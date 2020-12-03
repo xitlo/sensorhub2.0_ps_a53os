@@ -1,0 +1,17 @@
+#!/bin/sh
+
+echo "Sensorhub2.0 autostart begin!"
+
+USERHOOK_EMMC0=/media/sd-mmcblk0p1/autostart.sh
+USERHOOK_USB0=/run/media/sda1/autostart.sh
+
+if [ -f $USERHOOK_EMMC0 ]; then
+	echo "find in /media/sd-mmcblk0p1/autostart.sh, start run!"
+	sh $USERHOOK_EMMC0
+fi
+if [ -f $USERHOOK_USB0 ]; then
+	echo "find in /run/media/sda1/autostart.sh, start run!"
+	sh $USERHOOK_USB0
+fi
+
+echo "Sensorhub2.0 autostart done!"
