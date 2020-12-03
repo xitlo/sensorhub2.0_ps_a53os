@@ -1,11 +1,14 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 SRC_URI += "file://platform-top.h"
+SRC_URI += "file://bsp.cfg"
 
 do_configure_append () {
 	if [ "${U_BOOT_AUTO_CONFIG}" = "1" ]; then
 		install ${WORKDIR}/platform-auto.h ${S}/include/configs/
 		install ${WORKDIR}/platform-top.h ${S}/include/configs/
+	else
+		install ${WORKDIR}/bsp.cfg ${S}/include/configs/
 	fi
 }
 
