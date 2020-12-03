@@ -118,10 +118,10 @@ CONFIG_system-zynqmp=y
 #
 # CONFIG_e2fsprogs is not set
 # CONFIG_e2fsprogs-dev is not set
-# CONFIG_e2fsprogs-mke2fs is not set
+CONFIG_e2fsprogs-mke2fs=y
 # CONFIG_e2fsprogs-dbg is not set
 # CONFIG_e2fsprogs-resize2fs is not set
-# CONFIG_e2fsprogs-tune2fs is not set
+CONFIG_e2fsprogs-tune2fs=y
 # CONFIG_libss is not set
 # CONFIG_libcomerr is not set
 # CONFIG_libext2fs is not set
@@ -167,7 +167,7 @@ CONFIG_haveged=y
 #
 # i2c-tools 
 #
-# CONFIG_i2c-tools is not set
+CONFIG_i2c-tools=y
 # CONFIG_i2c-tools-dev is not set
 # CONFIG_i2c-tools-misc is not set
 # CONFIG_i2c-tools-dbg is not set
@@ -214,7 +214,7 @@ CONFIG_haveged=y
 #
 # linuxptp 
 #
-# CONFIG_linuxptp is not set
+CONFIG_linuxptp=y
 # CONFIG_linuxptp-dev is not set
 # CONFIG_linuxptp-dbg is not set
 
@@ -3611,7 +3611,7 @@ CONFIG_bridge-utils=y
 #
 # tcpdump 
 #
-# CONFIG_tcpdump is not set
+CONFIG_tcpdump=y
 # CONFIG_tcpdump-dev is not set
 # CONFIG_tcpdump-dbg is not set
 
