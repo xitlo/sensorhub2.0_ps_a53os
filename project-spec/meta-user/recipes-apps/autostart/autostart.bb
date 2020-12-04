@@ -12,7 +12,14 @@ SRC_URI = "file://autostart \
 
 S = "${WORKDIR}"
 
+inherit update-rc.d
+
+INITSCRIPT_NAME = "autostart"
+INITSCRIPT_PARAMS = "start 99 5 ."
+
 do_install() {
-	     install -d ${D}/${bindir}
-	     install -m 0755 ${S}/autostart ${D}/${bindir}
+	     install -d ${D}${sysconfdir}/init.d
+	     install -m 0755 ${S}/autostart ${D}${sysconfdir}/init.d/autostart
 }
+
+RDEPENDS_${PN}_append += "bash"
