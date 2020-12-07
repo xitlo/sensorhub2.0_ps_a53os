@@ -1,0 +1,20 @@
+{
+    "a53": {
+        "ip_addr": "192.168.2.160",
+        "ip_dest": "192.168.2.1",
+        "data_port": 6688,
+        "status_port": 6699
+    },
+    "r5": {},
+    "fpga": {},
+    "camera": {
+        "cam0": {
+            "enable": 1,
+            "name": "front100",
+            "reg_set": {
+                "0x300a": "0x56"
+            }
+        }
+    },
+    "other": {}
+}

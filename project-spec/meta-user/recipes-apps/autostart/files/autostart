@@ -1,6 +1,14 @@
 #!/bin/sh
 
-echo "Sensorhub2.0 autostart begin!"
+echo ">>> Sensorhub2.0 autostart begin!"
+
+# 1, system set
+echo ">>1, system set"
+telnetd
+
+
+# 2, check and run script on emmc and usb
+echo ">>2, check and run script on emmc and usb"
 
 USERHOOK_EMMC0=/media/sd-mmcblk0p1/autostart.sh
 USERHOOK_USB0=/run/media/sda1/autostart.sh
@@ -14,4 +22,4 @@ if [ -f $USERHOOK_USB0 ]; then
 	sh $USERHOOK_USB0
 fi
 
-echo "Sensorhub2.0 autostart done!"
+echo ">>> Sensorhub2.0 autostart done!"
