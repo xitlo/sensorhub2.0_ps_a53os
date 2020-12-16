@@ -4224,6 +4224,7 @@ CONFIG_jq=y
 CONFIG_mem-test=y
 # CONFIG_peekpoke is not set
 CONFIG_task-data=y
+CONFIG_zlog=y
 
 #
 # user packages 

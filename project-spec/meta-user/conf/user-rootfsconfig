@@ -7,3 +7,4 @@ CONFIG_mem-test
 CONFIG_autostart
 CONFIG_jq
 CONFIG_task-data
+CONFIG_zlog
