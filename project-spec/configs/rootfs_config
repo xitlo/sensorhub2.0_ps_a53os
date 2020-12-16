@@ -120,14 +120,14 @@ CONFIG_system-zynqmp=y
 # CONFIG_e2fsprogs-dev is not set
 CONFIG_e2fsprogs-mke2fs=y
 # CONFIG_e2fsprogs-dbg is not set
-# CONFIG_e2fsprogs-resize2fs is not set
+CONFIG_e2fsprogs-resize2fs=y
 CONFIG_e2fsprogs-tune2fs=y
 # CONFIG_libss is not set
 # CONFIG_libcomerr is not set
 # CONFIG_libext2fs is not set
 # CONFIG_libe2p is not set
-# CONFIG_e2fsprogs-e2fsck is not set
-# CONFIG_e2fsprogs-badblocks is not set
+CONFIG_e2fsprogs-e2fsck=y
+CONFIG_e2fsprogs-badblocks=y
 
 #
 # ed 
@@ -4223,6 +4223,7 @@ CONFIG_autostart=y
 CONFIG_jq=y
 CONFIG_mem-test=y
 # CONFIG_peekpoke is not set
+CONFIG_task-data=y
 
 #
 # user packages 
