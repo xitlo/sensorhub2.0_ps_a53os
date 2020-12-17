@@ -6,20 +6,71 @@ echo ">>> Sensorhub2.0 autostart begin!"
 echo ">>1, system set"
 telnetd
 
+# 2, remount emmc partition
+echo ">>2, remount emmc partition"
+PART1=/dev/mmcblk0p1
+PART2=/dev/mmcblk0p2
+PART3=/dev/mmcblk0p3
+PART1_OLD=/media/sd-mmcblk0p1
+PART2_OLD=/media/sd-mmcblk0p2
+PART3_OLD=/media/sd-mmcblk0p3
+PART1_NEW=/boot
+PART2_NEW=/ldc
+PART3_NEW=/data
 
-# 2, check and run script on emmc and usb
-echo ">>2, check and run script on emmc and usb"
+if [ -d $PART1_OLD ]; then
+    echo ">>2.1, remount $PART1_NEW partition"
+    if [ ! -d $PART1_NEW ]; then
+        mkdir $PART1_NEW
+    fi
+    umount $PART1_OLD
+    mount $PART1 $PART1_NEW
+    rmdir $PART1_OLD
+else
+    echo ">>2.1, can't find $PART1_OLD, pls check!"
+	exit 1
+fi
 
-USERHOOK_EMMC0=/media/sd-mmcblk0p1/autostart.sh
+if [ -d $PART2_OLD ]; then
+    echo ">>2.2, remount $PART2_NEW partition"
+    if [ ! -d $PART2_NEW ]; then
+        mkdir $PART2_NEW
+    fi
+    umount $PART2_OLD
+    mount $PART2 $PART2_NEW
+    rmdir $PART2_OLD
+else
+    echo ">>2.2, can't find $PART2_OLD, pls check!"
+	exit 1
+fi
+
+if [ -d $PART3_OLD ]; then
+    echo ">>2.3, remount $PART3_NEW partition"
+    if [ ! -d $PART3_NEW ]; then
+        mkdir $PART3_NEW
+    fi
+    umount $PART3_OLD
+    mount $PART3 $PART3_NEW
+    rmdir $PART3_OLD
+else
+    echo ">>2.3, can't find $PART3_OLD, pls check!"
+	exit 1
+fi
+
+# 3, check and run script on emmc and usb
+echo ">>3, check and run script on emmc and usb"
+
+USERHOOK_EMMC0=$PART3_NEW/autostart.sh
 USERHOOK_USB0=/run/media/sda1/autostart.sh
 
 if [ -f $USERHOOK_EMMC0 ]; then
-	echo "find in /media/sd-mmcblk0p1/autostart.sh, start run!"
+	echo "find in $USERHOOK_EMMC0, start run!"
 	sh $USERHOOK_EMMC0
 fi
 if [ -f $USERHOOK_USB0 ]; then
-	echo "find in /run/media/sda1/autostart.sh, start run!"
+	echo "find in $USERHOOK_USB0, start run!"
 	sh $USERHOOK_USB0
 fi
 
 echo ">>> Sensorhub2.0 autostart done!"
+exit 0
