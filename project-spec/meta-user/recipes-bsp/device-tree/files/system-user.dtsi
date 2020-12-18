@@ -1,3 +1,16 @@
 /include/ "system-conf.dtsi"
+
+&uart1 {
+    status = "disabled";
+};
+
+&can0 {
+    status = "disabled";
+};
+
+&can1 {
+    status = "disabled";
+};
+
 / {
 };
