@@ -1652,7 +1652,7 @@ CONFIG_run-postinsts=y
 #
 # libmetal 
 #
-# CONFIG_libmetal is not set
+CONFIG_libmetal=y
 # CONFIG_libmetal-dev is not set
 # CONFIG_libmetal-dbg is not set
 # CONFIG_libmetal-demos is not set
@@ -2127,7 +2127,7 @@ CONFIG_run-postinsts=y
 #
 # open-amp 
 #
-# CONFIG_open-amp is not set
+CONFIG_open-amp=y
 # CONFIG_open-amp-dev is not set
 # CONFIG_open-amp-dbg is not set
 # CONFIG_open-amp-demos is not set
@@ -2697,21 +2697,21 @@ CONFIG_json-c=y
 #
 # openamp-fw-echo-testd 
 #
-# CONFIG_openamp-fw-echo-testd is not set
+CONFIG_openamp-fw-echo-testd=y
 # CONFIG_openamp-fw-echo-testd-dev is not set
 # CONFIG_openamp-fw-echo-testd-dbg is not set
 
 #
 # openamp-fw-mat-muld 
 #
-# CONFIG_openamp-fw-mat-muld is not set
+CONFIG_openamp-fw-mat-muld=y
 # CONFIG_openamp-fw-mat-muld-dev is not set
 # CONFIG_openamp-fw-mat-muld-dbg is not set
 
 #
 # openamp-fw-rpc-demo 
 #
-# CONFIG_openamp-fw-rpc-demo is not set
+CONFIG_openamp-fw-rpc-demo=y
 # CONFIG_openamp-fw-rpc-demo-dbg is not set
 # CONFIG_openamp-fw-rpc-demo-dev is not set
 
@@ -3236,7 +3236,7 @@ CONFIG_packagegroup-core-ssh-dropbear=y
 # sysfsutils 
 #
 # CONFIG_sysfsutils is not set
-# CONFIG_libsysfs is not set
+CONFIG_libsysfs=y
 # CONFIG_sysfsutils-dbg is not set
 # CONFIG_sysfsutils-dev is not set
 
@@ -4116,7 +4116,7 @@ CONFIG_hellopm=y
 #
 # packagegroup-petalinux-openamp 
 #
-# CONFIG_packagegroup-petalinux-openamp is not set
+CONFIG_packagegroup-petalinux-openamp=y
 # CONFIG_packagegroup-petalinux-openamp-dev is not set
 # CONFIG_packagegroup-petalinux-openamp-dbg is not set
 
