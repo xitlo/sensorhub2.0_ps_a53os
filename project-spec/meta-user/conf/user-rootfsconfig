@@ -9,3 +9,5 @@ CONFIG_jq
 CONFIG_task-data
 CONFIG_zlog
 CONFIG_common
+CONFIG_iperf3
+CONFIG_dosfstools
