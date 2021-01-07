@@ -18,6 +18,11 @@
         reg = <0x0 0x0 0x0 0x7ff00000>;
     };
 
+    timesync {
+        compatible = "momenta-timesync";
+        timereg = <0x80000000>;
+    };
+
     reserved-memory {
         #address-cells = <2>;
         #size-cells = <2>;
@@ -65,7 +70,6 @@
             };
         };
     };
-
 
     zynqmp_ipi1 {
         compatible = "xlnx,zynqmp-ipi-mailbox";

@@ -11,3 +11,4 @@ CONFIG_zlog
 CONFIG_common
 CONFIG_iperf3
 CONFIG_dosfstools
+CONFIG_timesync
