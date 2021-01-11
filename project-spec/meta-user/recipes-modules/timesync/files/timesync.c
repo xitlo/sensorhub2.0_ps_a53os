@@ -44,7 +44,7 @@
  * MACRO
  ** ===================================================== **/
 /* version */
-#define VERSION           "v1.3-21"
+#define VERSION           "v1.5"
 
 /* 设备节点名称 */
 #define DEVICE_NAME       "timesync"
@@ -60,26 +60,18 @@
 /** ===================================================== **
  * STRUCT DEFINE
  ** ===================================================== **/
-struct time_s {
-    unsigned int uiTimeNsec;
-    unsigned int uiTimeSecL;
-};
-
 struct ps_timer_s {
-    unsigned int uiTimeNsec;
-    unsigned int uiTimeSecL;
-    unsigned int uiTimeSecH;
-    unsigned int uiIrqCycle;
+    unsigned int nsec;
+    unsigned int sec;
 };
 
 struct sync_data_s {
     struct timespec64  begin;           //起始系统时间
     struct timespec64  end;             //结束系统时间
     struct timespec64  realtime;        //真实时间-读取自ps-timer寄存器
-    unsigned long      realtime_reg_v;  //真实时间-ps-timer寄存器读值
-    int                diff_real_b_ns;  //真实时间与起始系统时间差值，用于精度判断
-    int                handle_e_b_ns;   //结束系统时间与起始系统时间差值，用于操作时间计算
-}
+    long               diff_real_b_ns;  //真实时间与起始系统时间差值，用于精度判断
+    long               handle_e_b_ns;   //结束系统时间与起始系统时间差值，用于操作时间计算
+};
 
 struct timesync_char_dev{
     struct device_node *nd;             //设备树的设备节点
@@ -125,31 +117,30 @@ static DEVICE_ATTR(timesync_debug_log, S_IRUGO | S_IWUSR, show_debug_log, store_
 static void synctime_process(struct work_struct *work)
 {
     struct timesync_char_dev *dev = container_of(work, struct timesync_char_dev, sync_work);
-    struct timespec64 ts1, ts2, ts_set;
-    unsigned long ulCurPsTime;
-    struct time_s *time_ptr = (struct time_s *)&ulCurPsTime;
+    struct sync_data_s *sync_ptr = &dev->set;
+
+    unsigned long realtime_reg_value;
+    struct ps_timer_s *time_ptr = (struct ps_timer_s *)&realtime_reg_value;
     int ret;
 
-	spin_lock_irq(&dev->lock);
-    ktime_get_real_ts64(&ts1);
-    // ulCurPsTime = *(unsigned long *)dev->ps_timer_ptr;
-    // ts_set.tv_nsec = ulCurPsTime & 0x00000000FFFFFFFF;
-    // ts_set.tv_sec  = ulCurPsTime >> 32;
-    ulCurPsTime = atomic64_read((atomic64_t *)dev->ps_timer_ptr);
-    ts_set.tv_nsec = time_ptr->uiTimeNsec;
-    ts_set.tv_sec  = time_ptr->uiTimeSecL;
-    ret = do_settimeofday64(&ts_set);
-    ktime_get_real_ts64(&ts2);
-	spin_unlock_irq(&dev->lock);
+    spin_lock(&dev->lock);
+    ktime_get_real_ts64(&sync_ptr->begin);
+    realtime_reg_value = atomic64_read((atomic64_t *)dev->ps_timer_ptr);
+    sync_ptr->realtime.tv_nsec = time_ptr->nsec;
+    sync_ptr->realtime.tv_sec  = time_ptr->sec;
+    ret = do_settimeofday64(&sync_ptr->realtime);
+    ktime_get_real_ts64(&sync_ptr->end);
+
+    sync_ptr->diff_real_b_ns = (sync_ptr->realtime.tv_sec - sync_ptr->begin.tv_sec)*1000000000 + sync_ptr->realtime.tv_nsec - sync_ptr->begin.tv_nsec;
+    sync_ptr->handle_e_b_ns  = (sync_ptr->end.tv_sec - sync_ptr->begin.tv_sec)*1000000000 + sync_ptr->end.tv_nsec - sync_ptr->begin.tv_nsec;
+    spin_unlock(&dev->lock);
 
     if ( 0 < iFlagDebuglog ) {
-        printk("&&timer expire[%d]! sys1/ps/diff, sys2/hdt: %lld.%09ld/%lld.%09ld/%lld, %lld.%09ld/%lld\n",
+        printk("&&timer expire[%d]! b/r/diff, e/hdl: %lld.%09ld/%lld.%09ld/%ld, %lld.%09ld/%ld\n",
             ret,
-            ts1.tv_sec, ts1.tv_nsec,
-            ts_set.tv_sec, ts_set.tv_nsec,
-            (ts_set.tv_sec - ts1.tv_sec)*1000000000 + ts_set.tv_nsec - ts1.tv_nsec,
-            ts2.tv_sec, ts2.tv_nsec,
-            (ts2.tv_sec - ts1.tv_sec)*1000000000 + ts2.tv_nsec - ts1.tv_nsec);
+            sync_ptr->begin.tv_sec, sync_ptr->begin.tv_nsec,
+            sync_ptr->realtime.tv_sec, sync_ptr->realtime.tv_nsec, sync_ptr->diff_real_b_ns,
+            sync_ptr->end.tv_sec, sync_ptr->end.tv_nsec, sync_ptr->handle_e_b_ns);
     }
 }
 
@@ -199,6 +190,35 @@ static ssize_t timesync_write(struct file *file_p, const char __user *buf, size_
 
 static ssize_t timesync_read(struct file *file_p, char __user *buf, size_t len, loff_t *loff_t_p)
 {
+    struct timesync_char_dev *dev = file_p->private_data;
+    struct sync_data_s *sync_ptr = &dev->read;
+
+    unsigned long realtime_reg_value;
+    struct ps_timer_s *time_ptr = (struct ps_timer_s *)&realtime_reg_value;
+
+    spin_lock(&dev->lock);
+    ktime_get_real_ts64(&sync_ptr->begin);
+    realtime_reg_value = atomic64_read((atomic64_t *)dev->ps_timer_ptr);
+    sync_ptr->realtime.tv_nsec = time_ptr->nsec;
+    sync_ptr->realtime.tv_sec  = time_ptr->sec;
+    ktime_get_real_ts64(&sync_ptr->end);
+
+    sync_ptr->diff_real_b_ns = (sync_ptr->realtime.tv_sec - sync_ptr->begin.tv_sec)*1000000000 + sync_ptr->realtime.tv_nsec - sync_ptr->begin.tv_nsec;
+    sync_ptr->handle_e_b_ns  = (sync_ptr->end.tv_sec - sync_ptr->begin.tv_sec)*1000000000 + sync_ptr->end.tv_nsec - sync_ptr->begin.tv_nsec;
+    spin_unlock(&dev->lock);
+
+    if (copy_to_user(buf, sync_ptr, sizeof(struct sync_data_s))) {
+        printk("timesync copy_to_user failed\n");
+        return -EFAULT;
+    }
+
+    if ( 1 < iFlagDebuglog ) {
+        printk("timesync_read! b/r/diff, e/hdl: %lld.%09ld/%lld.%09ld/%ld, %lld.%09ld/%ld\n",
+            sync_ptr->begin.tv_sec, sync_ptr->begin.tv_nsec,
+            sync_ptr->realtime.tv_sec, sync_ptr->realtime.tv_nsec, sync_ptr->diff_real_b_ns,
+            sync_ptr->end.tv_sec, sync_ptr->end.tv_nsec, sync_ptr->handle_e_b_ns);
+    }
+
     return 0;
 }
 
@@ -259,10 +279,10 @@ static int timesync_probe(struct platform_device *dev)
     timer_setup(&timesync_dev.timer, timer_function, 0);
 
     if ( 0 != device_create_file(&dev->dev, &dev_attr_timesync_debug_log) ) {
-		printk(KERN_DEBUG "Failed to create device file debug log \n");
-	}else{
-		printk(KERN_DEBUG "Device file debug log created successfully\n");
-	}
+        printk(KERN_DEBUG "Failed to create device file debug log \n");
+    }else{
+        printk(KERN_DEBUG "Device file debug log created successfully\n");
+    }
 
     return 0;
 }
