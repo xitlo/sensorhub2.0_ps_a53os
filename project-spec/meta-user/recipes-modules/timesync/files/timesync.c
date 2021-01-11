@@ -105,7 +105,7 @@ static ssize_t show_debug_log(struct device *dev, struct device_attribute *attr,
 static ssize_t store_debug_log(struct device *dev,struct device_attribute *attr,const char *buf, size_t count) {
     if(kstrtoint(buf, 10, &iFlagDebuglog) < 0)
         return -EINVAL;
-    printk(">>>> debug log: %d\n", iFlagDebuglog);
+    printk(KERN_INFO ">>>> debug log: %d\n", iFlagDebuglog);
     return count;
 }
 
@@ -136,7 +136,7 @@ static void synctime_process(struct work_struct *work)
     spin_unlock(&dev->lock);
 
     if ( 0 < iFlagDebuglog ) {
-        printk("&&timer expire[%d]! b/r/diff, e/hdl: %lld.%09ld/%lld.%09ld/%ld, %lld.%09ld/%ld\n",
+        printk(KERN_INFO "&&timer expire[%d]! b/r/diff, e/hdl: %lld.%09ld/%lld.%09ld/%ld, %lld.%09ld/%ld\n",
             ret,
             sync_ptr->begin.tv_sec, sync_ptr->begin.tv_nsec,
             sync_ptr->realtime.tv_sec, sync_ptr->realtime.tv_nsec, sync_ptr->diff_real_b_ns,
@@ -166,17 +166,17 @@ static ssize_t timesync_write(struct file *file_p, const char __user *buf, size_
 
     retvalue = copy_from_user((void *)&databuf, buf, len);
     if(retvalue < 0) {
-        printk("timesync copy_from_user failed\n");
+        printk(KERN_ERR "timesync copy_from_user failed\n");
         return -EFAULT;
     }
 
     if( sizeof(unsigned int) != len ) {
-        printk("length err, %ld/%ld\n", len, sizeof(unsigned int));
+        printk(KERN_ERR "length err, %ld/%ld\n", len, sizeof(unsigned int));
         return -EFAULT;
     }
 
     dev->time_period_ms = databuf;
-    printk("timesync period: %d\n", dev->time_period_ms);
+    printk(KERN_INFO "timesync period: %d\n", dev->time_period_ms);
 
     if( 0 == dev->time_period_ms)
         del_timer_sync(&dev->timer);
@@ -208,12 +208,12 @@ static ssize_t timesync_read(struct file *file_p, char __user *buf, size_t len, 
     spin_unlock(&dev->lock);
 
     if (copy_to_user(buf, sync_ptr, sizeof(struct sync_data_s))) {
-        printk("timesync copy_to_user failed\n");
+        printk(KERN_ERR "timesync copy_to_user failed\n");
         return -EFAULT;
     }
 
     if ( 1 < iFlagDebuglog ) {
-        printk("timesync_read! b/r/diff, e/hdl: %lld.%09ld/%lld.%09ld/%ld, %lld.%09ld/%ld\n",
+        printk(KERN_INFO "timesync_read! b/r/diff, e/hdl: %lld.%09ld/%lld.%09ld/%ld, %lld.%09ld/%ld\n",
             sync_ptr->begin.tv_sec, sync_ptr->begin.tv_nsec,
             sync_ptr->realtime.tv_sec, sync_ptr->realtime.tv_nsec, sync_ptr->diff_real_b_ns,
             sync_ptr->end.tv_sec, sync_ptr->end.tv_nsec, sync_ptr->handle_e_b_ns);
@@ -249,27 +249,27 @@ static int timesync_probe(struct platform_device *dev)
 {
     int ret = 0;
 
-    printk("%s, %s\n", __func__, VERSION);
+    printk(KERN_INFO "%s, %s\n", __func__, VERSION);
 
     /* 获取设备节点 */
     timesync_dev.nd = of_find_node_by_path("/timesync");
     if(timesync_dev.nd == NULL) {
-        printk("timesync node nost find\n");
+        printk(KERN_ERR "timesync node nost find\n");
         return -EINVAL;
     }
 
     if(0 > of_property_read_u32(timesync_dev.nd, "timereg", &timesync_dev.time_reg_addr)) {
-        printk("can not get timereg\n");
+        printk(KERN_ERR "can not get timereg\n");
         return -EINVAL;
     }
 
     timesync_dev.ps_timer_ptr = (struct ps_timer_s *)ioremap_wc(timesync_dev.time_reg_addr, sizeof(struct ps_timer_s));
-    printk("timereg/remap: 0x%08x/0x%lx\n", timesync_dev.time_reg_addr, (unsigned long)timesync_dev.ps_timer_ptr);
+    printk(KERN_INFO "timereg/remap: 0x%08x/0x%lx\n", timesync_dev.time_reg_addr, (unsigned long)timesync_dev.ps_timer_ptr);
 
     /* 注册misc设备 */
     ret = misc_register(&timesync_miscdev);
     if(ret < 0) {
-        printk("misc device register failed\n");
+        printk(KERN_ERR "misc device register failed\n");
         return -EFAULT;
     }
 
@@ -279,9 +279,9 @@ static int timesync_probe(struct platform_device *dev)
     timer_setup(&timesync_dev.timer, timer_function, 0);
 
     if ( 0 != device_create_file(&dev->dev, &dev_attr_timesync_debug_log) ) {
-        printk(KERN_DEBUG "Failed to create device file debug log \n");
+        printk(KERN_WARNING "Failed to create device file debug log \n");
     }else{
-        printk(KERN_DEBUG "Device file debug log created successfully\n");
+        printk(KERN_INFO "Device file debug log created successfully\n");
     }
 
     return 0;
@@ -299,7 +299,7 @@ static int timesync_remove(struct platform_device *dev)
     /* 注销misc设备 */
     misc_deregister(&timesync_miscdev);
 
-    printk("timesync_remove ok\n");
+    printk(KERN_INFO "timesync_remove ok\n");
     return 0;
 }
 
