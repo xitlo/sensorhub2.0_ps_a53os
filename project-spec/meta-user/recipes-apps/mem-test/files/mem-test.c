@@ -35,34 +35,37 @@
 #include <sys/mman.h>
 #include <errno.h>
 
+#define MEM_TEST_VERSION  "V1.3"
+
 static int dev_fd;
 int main(int argc, char **argv)
 {
-    uint32_t addr, value, map_size,base;
     int flag = 0;
     int i;
-    unsigned char *map_base;
+    unsigned int *map_base, addr, value, map_size;;
+    unsigned long base;
+
+    printf("mem-test version: %s\n", MEM_TEST_VERSION);
 
 	//printf("int/long/float/double/longlong: %d/%d/%d/%d/%d\n", sizeof(int), sizeof(long), sizeof(float), sizeof(double), sizeof(long long));
     if (argc != 5) {
-        printf("usage:   mem-test r base address readcount\n");
+        printf("usage:   mem-test(hex) r base(64bit) offset(32bit) read_num(32bit)\n");
         printf("example: mem-test r 0x50008000 20 1\n");
-        printf("usage:   mem-test w base address writevalue\n");
+        printf("usage:   mem-test(hex) w base(64bit) offset(32bit) write_val(32bit)\n");
         printf("example: mem-test w 0x50008000 20 0xffffffff\n");
         return -1;
     }
 
     if (argv[1][0] == 'r') {
         flag = 0;
-        value = strtol(argv[4], NULL, 10);
     }
     else {
         flag = 1;
-        value = strtol(argv[4], NULL, 16);
     }
 
     base = strtol(argv[2], NULL, 16);
     addr = strtol(argv[3], NULL, 16);
+    value = strtol(argv[4], NULL, 16);
 
     dev_fd = open("/dev/mem", O_RDWR | O_NDELAY | O_DSYNC);
 
@@ -74,7 +77,7 @@ int main(int argc, char **argv)
 
     addr &= ~0x3;
     map_size = addr + 0x100;
-    printf("map base:0x%x size:0x%x\n",base,map_size);
+    printf("map base: 0x%lx, size: 0x%x\n", base, map_size);
     map_base = (unsigned int *)mmap(NULL, map_size, PROT_READ | PROT_WRITE, MAP_SHARED, dev_fd, base);
     if((long)map_base == -1)
     {

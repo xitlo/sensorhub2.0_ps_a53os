@@ -4,6 +4,10 @@
     status = "disabled";
 };
 
+&spi0 {
+    status = "disabled";
+};
+
 &can0 {
     status = "disabled";
 };
@@ -12,79 +16,75 @@
     status = "disabled";
 };
 
-&CAN_BLK_can_0 {
+&SENSOR_BLK_CAN_BLK_can_0 {
     status = "disabled";
 };
 
-&CAN_BLK_can_1 {
+&SENSOR_BLK_CAN_BLK_can_1 {
     status = "disabled";
 };
 
-&CAN_BLK_can_2 {
+&SENSOR_BLK_CAN_BLK_can_2 {
     status = "disabled";
 };
 
-&CAN_BLK_can_3 {
+&SENSOR_BLK_CAN_BLK_can_3 {
     status = "disabled";
 };
 
-&CAN_BLK_can_4 {
+&SENSOR_BLK_CAN_BLK_can_4 {
     status = "disabled";
 };
 
-&CAN_BLK_can_5 {
+&SENSOR_BLK_CAN_BLK_can_5 {
     status = "disabled";
 };
 
-&CAN_BLK_can_6 {
+&SENSOR_BLK_CAN_BLK_can_6 {
     status = "disabled";
 };
 
-&CAN_BLK_can_7 {
+&SENSOR_BLK_CAN_BLK_can_7 {
     status = "disabled";
 };
 
-&UART_BLK_UART7 {
+&SENSOR_BLK_UART_BLK_axi_uartlite_0 {
     status = "disabled";
 };
 
-&UART_BLK_axi_uartlite_0 {
+&SENSOR_BLK_UART_BLK_axi_uartlite_1 {
     status = "disabled";
 };
 
-&UART_BLK_axi_uartlite_1 {
+&SENSOR_BLK_UART_BLK_axi_uartlite_2 {
     status = "disabled";
 };
 
-&UART_BLK_axi_uartlite_2 {
+&SENSOR_BLK_UART_BLK_axi_uartlite_3 {
     status = "disabled";
 };
 
-&UART_BLK_axi_uartlite_3 {
+&SENSOR_BLK_UART_BLK_axi_uartlite_4 {
     status = "disabled";
 };
 
-&UART_BLK_axi_uartlite_4 {
+&SENSOR_BLK_UART_BLK_axi_uartlite_5 {
     status = "disabled";
 };
 
-&UART_BLK_axi_uartlite_5 {
+&SENSOR_BLK_UART_BLK_axi_uartlite_6 {
     status = "disabled";
 };
 
-&UART_BLK_axi_uartlite_6 {
+&SENSOR_BLK_UART_BLK_axi_uartlite_7 {
     status = "disabled";
 };
 
-&UART_BLK_axi_uartlite_7 {
+&SENSOR_BLK_UART_BLK_f9p_uart {
     status = "disabled";
 };
 
-&UART_BLK_f9p_uart {
-    status = "disabled";
-};
-
-&UART_BLK_m8n_uart {
+&SENSOR_BLK_UART_BLK_m8n_uart {
     status = "disabled";
 };
 

@@ -45,7 +45,9 @@ EOF
 #1, umount
 echo -e ">>1, df & umount &fdisk\n"
 df
-umount /dev/mmcblk0p*
+if [ -e '/dev/mmcblk0p1' ]; then
+    umount /dev/mmcblk0p*
+fi
 fdisk -l
 
 #2, re-partition
@@ -55,7 +57,9 @@ run_mmc_case
 #3, format partitions
 sleep 1
 echo -e ">>3, format\n"
-umount /dev/mmcblk0p*
+if [ -e '/dev/mmcblk0p1' ]; then
+    umount /dev/mmcblk0p*
+fi
 mkfs.vfat /dev/mmcblk0p1
 mkfs.ext4 -E nodiscard -F /dev/mmcblk0p2
 mkfs.ext4 -E nodiscard -F /dev/mmcblk0p3
@@ -80,4 +84,3 @@ mount -o rw /dev/mmcblk0p3 /data
 
 #5, done
 echo -e ">>5, all done\n"
-
