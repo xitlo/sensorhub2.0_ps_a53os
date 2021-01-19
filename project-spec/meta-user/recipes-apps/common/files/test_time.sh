@@ -16,9 +16,9 @@ if [ $# -gt 2 ] ; then
 fi
 
 #3, check if only run timesync-test
-if [ $# -gt 1 -a $2 -eq 1 ] ; then
+if [ $# -gt 1 ] && [ $2 -eq 1 ] ; then
    echo "only run timesync-test with para $1"
-   /data/APP/timesync-test /dev/timesync $1
+   timesync-app /dev/timesync $1
    exit 0;
 fi
 

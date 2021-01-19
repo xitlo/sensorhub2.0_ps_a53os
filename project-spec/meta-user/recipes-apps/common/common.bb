@@ -22,3 +22,5 @@ do_install() {
 		install -m 0644 ${S}/zlog.conf ${D}${sysconfdir}/common
 		install -m 0755 ${S}/test_time.sh ${D}${sysconfdir}/common
 }
+
+RDEPENDS_${PN}_append += "bash"
