@@ -16,6 +16,14 @@
     status = "disabled";
 };
 
+&i2c0 {
+    status = "disabled";
+};
+
+&i2c1 {
+    status = "disabled";
+};
+
 &SENSOR_DOMAIN_CAN_BLK_can_0 {
     status = "disabled";
 };
