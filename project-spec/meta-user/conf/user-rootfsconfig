@@ -13,3 +13,4 @@ CONFIG_iperf3
 CONFIG_dosfstools
 CONFIG_timesync
 CONFIG_timesync-app
+CONFIG_task-state
