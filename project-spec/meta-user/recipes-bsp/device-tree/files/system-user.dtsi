@@ -1,5 +1,11 @@
 /include/ "system-conf.dtsi"
 
+/* EMMC */
+&sdhci0 {
+    status = "okay";
+    max-frequency = <50000000>;
+};
+
 /* SD */
 &sdhci1 {
     status = "okay";
@@ -8,17 +14,42 @@
     disable-wp;
 };
 
-/* USB */
+/* USB3.0 */
 &dwc3_0 {
-	status = "okay";
-	dr_mode = "host";
+    status = "disabled";
 };
 
 &sata {
-	phy-names = "sata-phy";
-	phys = <&lane0 1 0 1 150000000>;
+	phys = <&lane0 1 0 0 150000000>;
 };
 
+&qspi {
+	flash0: flash@0 {
+		compatible = "n25q512a", "jedec,spi-nor"; /* 64MB */
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0x0>;
+		spi-tx-bus-width = <4>;
+		spi-rx-bus-width = <4>; /* FIXME also DUAL configuration possible */
+		spi-max-frequency = <108000000>;
+		partition@0 {
+			label = "boot";
+			reg = <0x00000000 0x00a00000>;
+		};
+		partition@1 {
+			label = "bootenv";
+			reg = <0x00a00000 0x00010000>;
+		};
+		partition@2 {
+			label = "kernel";
+			reg = <0x00a10000 0x01500000>;
+		};
+		partition@3 {
+			label = "bootscr";
+			reg = <0x01f10000 0x00010000>;
+		};
+	};
+};
 
 &uart1 {
     status = "disabled";
