@@ -14,3 +14,4 @@ CONFIG_dosfstools
 CONFIG_timesync
 CONFIG_timesync-app
 CONFIG_task-state
+CONFIG_dd-full
