@@ -4,6 +4,7 @@
 &sdhci0 {
     status = "okay";
     max-frequency = <50000000>;
+    /* clk-phase-sd-hs = <63>, <72>; */
 };
 
 /* SD */
@@ -19,8 +20,11 @@
     status = "disabled";
 };
 
+
 &sata {
+	phy-names = "sata-phy";
 	phys = <&lane0 1 0 0 150000000>;
+	/* phys = <&lane1 1 1 0 150000000>; */
 };
 
 &qspi {
