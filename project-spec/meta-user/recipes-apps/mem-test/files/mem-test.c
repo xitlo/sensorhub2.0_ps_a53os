@@ -35,15 +35,16 @@
 #include <sys/mman.h>
 #include <errno.h>
 
-#define MEM_TEST_VERSION  "V1.3"
+#define MEM_TEST_VERSION  "V1.4"
 
 static int dev_fd;
 int main(int argc, char **argv)
 {
     int flag = 0;
     int i;
-    unsigned int *map_base, addr, value, map_size;;
+    unsigned int  addr, value, map_size;;
     unsigned long base;
+    unsigned char *map_base;
 
     printf("mem-test version: %s\n", MEM_TEST_VERSION);
 
@@ -78,7 +79,7 @@ int main(int argc, char **argv)
     addr &= ~0x3;
     map_size = addr + 0x100;
     printf("map base: 0x%lx, size: 0x%x\n", base, map_size);
-    map_base = (unsigned int *)mmap(NULL, map_size, PROT_READ | PROT_WRITE, MAP_SHARED, dev_fd, base);
+    map_base = (unsigned char *)mmap(NULL, map_size, PROT_READ | PROT_WRITE, MAP_SHARED, dev_fd, base);
     if((long)map_base == -1)
     {
         printf("map err %d\n",errno);
@@ -107,7 +108,7 @@ int main(int argc, char **argv)
     if(dev_fd)
         close(dev_fd);
 
-    munmap((unsigned int *)map_base, map_size);
+    munmap(map_base, map_size);
 
     return 0;
 }

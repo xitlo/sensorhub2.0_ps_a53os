@@ -4,7 +4,7 @@ echo ">>> Sensorhub2.0 autostart begin!"
 
 # 1, system set
 echo ">>1, system set"
-telnetd
+# telnetd
 
 # 2, remount emmc partition
 echo ">>2, remount emmc partition"
