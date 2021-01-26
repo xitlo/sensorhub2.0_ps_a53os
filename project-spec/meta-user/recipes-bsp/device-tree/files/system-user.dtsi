@@ -15,13 +15,6 @@
     disable-wp;
 };
 
-/* USB3.0 */
-/*
-&dwc3_0 {
-    status = "disabled";
-};
-*/
-
 &sata {
     status = "okay";
     phy-names = "sata-phy";
@@ -220,7 +213,7 @@
 
     timesync {
         compatible = "momenta-timesync";
-        timereg = <0x80000000>;
+        timereg = <0x80050000>;
     };
 
     reserved-memory {
