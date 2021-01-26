@@ -619,7 +619,7 @@ CONFIG_openssh-sftp-server=y
 #
 # parted 
 #
-# CONFIG_parted is not set
+CONFIG_parted=y
 # CONFIG_parted-dev is not set
 # CONFIG_parted-dbg is not set
 
@@ -4220,7 +4220,6 @@ CONFIG_imagefeature-debug-tweaks=y
 #
 CONFIG_autostart=y
 CONFIG_common=y
-CONFIG_dd-full=y
 CONFIG_dosfstools=y
 # CONFIG_gpio-demo is not set
 CONFIG_iperf3=y

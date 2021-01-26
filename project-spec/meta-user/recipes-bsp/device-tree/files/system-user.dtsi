@@ -20,40 +20,41 @@
 &dwc3_0 {
     status = "disabled";
 };
-
-&sata {
-	phy-names = "sata-phy";
-	phys = <&lane0 1 0 0 150000000>;
-	phys = <&lane1 1 1 0 150000000>;
-};
 */
 
+&sata {
+    status = "okay";
+    phy-names = "sata-phy";
+    phys = <&lane0 1 0 0 150000000>,
+           <&lane1 1 1 0 150000000>;
+};
+
 &qspi {
-	flash0: flash@0 {
-		compatible = "n25q512a", "jedec,spi-nor"; /* 64MB */
-		#address-cells = <1>;
-		#size-cells = <1>;
-		reg = <0x0>;
-		spi-tx-bus-width = <4>;
-		spi-rx-bus-width = <4>; /* FIXME also DUAL configuration possible */
-		spi-max-frequency = <108000000>;
-		partition@0 {
-			label = "boot";
-			reg = <0x00000000 0x01c00000>;
-		};
-		partition@1 {
-			label = "bootenv";
-			reg = <0x01c00000 0x00010000>;
-		};
-		partition@2 {
-			label = "kernel";
-			reg = <0x01c10000 0x01c00000>;
-		};
-		partition@3 {
-			label = "bootscr";
-			reg = <0x03810000 0x00010000>;
-		};
-	};
+    flash0: flash@0 {
+        compatible = "n25q512a", "jedec,spi-nor"; /* 64MB */
+        #address-cells = <1>;
+        #size-cells = <1>;
+        reg = <0x0>;
+        spi-tx-bus-width = <4>;
+        spi-rx-bus-width = <4>; /* FIXME also DUAL configuration possible */
+        spi-max-frequency = <108000000>;
+        partition@0 {
+            label = "boot";
+            reg = <0x00000000 0x01c00000>;
+        };
+        partition@1 {
+            label = "bootenv";
+            reg = <0x01c00000 0x00010000>;
+        };
+        partition@2 {
+            label = "kernel";
+            reg = <0x01c10000 0x01c00000>;
+        };
+        partition@3 {
+            label = "bootscr";
+            reg = <0x03810000 0x00010000>;
+        };
+    };
 };
 
 &uart1 {
@@ -157,58 +158,58 @@
 };
 
 &gem3 {
-	phy-handle = <&phy0>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_gem3_default>;
-	phy0: ethernet-phy@c {
-		reg = <0xc>;
-		ti,rx-internal-delay = <0x8>;
-		ti,tx-internal-delay = <0xa>;
-		ti,fifo-depth = <0x1>;
-		ti,dp83867-rxctrl-strap-quirk;
-	};
+    phy-handle = <&phy0>;
+    pinctrl-names = "default";
+    pinctrl-0 = <&pinctrl_gem3_default>;
+    phy0: ethernet-phy@c {
+        reg = <0xc>;
+        ti,rx-internal-delay = <0x2>;
+        ti,tx-internal-delay = <0xa>;
+        ti,fifo-depth = <0x1>;
+        ti,dp83867-rxctrl-strap-quirk;
+    };
 };
 
 &pinctrl0 {
-	status = "okay";
-	pinctrl_gem3_default: gem3-default {
-		mux {
-			function = "ethernet3";
-			groups = "ethernet3_0_grp";
-		};
+    status = "okay";
+    pinctrl_gem3_default: gem3-default {
+        mux {
+            function = "ethernet3";
+            groups = "ethernet3_0_grp";
+        };
 
-		conf {
-			groups = "ethernet3_0_grp";
-			slew-rate = <1>;
-			io-standard = <1>;
-		};
+        conf {
+            groups = "ethernet3_0_grp";
+            slew-rate = <1>;
+            io-standard = <1>;
+        };
 
-		conf-rx {
-			pins = "MIO70", "MIO71", "MIO72", "MIO73", "MIO74",
-									"MIO75";
-			bias-pull-up;
-			low-power-disable;
-		};
+        conf-rx {
+            pins = "MIO70", "MIO71", "MIO72", "MIO73", "MIO74",
+                                    "MIO75";
+            bias-high-impedance;
+            low-power-disable;
+        };
 
-		conf-tx {
-			pins = "MIO64", "MIO65", "MIO66", "MIO67", "MIO68",
-									"MIO69";
-			bias-disable;
-			low-power-enable;
-		};
+        conf-tx {
+            pins = "MIO64", "MIO65", "MIO66", "MIO67", "MIO68",
+                                    "MIO69";
+            bias-disable;
+            low-power-enable;
+        };
 
-		mux-mdio {
-			function = "mdio3";
-			groups = "mdio3_0_grp";
-		};
+        mux-mdio {
+            function = "mdio3";
+            groups = "mdio3_0_grp";
+        };
 
-		conf-mdio {
-			groups = "mdio3_0_grp";
-			slew-rate = <1>;
-			io-standard = <1>;
-			bias-disable;
-		};
-	};
+        conf-mdio {
+            groups = "mdio3_0_grp";
+            slew-rate = <1>;
+            io-standard = <1>;
+            bias-disable;
+        };
+    };
 };
 
 / {
