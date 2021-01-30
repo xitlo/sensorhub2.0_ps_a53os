@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo ">>> Sensorhub2.0 autostart begin!"
-echo ">>> Version: v1.06"
+echo ">>> Version: v1.07"
 
 # 1, system set
 echo ">>1, system set"
@@ -72,6 +72,10 @@ if [ -f $USERHOOK_USB0 ]; then
 	echo "find in $USERHOOK_USB0, start run in background!"
 	sh $USERHOOK_USB0 &
 fi
+
+# 4, check and run script on emmc and usb
+echo ">>4, start timesync and ptp"
+/etc/common/autostart.sh-time
 
 echo ">>> Sensorhub2.0 autostart done!"
 exit 0

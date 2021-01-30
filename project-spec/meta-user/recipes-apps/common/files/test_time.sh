@@ -22,10 +22,10 @@ if [ $# -gt 1 ] && [ $2 -eq 1 ] ; then
    exit 0;
 fi
 
-#4, enable timer and set time to 20210101-000000
-mem-test w 0x80050000 0x24 0x00
-mem-test w 0x80050000 0x04 0x5FEDF580
-mem-test w 0x80050000 0x24 0x01
+#4, enable timer and set time to 20210101-120000
+mem-test w 0x80050000 0x24 0x00000000
+mem-test w 0x80050000 0x04 0x5FEE9E40
+mem-test w 0x80050000 0x24 0x00010007
 
 #5, load timesync driver
 lsmod | grep timesync

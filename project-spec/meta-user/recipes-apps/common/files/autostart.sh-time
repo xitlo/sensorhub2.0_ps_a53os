@@ -6,4 +6,4 @@ echo ">>>1, start test_time period 2s!"
 
 echo ">>>2, sleep 1s, start ptp4l!"
 sleep 1
-ptp4l -i eth0 &
+ptp4l -i eth0 -S &
