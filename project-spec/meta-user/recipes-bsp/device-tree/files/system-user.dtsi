@@ -45,7 +45,7 @@
         };
         partition@3 {
             label = "bootscr";
-            reg = <0x03810000 0x00010000>;
+            reg = <0x03810000 0x00080000>;
         };
     };
 };
@@ -74,79 +74,35 @@
     status = "disabled";
 };
 
-&SENSOR_DOMAIN_CAN_BLK_can_0 {
+&CAN_BLK_can_0 {
     status = "disabled";
 };
 
-&SENSOR_DOMAIN_CAN_BLK_can_1 {
+&CAN_BLK_can_1 {
     status = "disabled";
 };
 
-&SENSOR_DOMAIN_CAN_BLK_can_2 {
+&CAN_BLK_can_2 {
     status = "disabled";
 };
 
-&SENSOR_DOMAIN_CAN_BLK_can_3 {
+&CAN_BLK_can_3 {
     status = "disabled";
 };
 
-&SENSOR_DOMAIN_CAN_BLK_can_4 {
+&CAN_BLK_can_4 {
     status = "disabled";
 };
 
-&SENSOR_DOMAIN_CAN_BLK_can_5 {
+&CAN_BLK_can_5 {
     status = "disabled";
 };
 
-&SENSOR_DOMAIN_CAN_BLK_can_6 {
+&CAN_BLK_can_6 {
     status = "disabled";
 };
 
-&SENSOR_DOMAIN_CAN_BLK_can_7 {
-    status = "disabled";
-};
-
-&SENSOR_DOMAIN_UART_BLK_axi_uartlite_0 {
-    status = "disabled";
-};
-
-&SENSOR_DOMAIN_UART_BLK_axi_uartlite_1 {
-    status = "disabled";
-};
-
-&SENSOR_DOMAIN_UART_BLK_axi_uartlite_2 {
-    status = "disabled";
-};
-
-&SENSOR_DOMAIN_UART_BLK_axi_uartlite_3 {
-    status = "disabled";
-};
-
-&SENSOR_DOMAIN_UART_BLK_axi_uartlite_4 {
-    status = "disabled";
-};
-
-&SENSOR_DOMAIN_UART_BLK_axi_uartlite_5 {
-    status = "disabled";
-};
-
-&SENSOR_DOMAIN_UART_BLK_axi_uartlite_6 {
-    status = "disabled";
-};
-
-&SENSOR_DOMAIN_UART_BLK_axi_uartlite_7 {
-    status = "disabled";
-};
-
-&SENSOR_DOMAIN_UART_BLK_axi_uartlite_F9P {
-    status = "disabled";
-};
-
-&SENSOR_DOMAIN_UART_BLK_axi_uartlite_m8n {
-    status = "disabled";
-};
-
-&SENSOR_DOMAIN_UART_BLK_axi_uartlite_debug {
+&CAN_BLK_can_7 {
     status = "disabled";
 };
 
