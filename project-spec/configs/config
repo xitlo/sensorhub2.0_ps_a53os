@@ -306,4 +306,5 @@ CONFIG_YOCTO_LOCAL_SSTATE_FEEDS_URL="/opt/petalinux/cash/2020.1/sstate-cache"
 # User Layers
 #
 CONFIG_USER_LAYER_0=""
+
 CONFIG_SUBSYSTEM_BOOTARGS_GENERATED=" earlycon console=ttyPS0,115200 clk_ignore_unused root=/dev/ram0 rw"
