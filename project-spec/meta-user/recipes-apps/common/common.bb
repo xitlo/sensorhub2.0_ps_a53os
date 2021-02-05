@@ -12,6 +12,7 @@ SRC_URI = "file://deploy.sh \
 	file://zlog.conf \
 	file://test_time.sh \
 	file://autostart.sh-time \
+	file://sensorhub-2.elf \
 	"
 
 S = "${WORKDIR}"
@@ -23,6 +24,8 @@ do_install() {
 		install -m 0644 ${S}/zlog.conf ${D}${sysconfdir}/common
 		install -m 0755 ${S}/test_time.sh ${D}${sysconfdir}/common
 		install -m 0755 ${S}/autostart.sh-time ${D}${sysconfdir}/common
+		install -d ${D}${base_libdir}/firmware
+		install -m 0644 ${S}/sensorhub-2.elf ${D}${base_libdir}/firmware
 }
 
 RDEPENDS_${PN}_append += "bash"
