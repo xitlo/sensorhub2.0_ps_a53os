@@ -1,6 +1,6 @@
 /** ===================================================== **
  *Author : Momenta founderHAN
- *Created: 2021-2-5
+ *Created: 2021-1-5
  *Version: 1.0
  ** ===================================================== **/
 
@@ -25,13 +25,13 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.4"
+#define VERSION "v1.6"
 
-#define RPMSG_GET_KFIFO_SIZE        1
-#define RPMSG_GET_AVAIL_DATA_SIZE   2
-#define RPMSG_GET_FREE_SPACE        3
+#define RPMSG_GET_KFIFO_SIZE 1
+#define RPMSG_GET_AVAIL_DATA_SIZE 2
+#define RPMSG_GET_FREE_SPACE 3
 
-#define RPMSG_HEADER_LEN    16
+#define RPMSG_HEADER_LEN 16
 #define MAX_RPMSG_BUFF_SIZE (512 - RPMSG_HEADER_LEN)
 
 #define RPMSG_BUS_SYS "/sys/bus/rpmsg"
@@ -48,7 +48,8 @@ static int charfd = -1, eptfd = -1;
 uint8_t aucRecv[MAX_RPMSG_BUFF_SIZE] = {0};
 uint8_t aucCmd[1024] = {0};
 
-static int loop=50;
+static int loop = 50;
+static int is_show_char = 0;
 
 /** ===================================================== **
  * FUNCTION
@@ -56,7 +57,7 @@ static int loop=50;
 void ctrl_c_handler(int signum, siginfo_t *info, void *myact)
 {
     loop = 0;
-    printf("! CTRL+C %d %p %p  %d\n",signum,info,myact,loop);
+    printf("! CTRL+C %d %p %p  %d\n", signum, info, myact, loop);
 }
 
 static int rpmsg_create_ept(int rpfd, struct rpmsg_endpoint_info *eptinfo)
@@ -70,8 +71,8 @@ static int rpmsg_create_ept(int rpfd, struct rpmsg_endpoint_info *eptinfo)
 }
 
 static char *get_rpmsg_ept_dev_name(const char *rpmsg_char_name,
-                    const char *ept_name,
-                    char *ept_dev_name)
+                                    const char *ept_name,
+                                    char *ept_dev_name)
 {
     char sys_rpmsg_ept_name_path[64];
     char svc_name[64];
@@ -80,24 +81,27 @@ static char *get_rpmsg_ept_dev_name(const char *rpmsg_char_name,
     int i;
     int ept_name_len;
 
-    for (i = 0; i < 128; i++) {
+    for (i = 0; i < 128; i++)
+    {
         sprintf(sys_rpmsg_ept_name_path, "%s/%s/rpmsg%d/name",
-            sys_rpmsg_path, rpmsg_char_name, i);
+                sys_rpmsg_path, rpmsg_char_name, i);
         printf("checking %s\n", sys_rpmsg_ept_name_path);
         if (access(sys_rpmsg_ept_name_path, F_OK) < 0)
             continue;
         fp = fopen(sys_rpmsg_ept_name_path, "r");
-        if (!fp) {
+        if (!fp)
+        {
             printf("failed to open %s\n", sys_rpmsg_ept_name_path);
             break;
         }
         fgets(svc_name, sizeof(svc_name), fp);
         fclose(fp);
-        printf("svc_name: %s.\n",svc_name);
+        printf("svc_name: %s.\n", svc_name);
         ept_name_len = strlen(ept_name);
         if (ept_name_len > sizeof(svc_name))
             ept_name_len = sizeof(svc_name);
-        if (!strncmp(svc_name, ept_name, ept_name_len)) {
+        if (!strncmp(svc_name, ept_name, ept_name_len))
+        {
             sprintf(ept_dev_name, "rpmsg%d", i);
             return ept_dev_name;
         }
@@ -115,20 +119,21 @@ static int bind_rpmsg_chrdev(const char *rpmsg_dev_name)
     int fd;
     int ret;
 
-
     /* rpmsg dev overrides path */
     sprintf(fpath, "%s/devices/%s/driver_override",
-        RPMSG_BUS_SYS, rpmsg_dev_name);
+            RPMSG_BUS_SYS, rpmsg_dev_name);
     fd = open(fpath, O_WRONLY);
-    if (fd < 0) {
+    if (fd < 0)
+    {
         fprintf(stderr, "Failed to open %s, %s\n",
-            fpath, strerror(errno));
+                fpath, strerror(errno));
         return -EINVAL;
     }
     ret = write(fd, rpmsg_chdrv, strlen(rpmsg_chdrv) + 1);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         fprintf(stderr, "Failed to write %s to %s, %s\n",
-            rpmsg_chdrv, fpath, strerror(errno));
+                rpmsg_chdrv, fpath, strerror(errno));
         return -EINVAL;
     }
     close(fd);
@@ -136,15 +141,17 @@ static int bind_rpmsg_chrdev(const char *rpmsg_dev_name)
     /* bind the rpmsg device to rpmsg char driver */
     sprintf(fpath, "%s/drivers/%s/bind", RPMSG_BUS_SYS, rpmsg_chdrv);
     fd = open(fpath, O_WRONLY);
-    if (fd < 0) {
+    if (fd < 0)
+    {
         fprintf(stderr, "Failed to open %s, %s\n",
-            fpath, strerror(errno));
+                fpath, strerror(errno));
         return -EINVAL;
     }
     ret = write(fd, rpmsg_dev_name, strlen(rpmsg_dev_name) + 1);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         fprintf(stderr, "Failed to write %s to %s, %s\n",
-            rpmsg_dev_name, fpath, strerror(errno));
+                rpmsg_dev_name, fpath, strerror(errno));
         return -EINVAL;
     }
     close(fd);
@@ -152,7 +159,7 @@ static int bind_rpmsg_chrdev(const char *rpmsg_dev_name)
 }
 
 static int get_rpmsg_chrdev_fd(const char *rpmsg_dev_name,
-                   char *rpmsg_ctrl_name)
+                               char *rpmsg_ctrl_name)
 {
     char dpath[256];
     char fpath[256];
@@ -163,20 +170,24 @@ static int get_rpmsg_chrdev_fd(const char *rpmsg_dev_name,
 
     sprintf(dpath, "%s/devices/%s/rpmsg", RPMSG_BUS_SYS, rpmsg_dev_name);
     dir = opendir(dpath);
-    if (dir == NULL) {
+    if (dir == NULL)
+    {
         fprintf(stderr, "Failed to open dir %s\n", dpath);
         return -EINVAL;
     }
-    while ((ent = readdir(dir)) != NULL) {
+    while ((ent = readdir(dir)) != NULL)
+    {
         if (!strncmp(ent->d_name, rpmsg_ctrl_prefix,
-                strlen(rpmsg_ctrl_prefix))) {
+                     strlen(rpmsg_ctrl_prefix)))
+        {
             printf("Opening file %s.\n", ent->d_name);
             sprintf(fpath, "/dev/%s", ent->d_name);
             fd = open(fpath, O_RDWR | O_NONBLOCK);
-            if (fd < 0) {
+            if (fd < 0)
+            {
                 fprintf(stderr,
-                    "Failed to open rpmsg char dev %s,%s\n",
-                    fpath, strerror(errno));
+                        "Failed to open rpmsg char dev %s,%s\n",
+                        fpath, strerror(errno));
                 return fd;
             }
             sprintf(rpmsg_ctrl_name, "%s", ent->d_name);
@@ -196,30 +207,35 @@ Output:         hex:转换后的hex字符数组
 Return:         -1 不符合规则，失败
                 >0 成功，转换的字节数
 *************************************************/
-static int string2hex(char* str, uint8_t* hex)
+static int string2hex(char *str, uint8_t *hex)
 {
     int i = 0;
     int j = 0;
     uint8_t temp = 0;
     int str_len = 0;
     char str_cpy[128] = {'0'};
-    strcpy(str_cpy,str);
+    strcpy(str_cpy, str);
     str_len = strlen(str_cpy);
-    if(str_len==0)
+    if (str_len == 0)
     {
         return -1;
     }
-    while(i < str_len)
+    while (i < str_len)
     {
-        if(str_cpy[i]>='0' && str_cpy[i]<='F')
+        if (str_cpy[i] >= 'a' && str_cpy[i] <= 'f')
         {
-            if((str_cpy[i]>='0' && str_cpy[i]<='9'))
+            str_cpy[i] -= 0x20;
+        }
+
+        if (str_cpy[i] >= '0' && str_cpy[i] <= 'F')
+        {
+            if ((str_cpy[i] >= '0' && str_cpy[i] <= '9'))
             {
-                temp = (str_cpy[i] & 0x0f)<<4;
+                temp = (str_cpy[i] & 0x0f) << 4;
             }
-            else if(str_cpy[i]>='A' && str_cpy[i]<='F')
+            else if (str_cpy[i] >= 'A' && str_cpy[i] <= 'F')
             {
-                temp = ((str_cpy[i] + 0x09) & 0x0f)<<4;
+                temp = ((str_cpy[i] + 0x09) & 0x0f) << 4;
             }
             else
             {
@@ -231,13 +247,13 @@ static int string2hex(char* str, uint8_t* hex)
             return -1;
         }
         i++;
-        if(str_cpy[i]>='0' && str_cpy[i]<='F')
+        if (str_cpy[i] >= '0' && str_cpy[i] <= 'F')
         {
-            if(str_cpy[i]>='0' && str_cpy[i]<='9')
+            if (str_cpy[i] >= '0' && str_cpy[i] <= '9')
             {
                 temp |= (str_cpy[i] & 0x0f);
             }
-            else if(str_cpy[i]>='A' && str_cpy[i]<='F')
+            else if (str_cpy[i] >= 'A' && str_cpy[i] <= 'F')
             {
                 temp |= ((str_cpy[i] + 0x09) & 0x0f);
             }
@@ -265,14 +281,25 @@ void *receive(void *pth_arg)
     int i, bytes_rcvd;
 
     printf("start wait for r5 msg\r\n");
-    while(loop) {
+    while (loop)
+    {
         bytes_rcvd = read(eptfd, aucRecv, sizeof(aucRecv));
-        if ( 0 >= bytes_rcvd)
+        if (0 >= bytes_rcvd)
             continue;
-        
+
         printf("\r\n==recv[%d], hex:\r\n", bytes_rcvd);
-        for ( i=0; i<bytes_rcvd; i++ ) {
+        for (i = 0; i < bytes_rcvd; i++)
+        {
             printf("%02x ", aucRecv[i]);
+        }
+
+        if(is_show_char)
+        {
+            printf("\r\n==recv[%d], char:\r\n", bytes_rcvd);
+            for (i = 0; i < bytes_rcvd; i++)
+            {
+                printf("%c", aucRecv[i]);
+            }
         }
         printf("\r\n\r\n");
     }
@@ -283,7 +310,7 @@ int main(int argc, char *argv[])
     int ret, i;
     int bytes_sent;
     int opt;
-    char *rpmsg_dev="virtio0.rpmsg-openamp-demo-channel.-1.0";
+    char *rpmsg_dev = "virtio0.rpmsg-openamp-demo-channel.-1.0";
     char fpath[256];
     char rpmsg_char_name[16];
     struct rpmsg_endpoint_info eptinfo;
@@ -298,19 +325,25 @@ int main(int argc, char *argv[])
     act.sa_flags = SA_SIGINFO;
     act.sa_sigaction = ctrl_c_handler;
 
-    if(sigaction(SIGINT, &act, NULL) < 0) {
+    if (sigaction(SIGINT, &act, NULL) < 0)
+    {
         fprintf(stderr, "install sigal error\n");
     }
 
     fprintf(stdout, "openamp-test: %s\n", VERSION);
 
-    while ((opt = getopt(argc, argv, "d:")) != -1) {
-        switch (opt) {
+    while ((opt = getopt(argc, argv, "d:c")) != -1)
+    {
+        switch (opt)
+        {
         case 'd':
             rpmsg_dev = optarg;
             break;
+        case 'c':
+            is_show_char = 1;
+            break;
         default:
-            printf("getopt return unsupported option: -%c\n",opt);
+            printf("getopt return unsupported option: -%c\n", opt);
             break;
         }
     }
@@ -318,16 +351,18 @@ int main(int argc, char *argv[])
     /* Load rpmsg_char driver */
     printf("\r\nMaster>probe rpmsg_char\r\n");
     ret = system("modprobe rpmsg_char");
-    if (ret < 0) {
+    if (ret < 0)
+    {
         perror("Failed to load rpmsg_char driver.\n");
         return -EINVAL;
     }
 
     printf("\r\n Open rpmsg dev %s! \r\n", rpmsg_dev);
     sprintf(fpath, "%s/devices/%s", RPMSG_BUS_SYS, rpmsg_dev);
-    if (access(fpath, F_OK)) {
+    if (access(fpath, F_OK))
+    {
         fprintf(stderr, "Not able to access rpmsg device %s, %s\n",
-            fpath, strerror(errno));
+                fpath, strerror(errno));
         return -EINVAL;
     }
     ret = bind_rpmsg_chrdev(rpmsg_dev);
@@ -342,16 +377,18 @@ int main(int argc, char *argv[])
     eptinfo.src = 0;
     eptinfo.dst = 0xFFFFFFFF;
     ret = rpmsg_create_ept(charfd, &eptinfo);
-    if (ret) {
+    if (ret)
+    {
         printf("failed to create RPMsg endpoint.\n");
         return -EINVAL;
     }
     if (!get_rpmsg_ept_dev_name(rpmsg_char_name, eptinfo.name,
-                    ept_dev_name))
+                                ept_dev_name))
         return -EINVAL;
     sprintf(ept_dev_path, "/dev/%s", ept_dev_name);
     eptfd = open(ept_dev_path, O_RDWR | O_NONBLOCK);
-    if (eptfd < 0) {
+    if (eptfd < 0)
+    {
         perror("Failed to open rpmsg device.");
         close(charfd);
         return -1;
@@ -361,34 +398,38 @@ int main(int argc, char *argv[])
     printf("create thread for r5 msg recevie\r\n");
     pthread_t pth_r5_recv;
     ret = pthread_create(&pth_r5_recv, NULL, receive, NULL);
-    if (-1 == ret) {
+    if (-1 == ret)
+    {
         printf("%d, pthread_create failed: %s\n", __LINE__, strerror(errno));
         close(charfd);
         return -1;
     }
 
     printf("\r\npls input hex msg, e.g: ABCDEF0123456 ...\r\n");
-    while(loop) {
+    while (loop)
+    {
         memset(acMsgStr, 0, sizeof(acMsgStr));
         memset(aucCmd, 0, sizeof(aucCmd));
 
         scanf("%s", acMsgStr);
         printf("get msg string: %s\n", acMsgStr);
         iLen = string2hex(acMsgStr, aucCmd);
-        if( 0 >= iLen)
+        if (0 >= iLen)
         {
             printf("cmd err, please check!\n");
             continue;
         }
 
         printf("\r\n==send[%d], hex:\r\n", iLen);
-        for ( i=0; i<iLen; i++ ) {
+        for (i = 0; i < iLen; i++)
+        {
             printf("%02x ", aucCmd[i]);
         }
         printf("\r\n");
 
         bytes_sent = write(eptfd, aucCmd, iLen);
-        if (bytes_sent <= 0) {
+        if (bytes_sent <= 0)
+        {
             printf("\r\n Error sending data\r\n");
             break;
         }
