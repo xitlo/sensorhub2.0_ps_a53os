@@ -29,7 +29,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.6"
+#define VERSION "v1.7"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
@@ -370,6 +370,7 @@ int main(int argc, char *argv[])
     int ret;
     int opt;
     unsigned short send_port;
+    unsigned char aucInitCmd[3] = {0xAA, 0x55, 0xA0};
 
     /*ctrl + c*/
     struct sigaction act;
@@ -441,9 +442,9 @@ int main(int argc, char *argv[])
     addr0.sin_addr.s_addr = inet_addr(IP); //设置ip地址
 
     //5, main task, receive r5 message, send by udp
-    char *str_def = "hello r5!";
+    // char *str_def = "hello r5!";
     printf("start wait for r5 msg\r\n");
-    if (0 >= write(eptfd, str_def, strlen(str_def)))
+    if (0 >= write(eptfd, aucInitCmd, strlen(aucInitCmd)))
     {
         exit_rpmsg();
         print_err("rpmsg send failed", __LINE__, errno);

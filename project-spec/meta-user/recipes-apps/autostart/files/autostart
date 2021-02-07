@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo ">>> Sensorhub2.0 autostart begin!"
-echo ">>> Version: v1.08"
+echo ">>> Version: v1.08-1"
 
 # 1, system set
 echo ">>1, system set"
@@ -96,24 +96,26 @@ else
     # 4.1, start r5 and wait a while
     echo ">>4.1, start r5!"
     /etc/common/app-control 1 1
-    sleep 2
+    echo ">>sleep 120s, pls wait..."
+    sleep 120
 
-    # 4.2, start timesync
-    echo ">>4.2, start timesync, period 2s!"
+    # 4.2, start task-data
+    echo ">>4.2, start task-data!"
+    /etc/common/app-control 5 1
+
+    # 4.3, start task-state
+    echo ">>4.3, start task-state!"
+    /etc/common/app-control 4 1
+
+    # 4.4, start timesync
+    echo ">>4.4, start timesync, period 2s!"
     /etc/common/app-control 2 1
     sleep 1
 
-    # 4.3, start ptp
-    echo ">>4.3, start ptp4l!"
+    # 4.5, start ptp
+    echo ">>4.5, start ptp4l!"
     /etc/common/app-control 3 1
 
-    # 4.4, start task-state
-    echo ">>4.4, start task-state!"
-    /etc/common/app-control 4 1
-
-    # 4.5, start task-data
-    echo ">>4.5, start task-data!"
-    /etc/common/app-control 5 1
 fi
 
 echo ">>> Sensorhub2.0 autostart done!"
