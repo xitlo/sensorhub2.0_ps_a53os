@@ -29,7 +29,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.5"
+#define VERSION "v1.6"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
@@ -77,6 +77,11 @@ void print_err(char *str, int line, int err_no)
     _exit(-1);
 }
 
+void stop_remote(void)
+{
+    system("modprobe -r rpmsg_char");
+}
+
 static int rpmsg_create_ept(int rpfd, struct rpmsg_endpoint_info *eptinfo)
 {
     int ret;
@@ -85,6 +90,11 @@ static int rpmsg_create_ept(int rpfd, struct rpmsg_endpoint_info *eptinfo)
     if (ret)
         perror("Failed to create endpoint.\n");
     return ret;
+}
+
+static void rpmsg_destroy_ept(int rpfd)
+{
+    ioctl(rpfd, RPMSG_DESTROY_EPT_IOCTL);
 }
 
 static char *get_rpmsg_ept_dev_name(const char *rpmsg_char_name,
@@ -239,16 +249,22 @@ static int init_rpmsg(void)
     sprintf(fpath, "%s/devices/%s", RPMSG_BUS_SYS, rpmsg_dev);
     if (access(fpath, F_OK))
     {
-        fprintf(stderr, "Not able to access rpmsg device %s, %s\n",
-                fpath, strerror(errno));
+        fprintf(stderr, "Not able to access rpmsg device %s, %s\n", fpath, strerror(errno));
+        stop_remote();
         return -EINVAL;
     }
     ret = bind_rpmsg_chrdev(rpmsg_dev);
     if (ret < 0)
+    {
+        stop_remote();
         return ret;
+    }
     charfd = get_rpmsg_chrdev_fd(rpmsg_dev, rpmsg_char_name);
     if (charfd < 0)
+    {
+        stop_remote();
         return charfd;
+    }
 
     /* Create endpoint from rpmsg char driver */
     strcpy(eptinfo.name, "rpmsg-openamp-demo-channel");
@@ -258,17 +274,25 @@ static int init_rpmsg(void)
     if (ret)
     {
         printf("failed to create RPMsg endpoint.\n");
+        close(charfd);
+        stop_remote();
         return -EINVAL;
     }
-    if (!get_rpmsg_ept_dev_name(rpmsg_char_name, eptinfo.name,
-                                ept_dev_name))
+    if (!get_rpmsg_ept_dev_name(rpmsg_char_name, eptinfo.name, ept_dev_name))
+    {
+        rpmsg_destroy_ept(charfd);
+        close(charfd);
+        stop_remote();
         return -EINVAL;
+    }
     sprintf(ept_dev_path, "/dev/%s", ept_dev_name);
     eptfd = open(ept_dev_path, O_RDWR | O_NONBLOCK);
     if (eptfd < 0)
     {
         perror("Failed to open rpmsg device.");
+        rpmsg_destroy_ept(charfd);
         close(charfd);
+        stop_remote();
         return -1;
     }
 
@@ -278,8 +302,11 @@ static int init_rpmsg(void)
 static void exit_rpmsg(void)
 {
     close(eptfd);
+    rpmsg_destroy_ept(charfd);
     if (charfd >= 0)
         close(charfd);
+
+    stop_remote();
 }
 
 //接收线程函数
@@ -330,6 +357,13 @@ void *receive(void *pth_arg)
     }
 }
 
+void display_help_msg(void)
+{
+    printf("\r\ntask-data\r\n");
+    printf("-d  Debug level, 1-5\n");
+    printf("-h  Displays this help message.\n");
+}
+
 int main(int argc, char *argv[])
 {
     int i, bytes_rcvd;
@@ -350,16 +384,20 @@ int main(int argc, char *argv[])
 
     fprintf(stdout, "task-data: %s\n", VERSION);
 
-    while ((opt = getopt(argc, argv, "d:")) != -1)
+    while ((opt = getopt(argc, argv, "d:h")) != -1)
     {
         switch (opt)
         {
         case 'd':
             debug_level = atoi(optarg);
             break;
+        case 'h':
+            display_help_msg();
+            return 0;
         default:
             printf("getopt return unsupported option: -%c\n", opt);
-            break;
+            display_help_msg();
+            return 0;
         }
     }
 
@@ -393,6 +431,7 @@ int main(int argc, char *argv[])
     ret = pthread_create(&pth_socket_recv, NULL, receive, NULL);
     if (-1 == ret)
     {
+        exit_rpmsg();
         print_err("pthread_create failed", __LINE__, errno);
     }
 
@@ -406,6 +445,7 @@ int main(int argc, char *argv[])
     printf("start wait for r5 msg\r\n");
     if (0 >= write(eptfd, str_def, strlen(str_def)))
     {
+        exit_rpmsg();
         print_err("rpmsg send failed", __LINE__, errno);
     }
 

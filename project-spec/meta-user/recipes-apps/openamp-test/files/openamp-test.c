@@ -25,7 +25,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.6"
+#define VERSION "v1.8"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
@@ -60,6 +60,11 @@ void ctrl_c_handler(int signum, siginfo_t *info, void *myact)
     printf("! CTRL+C %d %p %p  %d\n", signum, info, myact, loop);
 }
 
+void stop_remote(void)
+{
+    system("modprobe -r rpmsg_char");
+}
+
 static int rpmsg_create_ept(int rpfd, struct rpmsg_endpoint_info *eptinfo)
 {
     int ret;
@@ -68,6 +73,11 @@ static int rpmsg_create_ept(int rpfd, struct rpmsg_endpoint_info *eptinfo)
     if (ret)
         perror("Failed to create endpoint.\n");
     return ret;
+}
+
+static void rpmsg_destroy_ept(int rpfd)
+{
+    ioctl(rpfd, RPMSG_DESTROY_EPT_IOCTL);
 }
 
 static char *get_rpmsg_ept_dev_name(const char *rpmsg_char_name,
@@ -247,6 +257,12 @@ static int string2hex(char *str, uint8_t *hex)
             return -1;
         }
         i++;
+
+        if (str_cpy[i] >= 'a' && str_cpy[i] <= 'f')
+        {
+            str_cpy[i] -= 0x20;
+        }
+
         if (str_cpy[i] >= '0' && str_cpy[i] <= 'F')
         {
             if (str_cpy[i] >= '0' && str_cpy[i] <= '9')
@@ -293,7 +309,7 @@ void *receive(void *pth_arg)
             printf("%02x ", aucRecv[i]);
         }
 
-        if(is_show_char)
+        if (is_show_char)
         {
             printf("\r\n==recv[%d], char:\r\n", bytes_rcvd);
             for (i = 0; i < bytes_rcvd; i++)
@@ -303,6 +319,13 @@ void *receive(void *pth_arg)
         }
         printf("\r\n\r\n");
     }
+}
+
+void display_help_msg(void)
+{
+    printf("\r\nopenamp-test\r\n");
+    printf("-c  Display char of msg received from r5.\n");
+    printf("-h  Displays this help message.\n");
 }
 
 int main(int argc, char *argv[])
@@ -332,19 +355,20 @@ int main(int argc, char *argv[])
 
     fprintf(stdout, "openamp-test: %s\n", VERSION);
 
-    while ((opt = getopt(argc, argv, "d:c")) != -1)
+    while ((opt = getopt(argc, argv, "ch")) != -1)
     {
         switch (opt)
         {
-        case 'd':
-            rpmsg_dev = optarg;
-            break;
         case 'c':
             is_show_char = 1;
             break;
+        case 'h':
+            display_help_msg();
+            return 0;
         default:
             printf("getopt return unsupported option: -%c\n", opt);
-            break;
+            display_help_msg();
+            return 0;
         }
     }
 
@@ -361,16 +385,22 @@ int main(int argc, char *argv[])
     sprintf(fpath, "%s/devices/%s", RPMSG_BUS_SYS, rpmsg_dev);
     if (access(fpath, F_OK))
     {
-        fprintf(stderr, "Not able to access rpmsg device %s, %s\n",
-                fpath, strerror(errno));
+        fprintf(stderr, "Not able to access rpmsg device %s, %s\n", fpath, strerror(errno));
+        stop_remote();
         return -EINVAL;
     }
     ret = bind_rpmsg_chrdev(rpmsg_dev);
     if (ret < 0)
+    {
+        stop_remote();
         return ret;
+    }
     charfd = get_rpmsg_chrdev_fd(rpmsg_dev, rpmsg_char_name);
     if (charfd < 0)
+    {
+        stop_remote();
         return charfd;
+    }
 
     /* Create endpoint from rpmsg char driver */
     strcpy(eptinfo.name, "rpmsg-openamp-demo-channel");
@@ -380,17 +410,25 @@ int main(int argc, char *argv[])
     if (ret)
     {
         printf("failed to create RPMsg endpoint.\n");
+        close(charfd);
+        stop_remote();
         return -EINVAL;
     }
-    if (!get_rpmsg_ept_dev_name(rpmsg_char_name, eptinfo.name,
-                                ept_dev_name))
+    if (!get_rpmsg_ept_dev_name(rpmsg_char_name, eptinfo.name, ept_dev_name))
+    {
+        rpmsg_destroy_ept(charfd);
+        close(charfd);
+        stop_remote();
         return -EINVAL;
+    }
     sprintf(ept_dev_path, "/dev/%s", ept_dev_name);
     eptfd = open(ept_dev_path, O_RDWR | O_NONBLOCK);
     if (eptfd < 0)
     {
         perror("Failed to open rpmsg device.");
+        rpmsg_destroy_ept(charfd);
         close(charfd);
+        stop_remote();
         return -1;
     }
 
@@ -401,7 +439,9 @@ int main(int argc, char *argv[])
     if (-1 == ret)
     {
         printf("%d, pthread_create failed: %s\n", __LINE__, strerror(errno));
+        rpmsg_destroy_ept(charfd);
         close(charfd);
+        stop_remote();
         return -1;
     }
 
@@ -440,7 +480,11 @@ int main(int argc, char *argv[])
     pthread_join(pth_r5_recv, NULL);
 
     close(eptfd);
+    rpmsg_destroy_ept(charfd);
     if (charfd >= 0)
         close(charfd);
+
+    stop_remote();
+
     return 0;
 }
