@@ -29,7 +29,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.7"
+#define VERSION "v1.8"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
@@ -40,7 +40,7 @@
 
 #define RPMSG_BUS_SYS "/sys/bus/rpmsg"
 
-#define IP "192.168.2.1"
+#define IP "192.168.2.2"
 #define PORT_RECV 8866
 #define PORT_SEND 8766
 

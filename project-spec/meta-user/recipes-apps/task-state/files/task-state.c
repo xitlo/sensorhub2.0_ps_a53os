@@ -30,7 +30,7 @@
  ** ===================================================== **/
 #define TASK_STATE_VERSION "v1.2"
 
-#define STATE_IP "192.168.2.1"
+#define STATE_IP "192.168.2.2"
 #define STATE_PORT (8000)
 
 #define STATE_PL_ADDR (0x80010000)
