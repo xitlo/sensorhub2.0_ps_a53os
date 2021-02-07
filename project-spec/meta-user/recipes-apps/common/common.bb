@@ -12,12 +12,10 @@ SRC_URI = "file://deploy.sh \
 	file://zlog.conf \
 	file://test_time.sh \
 	file://autostart.sh-time \
-	file://sensorhub-2.elf \
-	file://openamp-script.sh \
+	file://app-control.sh \
 	"
 
 S = "${WORKDIR}"
-INSANE_SKIP_${PN} = "arch"
 
 do_install() {
 		install -d ${D}${sysconfdir}/common
@@ -26,19 +24,15 @@ do_install() {
 		install -m 0644 ${S}/zlog.conf ${D}${sysconfdir}/common
 		install -m 0755 ${S}/test_time.sh ${D}${sysconfdir}/common
 		install -m 0755 ${S}/autostart.sh-time ${D}${sysconfdir}/common
-		install -m 0755 ${S}/openamp-script.sh ${D}${sysconfdir}/common
-		install -d ${D}/lib/firmware
-		install -m 0644 ${S}/sensorhub-2.elf ${D}/lib/firmware/sensorhub-2.elf
+		install -m 0755 ${S}/app-control.sh ${D}${sysconfdir}/common
 }
 
 RDEPENDS_${PN}_append += "bash"
-FILES_${PN} = "/lib/firmware/sensorhub-2.elf"
 
 FILES_${PN} = "${sysconfdir}/common/deploy.sh \
 		${sysconfdir}/common/sensorhub2-config.json \
 		${sysconfdir}/common/zlog.conf \
 		${sysconfdir}/common/test_time.sh \
 		${sysconfdir}/common/autostart.sh-time \
-		/lib/firmware/sensorhub-2.elf \
-		${sysconfdir}/common/openamp-script.sh \
+		${sysconfdir}/common/app-control.sh \
 		"

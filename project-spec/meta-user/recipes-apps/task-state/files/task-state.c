@@ -28,7 +28,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define TASK_STATE_VERSION "v1.1"
+#define TASK_STATE_VERSION "v1.2"
 
 #define STATE_IP "192.168.2.1"
 #define STATE_PORT (8000)
@@ -129,7 +129,7 @@ int main()
         memcpy(s_stState.aucStatePl, map_base, STATE_PL_SIZE);
 
         /* b, send */
-        printf("send state %d\n", uiCnt++);
+        // printf("send state %d\n", uiCnt++);
         ret = sendto(cfd, (void *)&s_stState, sizeof(s_stState), 0, (struct sockaddr *)&addr0, sizeof(addr0));
         if (-1 == ret)
         {
