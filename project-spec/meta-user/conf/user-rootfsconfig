@@ -6,13 +6,12 @@ CONFIG_peekpoke
 CONFIG_mem-test
 CONFIG_autostart
 CONFIG_jq
-CONFIG_task-data
 CONFIG_zlog
 CONFIG_common
 CONFIG_iperf3
 CONFIG_dosfstools
 CONFIG_timesync
 CONFIG_timesync-app
-CONFIG_task-state
 CONFIG_openamp-test
 CONFIG_r5files
+CONFIG_momenta
