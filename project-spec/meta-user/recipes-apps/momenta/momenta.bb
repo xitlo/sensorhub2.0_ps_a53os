@@ -9,8 +9,12 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 
 DEPENDS = "zlog"
 
-SRC_URI = "file://dir-task-data/task-data.c \
+SRC_URI = "file://dir-common/log.c \
+		file://dir-common/log.h \
+		file://dir-common/zlog.h \
+		file://dir-task-data/task-data.c \
 		file://dir-task-state/task-state.c \
+		file://dir-timesync-app/timesync-app.c \
 		file://Makefile \
 		  "
 
@@ -24,4 +28,5 @@ do_install() {
 	     install -d ${D}${bindir}
 	     install -m 0755 task-data ${D}${bindir}
 	     install -m 0755 task-state ${D}${bindir}
+	     install -m 0755 timesync-app ${D}${bindir}
 }
