@@ -90,6 +90,8 @@ NAND_FIT_IMAGE_LOAD_ADDRESS = "${@append_baseaddr(d,"0x10000000")}"
 NAND_FIT_IMAGE_SIZE = "0x6400000"
 
 FIT_IMAGE = "image.ub"
+FIT_IMAGE_BAK = "image0001.ub"
+FIT_IMAGE_ORIGIN = "image0002.ub"
 
 python () {
     baseaddr = d.getVar('DDR_BASEADDR') or "0x0"
@@ -139,6 +141,9 @@ do_compile_prepend() {
 	    -e 's/@@NAND_FIT_IMAGE_LOAD_ADDRESS@@/${NAND_FIT_IMAGE_LOAD_ADDRESS}/' \
 	    -e 's/@@NAND_FIT_IMAGE_SIZE@@/${NAND_FIT_IMAGE_SIZE}/' \
 	    -e 's/@@FIT_IMAGE@@/${FIT_IMAGE}/' \
+	    -e 's/@@FIT_IMAGE_BAK@@/${FIT_IMAGE_BAK}/' \
+	    -e 's/@@FIT_IMAGE_ORIGIN@@/${FIT_IMAGE_ORIGIN}/' \
+	    -e 's/@@MULTIBOOT_VAL@@/${MULTIBOOT_VAL}/' \
 	    -e 's/@@PRE_BOOTENV@@/${PRE_BOOTENV}/' \
 	    "${WORKDIR}/boot.cmd.${BOOTMODE}${BOOTFILE_EXT}" > "${WORKDIR}/boot.cmd.${BOOTMODE}.${SOC_FAMILY}"
 }

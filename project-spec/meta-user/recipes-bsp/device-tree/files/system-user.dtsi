@@ -107,7 +107,10 @@
 };
 
 &gem3 {
+    status = "okay";
+    is-internal-pcspma = <0x1>;
     phy-handle = <&phy0>;
+    phy-mode = "rgmii-id";
     pinctrl-names = "default";
     pinctrl-0 = <&pinctrl_gem3_default>;
     phy0: ethernet-phy@c {

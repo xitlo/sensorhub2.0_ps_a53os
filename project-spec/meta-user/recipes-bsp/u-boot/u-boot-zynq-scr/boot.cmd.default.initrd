@@ -5,6 +5,9 @@
 ################
 @@PRE_BOOTENV@@
 
+zynqmp mmio_read 0xFFCA0010
+mw 0x80020000 0xAABBCCDD
+
 for boot_target in ${boot_targets};
 do
 	if test "${boot_target}" = "jtag" ; then
@@ -15,8 +18,15 @@ do
 		if test -e ${devtype} ${devnum}:${distro_bootpart} /@@FIT_IMAGE@@; then
 			fatload ${devtype} ${devnum}:${distro_bootpart} @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE@@;
 			bootm @@FIT_IMAGE_LOAD_ADDRESS@@;
-			exit;
-                fi
+		fi
+		if test -e ${devtype} ${devnum}:${distro_bootpart} /@@FIT_IMAGE_BAK@@; then
+			fatload ${devtype} ${devnum}:${distro_bootpart} @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE_BAK@@;
+			bootm @@FIT_IMAGE_LOAD_ADDRESS@@;
+		fi
+		if test -e ${devtype} ${devnum}:${distro_bootpart} /@@FIT_IMAGE_ORIGIN@@; then
+			fatload ${devtype} ${devnum}:${distro_bootpart} @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE_ORIGIN@@;
+			bootm @@FIT_IMAGE_LOAD_ADDRESS@@;
+		fi
 		if test -e ${devtype} ${devnum}:${distro_bootpart} /@@KERNEL_IMAGE@@; then
 			fatload ${devtype} ${devnum}:${distro_bootpart} @@KERNEL_LOAD_ADDRESS@@ @@KERNEL_IMAGE@@;;
 		fi
