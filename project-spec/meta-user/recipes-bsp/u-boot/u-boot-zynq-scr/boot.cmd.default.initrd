@@ -5,8 +5,8 @@
 ################
 @@PRE_BOOTENV@@
 
-zynqmp mmio_read 0xFFCA0010
 mw 0x80020000 0xAABBCCDD
+zynqmp mmio_read 0xFFCA0010 0x80020004
 
 for boot_target in ${boot_targets};
 do
@@ -16,14 +16,17 @@ do
 	fi
 	if test "${boot_target}" = "mmc0" || test "${boot_target}" = "mmc1" ; then
 		if test -e ${devtype} ${devnum}:${distro_bootpart} /@@FIT_IMAGE@@; then
+			mw 0x80020008 0x00
 			fatload ${devtype} ${devnum}:${distro_bootpart} @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE@@;
 			bootm @@FIT_IMAGE_LOAD_ADDRESS@@;
 		fi
 		if test -e ${devtype} ${devnum}:${distro_bootpart} /@@FIT_IMAGE_BAK@@; then
+			mw 0x80020008 0x01
 			fatload ${devtype} ${devnum}:${distro_bootpart} @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE_BAK@@;
 			bootm @@FIT_IMAGE_LOAD_ADDRESS@@;
 		fi
 		if test -e ${devtype} ${devnum}:${distro_bootpart} /@@FIT_IMAGE_ORIGIN@@; then
+			mw 0x80020008 0x02
 			fatload ${devtype} ${devnum}:${distro_bootpart} @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE_ORIGIN@@;
 			bootm @@FIT_IMAGE_LOAD_ADDRESS@@;
 		fi
@@ -44,6 +47,7 @@ do
 	if test "${boot_target}" = "xspi0" || test "${boot_target}" = "qspi" || test "${boot_target}" = "qspi0"; then
 		sf probe 0 0 0;
 		if test "@@QSPI_KERNEL_IMAGE@@" = "@@FIT_IMAGE@@"; then
+			mw 0x80020008 0x03
 			sf read @@QSPI_FIT_IMAGE_LOAD_ADDRESS@@ @@QSPI_KERNEL_OFFSET@@ @@QSPI_FIT_IMAGE_SIZE@@;
 			bootm @@QSPI_FIT_IMAGE_LOAD_ADDRESS@@;
 			exit;
