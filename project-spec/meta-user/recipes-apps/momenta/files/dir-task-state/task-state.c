@@ -24,11 +24,12 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include <sys/mman.h>
+#include "common.h"
 
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define TASK_STATE_VERSION "v1.2"
+#define TASK_STATE_VERSION "v1.4"
 
 #define STATE_IP "192.168.2.2"
 #define STATE_PORT (8000)
@@ -57,6 +58,9 @@ unsigned int *map_base;
 unsigned long base;
 static int dev_fd;
 static int loop = 50;
+static unsigned char *bram_map_base;
+static A53State_s *s_pstA53State;
+static unsigned char *s_pucR5State;
 
 /** ===================================================== **
  * FUNCTION
@@ -120,12 +124,29 @@ int main()
         print_err("mmap failed", __LINE__, errno);
     }
 
+
+    /* 4, mapping bram mem */
+    printf("bram_map_base: 0x%lx, size: 0x%x\n", BRAM_BASE_ADDR, BRAM_MAX_SIZE);
+    bram_map_base = (unsigned char *)mmap(NULL, BRAM_MAX_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, dev_fd, BRAM_BASE_ADDR);
+    if (-1 == (unsigned long)bram_map_base)
+    {
+        munmap(map_base, STATE_PL_SIZE);
+        close(dev_fd);
+        close(cfd);
+        print_err("mmap failed", __LINE__, errno);
+    }
+
+    s_pstA53State = (A53State_s *)(bram_map_base + BRAM_A53_STATE_BASE_ADDR - BRAM_BASE_ADDR);
+    s_pucR5State = (unsigned char *)(bram_map_base + BRAM_R5_STATE_BASE_ADDR - BRAM_BASE_ADDR);
+
     /* 4, periodly collect state and send */
     while (loop)
     {
         sleep(1);
 
         /* a, collect pl state */
+        memcpy(s_stState.aucStateA53, (unsigned char *)s_pstA53State, sizeof(A53State_s));
+        memcpy(s_stState.aucStateR5, (unsigned char *)s_pucR5State, 64);
         memcpy(s_stState.aucStatePl, map_base, STATE_PL_SIZE);
 
         /* b, send */
@@ -139,6 +160,7 @@ int main()
     }
 
     /* 5, close app */
+    munmap(bram_map_base, BRAM_MAX_SIZE);
     munmap(map_base, STATE_PL_SIZE);
     close(dev_fd);
     close(cfd);
