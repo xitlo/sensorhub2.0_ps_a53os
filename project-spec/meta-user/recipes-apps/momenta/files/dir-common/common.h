@@ -51,6 +51,15 @@ typedef struct A53State {
     uint8_t ucBootScrVer;           /*!< boot script file version */
     uint8_t ucImageVal;             /*!< image file num val, image.ub start check */
     uint8_t ucReserved;
+    uint32_t uiA53Version;          /*!< version of A53 */
+    uint32_t uiTimeSyncBeginSec;    /*!< timesync begin local time second */
+    uint32_t uiTimeSyncBeginNsec;   /*!< timesync begin local time nand second */
+    uint32_t uiTimeSyncRealSec;     /*!< timesync read pl real time second */
+    uint32_t uiTimeSyncRealNsec;    /*!< timesync read pl real time nand second */
+    uint32_t uiTimeSyncEndSec;      /*!< timesync end local time second */
+    uint32_t uiTimeSyncEndNsec;     /*!< timesync end local time nand second */
+    uint32_t uiTimeSyncDiffR2B;     /*!< timesync diff real -> begin */
+    uint32_t uiTimeSyncDiffE2B;     /*!< timesync diff end -> begin */
 } A53State_s;
 
 /*******************************************************************************

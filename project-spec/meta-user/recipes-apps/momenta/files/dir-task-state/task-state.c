@@ -29,7 +29,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define TASK_STATE_VERSION "v1.4"
+#define TASK_STATE_VERSION "v1.5"
 
 #define STATE_IP "192.168.2.2"
 #define STATE_PORT (8000)
@@ -145,8 +145,8 @@ int main()
         sleep(1);
 
         /* a, collect pl state */
-        memcpy(s_stState.aucStateA53, (unsigned char *)s_pstA53State, sizeof(A53State_s));
-        memcpy(s_stState.aucStateR5, (unsigned char *)s_pucR5State, 64);
+        memcpy(s_stState.aucStateA53, (unsigned char *)s_pstA53State, STATE_A53_SIZE);
+        memcpy(s_stState.aucStateR5, (unsigned char *)s_pucR5State, STATE_R5_SIZE);
         memcpy(s_stState.aucStatePl, map_base, STATE_PL_SIZE);
 
         /* b, send */
