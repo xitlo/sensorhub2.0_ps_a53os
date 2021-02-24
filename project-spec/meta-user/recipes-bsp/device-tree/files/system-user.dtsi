@@ -22,6 +22,35 @@
            <&lane1 1 1 0 150000000>;
 };
 
+&axi_iic_a53 {
+	clock-frequency = <100000>;
+	status = "okay";
+
+    tca1@74 {
+        compatible = "ti,tca9539";
+        reg = <0x74>;
+        gpio-controller;
+    };
+
+    tca3@75 {
+        compatible = "ti,tca9539";
+        reg = <0x75>;
+        gpio-controller;
+    };
+
+    tca2@76 {
+        compatible = "ti,tca9539";
+        reg = <0x76>;
+        gpio-controller;
+    };
+
+    // tca0@77 {
+    //     compatible = "ti,tca9539";
+    //     reg = <0x77>;
+    //     gpio-controller;
+    // };
+};
+
 &qspi {
     flash0: flash@0 {
         compatible = "n25q512a", "jedec,spi-nor"; /* 64MB */
@@ -167,7 +196,7 @@
 / {
     memory {
         device_type = "memory";
-        reg = <0x0 0x0 0x0 0x7ff00000>;
+        reg = <0x0 0x0 0x0 0x7ff00000>, <0x0 0x80020000 0x0 0x10000>;
     };
 
     timesync {
@@ -194,6 +223,9 @@
         rproc_0_reserved: rproc@3ee48000 {
             no-map;
             reg = <0x0 0x3ee48000 0x0 0x1000000>;
+        };
+        bram_reserved {
+            reg = <0x0 0x80020000 0x0 0x10000>;
         };
     };
 
