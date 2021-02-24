@@ -13,9 +13,12 @@ SRC_URI = "file://dir-common/log.c \
 		file://dir-common/log.h \
 		file://dir-common/zlog.h \
 		file://dir-common/common.h \
+		file://dir-common/cJSON.h \
+		file://dir-common/cJSON.c \
 		file://dir-task-data/task-data.c \
 		file://dir-task-state/task-state.c \
 		file://dir-timesync-app/timesync-app.c \
+		file://dir-config-parse/config-parse.c \
 		file://Makefile \
 		  "
 
@@ -30,4 +33,5 @@ do_install() {
 	     install -m 0755 task-data ${D}${bindir}
 	     install -m 0755 task-state ${D}${bindir}
 	     install -m 0755 timesync-app ${D}${bindir}
+	     install -m 0755 config-parse ${D}${bindir}
 }

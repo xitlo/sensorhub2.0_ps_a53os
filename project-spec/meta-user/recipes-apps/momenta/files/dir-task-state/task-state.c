@@ -29,7 +29,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define TASK_STATE_VERSION "v1.5"
+#define TASK_STATE_VERSION "v1.6"
 
 #define STATE_IP "192.168.2.2"
 #define STATE_PORT (8000)
@@ -105,6 +105,12 @@ int main()
 
     addr0.sin_family = AF_INET;                  // tcp protocol family
     addr0.sin_port = htons(STATE_PORT);          // port
+    addr0.sin_addr.s_addr = htonl(INADDR_ANY);   // ip addr
+    ret = bind(cfd, (struct sockaddr *)&addr0, sizeof(addr0));
+    if (-1 == ret)
+    {
+        print_err("bind failed", __LINE__, errno);
+    }
     addr0.sin_addr.s_addr = inet_addr(STATE_IP); // ip
 
     /* 3, mapping pl state mem */
@@ -123,7 +129,6 @@ int main()
         close(cfd);
         print_err("mmap failed", __LINE__, errno);
     }
-
 
     /* 4, mapping bram mem */
     printf("bram_map_base: 0x%lx, size: 0x%x\n", BRAM_BASE_ADDR, BRAM_MAX_SIZE);

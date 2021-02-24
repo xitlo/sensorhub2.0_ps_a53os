@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo ">>> Sensorhub2.0 autostart begin!"
-echo ">>> Version: v1.08-6"
+echo ">>> Version: v1.08-7"
 
 # 1, system set
 echo ">>1, system set"

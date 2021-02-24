@@ -33,16 +33,18 @@
 // {
 // #endif // __cplusplus
 
+#define VRESION_A53                 "v1.09"
+
 #define BRAM_BASE_ADDR              (0x80020000)
 #define BRAM_MAX_SIZE               (0x10000)
 
-#define BRAM_A53_STATE_BASE_ADDR    (BRAM_BASE_ADDR)
+#define BRAM_A53_STATE_BASE_ADDR    (BRAM_BASE_ADDR)                                    /*!< a53 state */
 #define BRAM_A53_STATE_SIZE         (0x1000)
-#define BRAM_A53_DATA_BASE_ADDR     (BRAM_A53_STATE_BASE_ADDR + BRAM_A53_STATE_SIZE)
+#define BRAM_A53_DATA_BASE_ADDR     (BRAM_A53_STATE_BASE_ADDR + BRAM_A53_STATE_SIZE)    /*!< a53 data, e.g. confige data */
 #define BRAM_A53_DATA_SIZE          (0x1000)
-#define BRAM_R5_STATE_BASE_ADDR     (BRAM_A53_DATA_BASE_ADDR + BRAM_A53_DATA_SIZE)
+#define BRAM_R5_STATE_BASE_ADDR     (BRAM_A53_DATA_BASE_ADDR + BRAM_A53_DATA_SIZE)      /*!< r5 state */
 #define BRAM_R5_STATE_SIZE          (0x1000)
-#define BRAM_R5_DATA_BASE_ADDR      (BRAM_R5_STATE_BASE_ADDR + BRAM_R5_STATE_SIZE)
+#define BRAM_R5_DATA_BASE_ADDR      (BRAM_R5_STATE_BASE_ADDR + BRAM_R5_STATE_SIZE)      /*!< r5 data, e.g. confige data */
 #define BRAM_R5_DATA_SIZE           (0x1000)
 
 typedef struct A53State {
@@ -61,6 +63,15 @@ typedef struct A53State {
     uint32_t uiTimeSyncDiffR2B;     /*!< timesync diff real -> begin */
     uint32_t uiTimeSyncDiffE2B;     /*!< timesync diff end -> begin */
 } A53State_s;
+
+typedef struct A53Data {
+    char acIpAddrLocal[32];         /*!< local ip addr */
+    char acIpAddrDest[32];          /*!< dest ip addr */
+    uint16_t usPortDataUp;          /*!< uplink data port */
+    uint16_t usPortDataDown;        /*!< downlink data port */
+    uint16_t usPortState;           /*!< uplink state port */
+    uint16_t usTimeSyncPeriodMs;    /*!< time sync period, ms */
+} A53Data_s;
 
 /*******************************************************************************
  Exported Variable Declarations
