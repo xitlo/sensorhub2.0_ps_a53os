@@ -28,7 +28,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define CONFIG_PARSE_VERSION "v1.1"
+#define CONFIG_PARSE_VERSION "v1.3"
 
 /** ===================================================== **
  * STRUCT
@@ -41,6 +41,8 @@ static int dev_fd;
 static int loop = 50;
 static int debug = 0;
 static unsigned char *bram_map_base;
+
+static uint32_t uiVerA53;
 static A53State_s *s_pstA53State;
 static A53Data_s *s_pstA53Data;
 static unsigned char *s_pucR5State;
@@ -112,6 +114,19 @@ void display_help_msg(void)
     printf("-h  Displays this help message.\n");
 }
 
+static void set_a53_version(void)
+{
+    int ver_major, ver_minor;
+    char cmd_str[128] = "";
+
+    sscanf(VRESION_A53, "v%d.%d", &ver_major, &ver_minor);
+    uiVerA53 = (uint32_t)(((ver_major & 0xFF) << 24) | (ver_minor & 0xFF));
+
+    sprintf(cmd_str, "devmem 0x%08x 32 0x%08x", VERSION_A53_REG_ADDR, uiVerA53);
+    system(cmd_str);
+    printf("\nA53 version: %s, 0x%04x\n%s\n\n", VRESION_A53, uiVerA53, cmd_str);
+}
+
 static int config_file_init(char *pcPath)
 {
     char *pcJsonStr;
@@ -147,7 +162,7 @@ static int config_file_set_string(cJSON *pstJson, char *pcItem, char *pcDestAddr
     {
         pcString = cJSON_GetObjectItem(pstJson, pcItem)->valuestring;
         strcpy(pcDestAddr, pcString);
-        printf("%s_mem: %s\n", pcItem, pcDestAddr);
+        printf("==%s: %s\n", pcItem, pcDestAddr);
     }
     else
     {
@@ -177,7 +192,7 @@ static int config_file_get_int(cJSON *pstJson, char *pcItem)
 static int config_file_a53(void)
 {
     cJSON *pstJsonItem;
-    char *pcItem, *pcString, *pcDestAddr;
+    char *pcItem;
     int iVal;
 
     pstJsonItem = cJSON_GetObjectItem(pstJsonRoot, "a53");
@@ -202,49 +217,65 @@ static int config_file_a53(void)
     }
 
     /* 3, port_data_up */
-    iVal = config_file_get_int(pstJsonItem, "port_data_up");
-    if (0 > iVal )
+    pcItem = "port_data_up";
+    iVal = config_file_get_int(pstJsonItem, pcItem);
+    if (0 > iVal)
     {
         fprintf(stderr, "%s: conf json parse err\n", __func__);
         return -1;
     }
     s_pstA53Data->usPortDataUp = (uint16_t)iVal;
+    printf("==%s: %d\n", pcItem, s_pstA53Data->usPortDataUp);
 
     /* 4, port_data_down */
-    iVal = config_file_get_int(pstJsonItem, "port_data_down");
-    if (0 > iVal )
+    pcItem = "port_data_down";
+    iVal = config_file_get_int(pstJsonItem, pcItem);
+    if (0 > iVal)
     {
         fprintf(stderr, "%s: conf json parse err\n", __func__);
         return -1;
     }
     s_pstA53Data->usPortDataDown = (uint16_t)iVal;
+    printf("==%s: %d\n", pcItem, s_pstA53Data->usPortDataDown);
 
     /* 5, port_state */
-    iVal = config_file_get_int(pstJsonItem, "port_state");
-    if (0 > iVal )
+    pcItem = "port_state";
+    iVal = config_file_get_int(pstJsonItem, pcItem);
+    if (0 > iVal)
     {
         fprintf(stderr, "%s: conf json parse err\n", __func__);
         return -1;
     }
     s_pstA53Data->usPortState = (uint16_t)iVal;
+    printf("==%s: %d\n", pcItem, s_pstA53Data->usPortState);
 
     /* 6, time_sync_period_ms */
+    pcItem = "time_sync_period_ms";
     iVal = config_file_get_int(pstJsonItem, "time_sync_period_ms");
-    if (0 > iVal )
+    if (0 > iVal)
     {
         fprintf(stderr, "%s: conf json parse err\n", __func__);
         return -1;
     }
     s_pstA53Data->usTimeSyncPeriodMs = (uint16_t)iVal;
-
+    printf("==%s: %d\n", pcItem, s_pstA53Data->usTimeSyncPeriodMs);
 
     return 0;
+}
+
+static void set_state_a53(void)
+{
+    /* 0, a53_version */
+    s_pstA53State->uiA53Version = uiVerA53;
 }
 
 int main(int argc, char **argv)
 {
     int opt;
     char config_file_path[256] = "";
+
+    /*0, set a53 version*/
+    set_a53_version();
 
     /*1, ctrl + c*/
     struct sigaction act;
@@ -315,7 +346,10 @@ int main(int argc, char **argv)
     config_file_a53();
     config_file_exit();
 
-    /* 6, close app */
+    /* 6, set state */
+    set_state_a53();
+
+    /* 7, close app */
     munmap(bram_map_base, BRAM_MAX_SIZE);
     close(dev_fd);
     printf("config-parse exit!\n");

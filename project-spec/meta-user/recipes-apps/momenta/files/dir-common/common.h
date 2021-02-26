@@ -34,6 +34,7 @@
 // #endif // __cplusplus
 
 #define VRESION_A53                 "v1.09"
+#define VERSION_A53_REG_ADDR        (0x8000017c)
 
 #define BRAM_BASE_ADDR              (0x80020000)
 #define BRAM_MAX_SIZE               (0x10000)

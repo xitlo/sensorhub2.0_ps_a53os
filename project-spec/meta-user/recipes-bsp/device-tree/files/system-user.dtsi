@@ -25,30 +25,6 @@
 &axi_iic_a53 {
 	clock-frequency = <100000>;
 	status = "okay";
-
-    tca1@74 {
-        compatible = "ti,tca9539";
-        reg = <0x74>;
-        gpio-controller;
-    };
-
-    tca3@75 {
-        compatible = "ti,tca9539";
-        reg = <0x75>;
-        gpio-controller;
-    };
-
-    tca2@76 {
-        compatible = "ti,tca9539";
-        reg = <0x76>;
-        gpio-controller;
-    };
-
-    // tca0@77 {
-    //     compatible = "ti,tca9539";
-    //     reg = <0x77>;
-    //     gpio-controller;
-    // };
 };
 
 &qspi {
