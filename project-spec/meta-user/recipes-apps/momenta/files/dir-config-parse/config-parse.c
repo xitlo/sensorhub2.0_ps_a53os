@@ -28,7 +28,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define CONFIG_PARSE_VERSION "v1.3"
+#define CONFIG_PARSE_VERSION "v1.5"
 
 /** ===================================================== **
  * STRUCT
@@ -120,11 +120,11 @@ static void set_a53_version(void)
     char cmd_str[128] = "";
 
     sscanf(VRESION_A53, "v%d.%d", &ver_major, &ver_minor);
-    uiVerA53 = (uint32_t)(((ver_major & 0xFF) << 24) | (ver_minor & 0xFF));
+    uiVerA53 = (uint32_t)(((VERSION_DEBUG & 0xFF) << 24) | ((ver_major & 0xFF) << 8) | (ver_minor & 0xFF));
 
     sprintf(cmd_str, "devmem 0x%08x 32 0x%08x", VERSION_A53_REG_ADDR, uiVerA53);
     system(cmd_str);
-    printf("\nA53 version: %s, 0x%04x\n%s\n\n", VRESION_A53, uiVerA53, cmd_str);
+    printf("\nA53 version: %s, %d, 0x%04x\n%s\n\n", VRESION_A53, VERSION_DEBUG, uiVerA53, cmd_str);
 }
 
 static int config_file_init(char *pcPath)

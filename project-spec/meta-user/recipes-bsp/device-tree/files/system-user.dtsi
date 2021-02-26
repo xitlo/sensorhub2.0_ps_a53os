@@ -71,13 +71,13 @@
     status = "disabled";
 };
 
-// &i2c0 {
-//     status = "disabled";
-// };
+&i2c0 {
+    status = "disabled";
+};
 
-// &i2c1 {
-//     status = "disabled";
-// };
+&i2c1 {
+    status = "disabled";
+};
 
 &CAN_BLK_can_0 {
     status = "disabled";
