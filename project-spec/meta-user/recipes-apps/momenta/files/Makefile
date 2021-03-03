@@ -1,13 +1,17 @@
 # Add any other object files to this list below
 COMMON_LOG = log
 COMMON_LOG_OBJ = $(COMMON_LOG).o
-COMMON_LOG_SRC = ./dir-common/log.c
+COMMON_LOG_SRC = ./dir-common/$(COMMON_LOG).c
 
 COMMON_CJSON = cJSON
 COMMON_CJSON_OBJ = $(COMMON_CJSON).o
-COMMON_CJSON_SRC = ./dir-common/cJSON.c
+COMMON_CJSON_SRC = ./dir-common/$(COMMON_CJSON).c
 
-COMMON_OBJS = $(COMMON_LOG_OBJ) $(COMMON_CJSON_OBJ)
+COMMON_MMAP = mem-mmap
+COMMON_MMAP_OBJ = $(COMMON_MMAP).o
+COMMON_MMAP_SRC = ./dir-common/$(COMMON_MMAP).c
+
+COMMON_OBJS = $(COMMON_LOG_OBJ) $(COMMON_CJSON_OBJ) $(COMMON_MMAP_OBJ)
 
 APP1 = task-data
 APP1_OBJ = $(APP1).o
@@ -36,6 +40,9 @@ $(COMMON_LOG_OBJ): $(COMMON_LOG_SRC)
 	$(CC) -c -o $@ $< $(LDFLAGS)
 
 $(COMMON_CJSON_OBJ): $(COMMON_CJSON_SRC)
+	$(CC) -c -o $@ $< $(LDFLAGS)
+
+$(COMMON_MMAP_OBJ): $(COMMON_MMAP_SRC)
 	$(CC) -c -o $@ $< $(LDFLAGS)
 
 $(APP1_OBJ): $(APP1_SRC)

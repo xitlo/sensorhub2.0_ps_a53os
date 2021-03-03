@@ -15,6 +15,8 @@ SRC_URI = "file://dir-common/log.c \
 		file://dir-common/common.h \
 		file://dir-common/cJSON.h \
 		file://dir-common/cJSON.c \
+		file://dir-common/mem-mmap.h \
+		file://dir-common/mem-mmap.c \
 		file://dir-task-data/task-data.c \
 		file://dir-task-state/task-state.c \
 		file://dir-timesync-app/timesync-app.c \

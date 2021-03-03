@@ -34,7 +34,7 @@
 // #endif // __cplusplus
 
 #define VRESION_A53                 "v1.09"
-#define VERSION_DEBUG               2
+#define VERSION_DEBUG               3
 #define VERSION_A53_REG_ADDR        (0x8000017c)
 
 #define BRAM_BASE_ADDR              (0x80020000)
@@ -48,6 +48,17 @@
 #define BRAM_R5_STATE_SIZE          (0x1000)
 #define BRAM_R5_DATA_BASE_ADDR      (BRAM_R5_STATE_BASE_ADDR + BRAM_R5_STATE_SIZE)      /*!< r5 data, e.g. confige data */
 #define BRAM_R5_DATA_SIZE           (0x1000)
+
+#define STATE_PL_ADDR               (0x80010000)
+#define STATE_PL_SIZE               (0x300)
+
+typedef enum BramType {
+    BRAM_A53_STATE = 0,
+    BRAM_A53_DATA,
+    BRAM_R5_STATE,
+    BRAM_R5_DATA,
+    BRAM_TYPE_NUM
+} BramType_e;
 
 typedef struct A53State {
     uint32_t uiHeader;              /*!< fix to 0xAABBCCDD */
@@ -74,6 +85,31 @@ typedef struct A53Data {
     uint16_t usPortState;           /*!< uplink state port */
     uint16_t usTimeSyncPeriodMs;    /*!< time sync period, ms */
 } A53Data_s;
+
+typedef struct R5State {
+    uint32_t uiHeader;              /*!< fix to 0xEEFF1122 */
+    uint32_t uiR5Version;           /*!< version of R5 */
+} R5State_s;
+
+typedef struct R5Data {
+    uint32_t uiCom1Baud;            /*!< BaudRate for COM1 */
+} R5Data_s;
+
+typedef struct BramPtr
+{
+    int fd;
+    uint8_t *pucBase;
+    A53State_s *pstA53State;
+    A53Data_s *pstA53Data;
+    R5State_s *pstR5State;
+    R5Data_s *pstR5Data;
+} BramPtr_s;
+
+typedef struct PlStatePtr
+{
+    int fd;
+    uint8_t *pucBase;
+} PlStatePtr_s;
 
 /*******************************************************************************
  Exported Variable Declarations

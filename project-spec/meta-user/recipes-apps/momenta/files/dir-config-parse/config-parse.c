@@ -24,11 +24,12 @@
 #include <sys/mman.h>
 #include "common.h"
 #include "cJSON.h"
+#include "mem-mmap.h"
 
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define CONFIG_PARSE_VERSION "v1.5"
+#define CONFIG_PARSE_VERSION "v1.7"
 
 /** ===================================================== **
  * STRUCT
@@ -37,16 +38,12 @@
 /** ===================================================== **
  * VARIABLE
  ** ===================================================== **/
-static int dev_fd;
 static int loop = 50;
 static int debug = 0;
-static unsigned char *bram_map_base;
 
 static uint32_t uiVerA53;
-static A53State_s *s_pstA53State;
-static A53Data_s *s_pstA53Data;
-static unsigned char *s_pucR5State;
 static cJSON *pstJsonRoot;
+static BramPtr_s s_stBram;
 
 /** ===================================================== **
  * FUNCTION - INTERNAL - JSON
@@ -203,14 +200,14 @@ static int config_file_a53(void)
     }
 
     /* 1, ip_local */
-    if (0 != config_file_set_string(pstJsonItem, "ip_local", s_pstA53Data->acIpAddrLocal))
+    if (0 != config_file_set_string(pstJsonItem, "ip_local", s_stBram.pstA53Data->acIpAddrLocal))
     {
         fprintf(stderr, "%s: conf json parse err\n", __func__);
         return -1;
     }
 
     /* 2, ip_dest */
-    if (0 != config_file_set_string(pstJsonItem, "ip_dest", s_pstA53Data->acIpAddrDest))
+    if (0 != config_file_set_string(pstJsonItem, "ip_dest", s_stBram.pstA53Data->acIpAddrDest))
     {
         fprintf(stderr, "%s: conf json parse err\n", __func__);
         return -1;
@@ -224,8 +221,8 @@ static int config_file_a53(void)
         fprintf(stderr, "%s: conf json parse err\n", __func__);
         return -1;
     }
-    s_pstA53Data->usPortDataUp = (uint16_t)iVal;
-    printf("==%s: %d\n", pcItem, s_pstA53Data->usPortDataUp);
+    s_stBram.pstA53Data->usPortDataUp = (uint16_t)iVal;
+    printf("==%s: %d\n", pcItem, s_stBram.pstA53Data->usPortDataUp);
 
     /* 4, port_data_down */
     pcItem = "port_data_down";
@@ -235,8 +232,8 @@ static int config_file_a53(void)
         fprintf(stderr, "%s: conf json parse err\n", __func__);
         return -1;
     }
-    s_pstA53Data->usPortDataDown = (uint16_t)iVal;
-    printf("==%s: %d\n", pcItem, s_pstA53Data->usPortDataDown);
+    s_stBram.pstA53Data->usPortDataDown = (uint16_t)iVal;
+    printf("==%s: %d\n", pcItem, s_stBram.pstA53Data->usPortDataDown);
 
     /* 5, port_state */
     pcItem = "port_state";
@@ -246,8 +243,8 @@ static int config_file_a53(void)
         fprintf(stderr, "%s: conf json parse err\n", __func__);
         return -1;
     }
-    s_pstA53Data->usPortState = (uint16_t)iVal;
-    printf("==%s: %d\n", pcItem, s_pstA53Data->usPortState);
+    s_stBram.pstA53Data->usPortState = (uint16_t)iVal;
+    printf("==%s: %d\n", pcItem, s_stBram.pstA53Data->usPortState);
 
     /* 6, time_sync_period_ms */
     pcItem = "time_sync_period_ms";
@@ -257,8 +254,8 @@ static int config_file_a53(void)
         fprintf(stderr, "%s: conf json parse err\n", __func__);
         return -1;
     }
-    s_pstA53Data->usTimeSyncPeriodMs = (uint16_t)iVal;
-    printf("==%s: %d\n", pcItem, s_pstA53Data->usTimeSyncPeriodMs);
+    s_stBram.pstA53Data->usTimeSyncPeriodMs = (uint16_t)iVal;
+    printf("==%s: %d\n", pcItem, s_stBram.pstA53Data->usTimeSyncPeriodMs);
 
     return 0;
 }
@@ -266,7 +263,7 @@ static int config_file_a53(void)
 static void set_state_a53(void)
 {
     /* 0, a53_version */
-    s_pstA53State->uiA53Version = uiVerA53;
+    s_stBram.pstA53State->uiA53Version = uiVerA53;
 }
 
 int main(int argc, char **argv)
@@ -319,27 +316,11 @@ int main(int argc, char **argv)
     }
     fprintf(stdout, "config file: %s\n", config_file_path);
 
-    /* 3, mapping pl state mem */
-    dev_fd = open("/dev/mem", O_RDWR | O_NDELAY | O_DSYNC);
-    if (0 > dev_fd)
+    if (0 != MAP_BlockRamOpen(&s_stBram))
     {
-        print_err("open /dev/mem failed", __LINE__, errno);
+        print_err("MAP_BlockRamOpen failed", __LINE__, errno);
     }
-
-    /* 4, mapping bram mem */
-    printf("bram_map_base: 0x%lx, size: 0x%x\n", BRAM_BASE_ADDR, BRAM_MAX_SIZE);
-    bram_map_base = (unsigned char *)mmap(NULL, BRAM_MAX_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, dev_fd, BRAM_BASE_ADDR);
-    if (NULL == bram_map_base)
-    {
-        close(dev_fd);
-        print_err("mmap failed", __LINE__, errno);
-    }
-
-    s_pstA53State = (A53State_s *)(bram_map_base + BRAM_A53_STATE_BASE_ADDR - BRAM_BASE_ADDR);
-    s_pstA53Data = (A53Data_s *)(bram_map_base + BRAM_A53_DATA_BASE_ADDR - BRAM_BASE_ADDR);
-    s_pucR5State = (unsigned char *)(bram_map_base + BRAM_R5_STATE_BASE_ADDR - BRAM_BASE_ADDR);
-    // printf("state/data/r5state: 0x%lx/0x%lx/0x%lx\n", s_pstA53State, s_pstA53Data, s_pucR5State);
-    memset((uint8_t *)s_pstA53Data, 0, BRAM_A53_DATA_SIZE);
+    memset((uint8_t *)s_stBram.pstA53Data, 0, BRAM_A53_DATA_SIZE);
 
     /* 5, read data from config file, set to BRAM */
     config_file_init(config_file_path);
@@ -350,8 +331,7 @@ int main(int argc, char **argv)
     set_state_a53();
 
     /* 7, close app */
-    munmap(bram_map_base, BRAM_MAX_SIZE);
-    close(dev_fd);
+    MAP_BlockRamClose(&s_stBram);
     printf("config-parse exit!\n");
 
     return 0;
