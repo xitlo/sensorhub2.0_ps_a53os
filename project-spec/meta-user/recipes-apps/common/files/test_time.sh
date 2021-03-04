@@ -1,24 +1,18 @@
 #!/bin/bash
-
-#1, check param
-if [ $# -lt 1 ] ; then
-   echo "Usage: $0 [timesync_period_ms] <if_only_run_test> <debug_swtich>"
-   echo " e.g.: $0 2000"
-   exit 1;
-fi
+# echo "Usage: $0 <if_only_run_test> <debug_swtich>"
 
 #2, check if only swtich debug
-if [ $# -gt 2 ] ; then
-   echo "only set timesync_debug_log $3"
-   echo $3 > /sys/devices/platform/timesync/timesync_debug_log
+if [ $# -gt 1 ] ; then
+   echo "only set timesync_debug_log $2"
+   echo $2 > /sys/devices/platform/timesync/timesync_debug_log
    cat /sys/devices/platform/timesync/timesync_debug_log
    exit 0;
 fi
 
 #3, check if only run timesync-test
-if [ $# -gt 1 ] && [ $2 -eq 1 ] ; then
-   echo "only run timesync-test with para $1"
-   timesync-app /dev/timesync $1
+if [ $# -gt 0 ] && [ $1 -eq 1 ] ; then
+   echo "only run timesync-test"
+   timesync-app /dev/timesync
    exit 0;
 fi
 
@@ -40,5 +34,4 @@ insmod /lib/modules/5.4.0-xilinx-v2020.1/extra/timesync.ko
 sleep 2
 
 #6, run timesync-test
-#/data/APP/timesync-test /dev/timesync $1
-timesync-app /dev/timesync $1
+timesync-app /dev/timesync
