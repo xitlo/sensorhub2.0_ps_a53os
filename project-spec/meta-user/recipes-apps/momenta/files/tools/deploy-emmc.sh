@@ -43,7 +43,7 @@ EOF
 }
 
 #1, umount
-echo -e ">>1, df & umount &fdisk\n"
+echo -e "\n>>1, df & umount &fdisk"
 df
 if [ -e '/dev/mmcblk0p1' ]; then
     umount /dev/mmcblk0p*
@@ -51,12 +51,12 @@ fi
 fdisk -l
 
 #2, re-partition
-echo -e ">>2, fdisk\n"
+echo -e "\n>>2, fdisk"
 run_mmc_case
 
 #3, format partitions
 sleep 1
-echo -e ">>3, format\n"
+echo -e "\n>>3, format"
 if [ -e '/dev/mmcblk0p1' ]; then
     umount /dev/mmcblk0p*
 fi
@@ -65,7 +65,7 @@ mkfs.ext4 -E nodiscard -F /dev/mmcblk0p2
 mkfs.ext4 -E nodiscard -F /dev/mmcblk0p3
 
 #4, remount
-echo -e ">>4, remount\n"
+echo -e "\n>>4, remount"
 if [ ! -d /boot ]; then
     mkdir /boot
 fi
@@ -83,4 +83,4 @@ mount -o rw /dev/mmcblk0p2 /ldc
 mount -o rw /dev/mmcblk0p3 /data
 
 #5, done
-echo -e ">>5, all done\n"
+echo -e "\n>>5, all done"

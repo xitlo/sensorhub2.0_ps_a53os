@@ -4231,11 +4231,6 @@ CONFIG_r5files=y
 CONFIG_zlog=y
 
 #
-# modules 
-#
-CONFIG_timesync=y
-
-#
 # user packages 
 #
 

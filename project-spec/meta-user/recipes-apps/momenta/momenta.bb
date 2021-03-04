@@ -22,8 +22,10 @@ SRC_URI = "file://common/log.c \
 		file://timesync-app/timesync-app.c \
 		file://config-parse/config-parse.c \
 		file://Makefile \
+
 		file://tools/app-control.sh \
-		file://tools/deploy.sh \
+		file://tools/deploy-emmc.sh \
+		file://tools/deploy-qspi.sh \
 		file://tools/test_time.sh \
 		file://tools/zlog.conf \
 		file://tools/sensorhub2-config.json \
@@ -44,7 +46,8 @@ do_install() {
 		install -m 0755 config-parse/config-parse ${D}${bindir}
 
 		install -d ${D}${sysconfdir}/common
-		install -m 0755 tools/deploy.sh ${D}${sysconfdir}/common
+		install -m 0755 tools/deploy-emmc.sh ${D}${sysconfdir}/common
+		install -m 0755 tools/deploy-qspi.sh ${D}${sysconfdir}/common
 		install -m 0644 tools/sensorhub2-config.json ${D}${sysconfdir}/common
 		install -m 0644 tools/zlog.conf ${D}${sysconfdir}/common
 		install -m 0755 tools/test_time.sh ${D}${sysconfdir}/common
