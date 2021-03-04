@@ -7,10 +7,8 @@ CONFIG_mem-test
 CONFIG_autostart
 CONFIG_jq
 CONFIG_zlog
-CONFIG_common
 CONFIG_iperf3
 CONFIG_dosfstools
-CONFIG_timesync
 CONFIG_openamp-test
 CONFIG_r5files
 CONFIG_momenta

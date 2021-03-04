@@ -22,6 +22,12 @@ SRC_URI = "file://common/log.c \
 		file://timesync-app/timesync-app.c \
 		file://config-parse/config-parse.c \
 		file://Makefile \
+		file://tools/app-control.sh \
+		file://tools/deploy.sh \
+		file://tools/test_time.sh \
+		file://tools/zlog.conf \
+		file://tools/sensorhub2-config.json \
+		file://tools/autostart.sh-time \
 		  "
 
 S = "${WORKDIR}"
@@ -31,9 +37,19 @@ do_compile() {
 }
 
 do_install() {
-	     install -d ${D}${bindir}
-	     install -m 0755 task-data/task-data ${D}${bindir}
-	     install -m 0755 task-state/task-state ${D}${bindir}
-	     install -m 0755 timesync-app/timesync-app ${D}${bindir}
-	     install -m 0755 config-parse/config-parse ${D}${bindir}
+		install -d ${D}${bindir}
+		install -m 0755 task-data/task-data ${D}${bindir}
+		install -m 0755 task-state/task-state ${D}${bindir}
+		install -m 0755 timesync-app/timesync-app ${D}${bindir}
+		install -m 0755 config-parse/config-parse ${D}${bindir}
+
+		install -d ${D}${sysconfdir}/common
+		install -m 0755 tools/deploy.sh ${D}${sysconfdir}/common
+		install -m 0644 tools/sensorhub2-config.json ${D}${sysconfdir}/common
+		install -m 0644 tools/zlog.conf ${D}${sysconfdir}/common
+		install -m 0755 tools/test_time.sh ${D}${sysconfdir}/common
+		install -m 0755 tools/autostart.sh-time ${D}${sysconfdir}/common
+		install -m 0755 tools/app-control.sh ${D}${sysconfdir}/common
 }
+
+RDEPENDS_${PN}_append += "bash"
