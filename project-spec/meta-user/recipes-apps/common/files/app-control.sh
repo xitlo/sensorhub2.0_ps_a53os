@@ -30,7 +30,7 @@ fi
 if [ $1 -eq 2 ] ; then
     if [ $2 -eq 1 ]; then
         echo ">>>2, app timesync on!"
-        /etc/common/test_time.sh 2000 > /dev/null &
+        /etc/common/test_time.sh > /dev/null &
     else
         echo ">>>2, app timesync off!"
         ps -ef | grep timesync-app | grep -v grep | awk '{print $1}' | xargs kill -9

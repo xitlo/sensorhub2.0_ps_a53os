@@ -18,11 +18,12 @@
 #include "log.h"
 #include <sys/mman.h>
 #include "common.h"
+#include "mem-mmap.h"
 
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.4"
+#define VERSION "v1.5"
 
 /** ===================================================== **
  * STRUCT
@@ -45,10 +46,8 @@ struct sync_data_s
 /** ===================================================== **
  * VARIABLE
  ** ===================================================== **/
-static int dev_fd;
 static int loop = 50;
-static unsigned char *bram_map_base;
-static A53State_s *s_pstA53State;
+static BramPtr_s s_stBram;
 
 /** ===================================================== **
  * FUNCTION
@@ -92,7 +91,7 @@ int main(int argc, char **argv)
     fprintf(stdout, "timesync-test: %s\n", VERSION);
 
     /* 验证输入参数个数 */
-    if (3 != argc)
+    if (2 > argc)
     {
         fprintf(stdout, "usage: %s <full_path_dev_name> <time_period_ms>\n", argv[0]);
         return -1;
@@ -107,42 +106,35 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    time_period = atoi(argv[2]);
+    /* mapping bram mem */
+    if (0 != MAP_BlockRamOpen(&s_stBram))
+    {
+        close(fd);
+        print_err("MAP_BlockRamOpen failed", __LINE__, errno);
+    }
+
+    time_period = s_stBram.pstA53Data->usTimeSyncPeriodMs;
+    if (2 < argc)
+    {
+        time_period = atoi(argv[2]);
+    }
+
     fprintf(stdout, "write[%ld] %d to dev:%s\n", sizeof(time_period), time_period, argv[1]);
     write(fd, &time_period, sizeof(time_period));
-
-    /* 3, mapping pl state mem */
-    dev_fd = open("/dev/mem", O_RDWR | O_NDELAY | O_DSYNC);
-    if (0 > dev_fd)
-    {
-        close(fd);
-        print_err("open /dev/mem failed", __LINE__, errno);
-    }
-
-    /* 4, mapping bram mem */
-    printf("bram_map_base: 0x%lx, size: 0x%x\n", BRAM_BASE_ADDR, BRAM_MAX_SIZE);
-    bram_map_base = (unsigned char *)mmap(NULL, BRAM_MAX_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, dev_fd, BRAM_BASE_ADDR);
-    if (-1 == (unsigned long)bram_map_base)
-    {
-        close(dev_fd);
-        close(fd);
-        print_err("mmap failed", __LINE__, errno);
-    }
-    s_pstA53State = (A53State_s *)(bram_map_base + BRAM_A53_STATE_BASE_ADDR - BRAM_BASE_ADDR);
 
     while (loop)
     {
         sleep(2);
         ret = read(fd, &readdata, sizeof(readdata));
 
-        s_pstA53State->uiTimeSyncBeginSec = (uint32_t)readdata.begin.tv_sec;
-        s_pstA53State->uiTimeSyncBeginNsec = (uint32_t)readdata.begin.tv_nsec;
-        s_pstA53State->uiTimeSyncRealSec = (uint32_t)readdata.realtime.tv_sec;
-        s_pstA53State->uiTimeSyncRealNsec = (uint32_t)readdata.realtime.tv_nsec;
-        s_pstA53State->uiTimeSyncEndSec = (uint32_t)readdata.end.tv_sec;
-        s_pstA53State->uiTimeSyncEndNsec = (uint32_t)readdata.end.tv_nsec;
-        s_pstA53State->uiTimeSyncDiffR2B = (uint32_t)readdata.diff_real_b_ns;
-        s_pstA53State->uiTimeSyncDiffE2B = (uint32_t)readdata.handle_e_b_ns;
+        s_stBram.pstA53State->uiTimeSyncBeginSec = (uint32_t)readdata.begin.tv_sec;
+        s_stBram.pstA53State->uiTimeSyncBeginNsec = (uint32_t)readdata.begin.tv_nsec;
+        s_stBram.pstA53State->uiTimeSyncRealSec = (uint32_t)readdata.realtime.tv_sec;
+        s_stBram.pstA53State->uiTimeSyncRealNsec = (uint32_t)readdata.realtime.tv_nsec;
+        s_stBram.pstA53State->uiTimeSyncEndSec = (uint32_t)readdata.end.tv_sec;
+        s_stBram.pstA53State->uiTimeSyncEndNsec = (uint32_t)readdata.end.tv_nsec;
+        s_stBram.pstA53State->uiTimeSyncDiffR2B = (uint32_t)readdata.diff_real_b_ns;
+        s_stBram.pstA53State->uiTimeSyncDiffE2B = (uint32_t)readdata.handle_e_b_ns;
 
         fprintf(stdout, "SyncRe[%d]! b/r/diff, e/hdl: %lld.%09ld/%lld.%09ld/%ld, %lld.%09ld/%ld\n",
                 ret,
@@ -157,7 +149,7 @@ int main(int argc, char **argv)
     }
 
     /* 操作结束后关闭文件 */
-    close(dev_fd);
+    MAP_BlockRamClose(&s_stBram);
     close(fd);
     log_fini();
     return 0;

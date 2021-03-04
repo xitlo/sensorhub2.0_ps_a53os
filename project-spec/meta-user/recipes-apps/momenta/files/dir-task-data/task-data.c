@@ -25,6 +25,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include "mem-mmap.h"
 
 /** ===================================================== **
  * MACRO
@@ -39,10 +40,6 @@
 #define MAX_RPMSG_BUFF_SIZE (512 - RPMSG_HEADER_LEN)
 
 #define RPMSG_BUS_SYS "/sys/bus/rpmsg"
-
-#define IP "192.168.2.2"
-#define PORT_RECV 8866
-#define PORT_SEND 8766
 
 /** ===================================================== **
  * STRUCT
@@ -61,6 +58,7 @@ static int loop = 50;
 
 static int is_show_char = 1;
 static int debug_level = 0;
+static BramPtr_s s_stBram;
 
 /** ===================================================== **
  * FUNCTION
@@ -402,6 +400,12 @@ int main(int argc, char *argv[])
         }
     }
 
+    // 0, mapping bram mem
+    if (0 != MAP_BlockRamOpen(&s_stBram))
+    {
+        print_err("MAP_BlockRamOpen failed", __LINE__, errno);
+    }
+
     //1, 创建tcp/ip协议族，指定通信方式为无链接不可靠的通信
     socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (-1 == socket_fd)
@@ -411,8 +415,8 @@ int main(int argc, char *argv[])
 
     //2, 进行端口号和ip的绑定
     struct sockaddr_in addr;
-    addr.sin_family = AF_INET;                //设置tcp协议族
-    addr.sin_port = htons(PORT_RECV);         //设置端口号
+    addr.sin_family = AF_INET; //设置tcp协议族
+    addr.sin_port = htons(s_stBram.pstA53Data->usPortDataDown); //设置端口号
     addr.sin_addr.s_addr = htonl(INADDR_ANY); //设置ip地址
     ret = bind(socket_fd, (struct sockaddr *)&addr, sizeof(addr));
     if (-1 == ret)
@@ -438,8 +442,8 @@ int main(int argc, char *argv[])
 
     struct sockaddr_in addr0;
     addr0.sin_family = AF_INET;            //设置tcp协议族
-    addr0.sin_port = htons(PORT_SEND);     //设置端口号
-    addr0.sin_addr.s_addr = inet_addr(IP); //设置ip地址
+    addr0.sin_port = htons(s_stBram.pstA53Data->usPortDataUp);     //设置端口号
+    addr0.sin_addr.s_addr = inet_addr(s_stBram.pstA53Data->acIpAddrDest); //设置ip地址
 
     //5, main task, receive r5 message, send by udp
     // char *str_def = "hello r5!";
@@ -490,6 +494,7 @@ int main(int argc, char *argv[])
     shutdown(socket_fd, SHUT_RDWR);
     pthread_join(pth_socket_recv, NULL);
     exit_rpmsg();
+    MAP_BlockRamClose(&s_stBram);
 
     return 0;
 }
