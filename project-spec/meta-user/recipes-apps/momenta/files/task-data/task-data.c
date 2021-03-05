@@ -30,7 +30,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.8"
+#define VERSION "v1.9"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
@@ -368,7 +368,7 @@ int main(int argc, char *argv[])
     int ret;
     int opt;
     unsigned short send_port;
-    unsigned char aucInitCmd[3] = {0xAA, 0x55, 0xA0};
+    unsigned char aucInitCmd[5] = {'H', 'E', 'L', 'L', 'O'};
 
     /*ctrl + c*/
     struct sigaction act;
