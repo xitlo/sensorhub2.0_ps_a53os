@@ -13,10 +13,14 @@ cat /proc/mtd
 
 #2, flash_eraseall
 echo -e "\n>>2, flash_eraseall"
-flash_erase /dev/mtd0 0 0
-flash_erase /dev/mtd1 0 0
-flash_erase /dev/mtd2 0 0
-flash_erase /dev/mtd3 0 0
+#flash_erase /dev/mtd0 0 0
+#flash_erase /dev/mtd1 0 0
+#flash_erase /dev/mtd2 0 0
+#flash_erase /dev/mtd3 0 0
+dd if=/dev/zero of=/dev/mtd0 ibs=1 obs=4096 count=28M
+dd if=/dev/zero of=/dev/mtd1 ibs=1 obs=4096 count=64k
+dd if=/dev/zero of=/dev/mtd2 ibs=1 obs=4096 count=28M
+dd if=/dev/zero of=/dev/mtd3 ibs=1 obs=4096 count=512k
 
 #3, program BOOT.BIN
 echo -e "\n>>3, program BOOT.BIN"
