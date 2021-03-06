@@ -111,9 +111,11 @@
     status = "disabled";
 };
 
+/*
 &INTERRUPT_axi_intc_0 {
     status = "disabled";
 };
+*/
 
 &gem3 {
     status = "okay";

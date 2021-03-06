@@ -4231,7 +4231,7 @@ CONFIG_r5files=y
 CONFIG_zlog=y
 
 #
-# modules
+# modules 
 #
 CONFIG_timesync=y
 
