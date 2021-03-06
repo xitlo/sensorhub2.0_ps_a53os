@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo ">>> Sensorhub2.0 autostart begin!"
-echo ">>> script version: v0.09"
+echo ">>> script version: v0.10"
 
 # 1, system set
 echo ">>1, system set"
@@ -109,8 +109,8 @@ else
     # 5.1, start r5 and wait a while
     echo ">>5.1, start r5!"
     /etc/common/app-control.sh 1 1
-    echo ">>sleep 120s, pls wait..."
-    sleep 120
+    echo ">>sleep 2s, pls wait..."
+    sleep 2
 
     # 5.2, start task-data
     echo ">>5.2, start task-data!"
