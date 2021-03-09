@@ -88,12 +88,12 @@ typedef struct A53Data {
 } A53Data_s;
 
 typedef struct R5State {
-    uint32_t uiHeader;              /*!< fix to 0xEEFF1122 */
-    uint32_t uiR5Version;           /*!< version of R5 */
+    volatile uint32_t uiHeader;              /*!< fix to 0xEEFF1122 */
+    volatile uint32_t uiR5Version;           /*!< version of R5 */
 } R5State_s;
 
 typedef struct R5Data {
-    uint32_t uiCom1Baud;            /*!< BaudRate for COM1 */
+    volatile uint32_t uiCom1Baud;            /*!< BaudRate for COM1 */
 } R5Data_s;
 
 typedef struct BramPtr
