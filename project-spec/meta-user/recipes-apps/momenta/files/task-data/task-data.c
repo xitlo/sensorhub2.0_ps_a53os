@@ -25,12 +25,14 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/time.h>
+#include "log.h"
 #include "mem-mmap.h"
 
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.9"
+#define VERSION "v1.10"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
@@ -41,9 +43,85 @@
 
 #define RPMSG_BUS_SYS "/sys/bus/rpmsg"
 
+#define DATA_SENSOR_HEADER_LEN   4
+
 /** ===================================================== **
  * STRUCT
  ** ===================================================== **/
+typedef struct DATA_Sensor
+{
+    uint16_t usUdpPort;
+    uint16_t usReserved;
+    uint8_t ucHeadHigh;
+    uint8_t ucHeadLow;
+    uint8_t ucType;
+    uint8_t ucCrc;
+    uint32_t uiTimeSec;
+    uint32_t uiTimeNsec;
+    uint32_t uiDataLen;
+    uint8_t *pstData;
+} DATA_Sensor_S;
+
+typedef struct DATA_PerfAnalyse
+{
+    unsigned long ulCnt;
+    unsigned long ulTimeDelayUs;        /* time delay between data timestamp to a53 recv */
+    unsigned long ulTimeDelayMaxUs;     /* max time delay between data timestamp to a53 recv */
+    float fDataFreq;                    /* data frequence */
+    unsigned int uiLastDataTimeSec;     /* last data timestamp, sec */
+    unsigned int uiLastDataTimeNsec;    /* last data timestamp, nsec */
+    struct timeval stLastTimeRecv;      /* last recv data system time */
+    unsigned long ulLastCnt;
+    struct timeval stLastTimeAnalyse;      /* last analyse system time */
+} DATA_PerfAnalyse_S;
+
+typedef enum DATA_SensorType
+{
+    /* 0x00-0x7F，用于网络发送数据类型 */
+    MASTER_CAN3 = 0x00,
+    MASTER_CAN1,
+    MASTER_CAN2,
+    SLAVE_UART1,
+    SLAVE_UART2,
+    SLAVE_UART3,
+    SLAVE_UART4,
+    SLAVE_CAN4,
+    SLAVE_CAN5,
+    MOMENTA_TOTAL,
+    MOMENTA_POWER,
+    MOMENTA_POWERKEY,
+    MOMENTA_WIRE_BT,
+    MOMENTA_WIRE_SS,
+    MOMENTA_SENSORHUB_F7,
+    MOMENTA_SENSORHUB_F4,
+
+    /* SENSOR_DATA_TYPE_COUNT表示网络发送数据类型的数量 */
+    SENSOR_DATA_TYPE_COUNT,
+    SLAVE_UART5,
+    SLAVE_UART6,
+    SLAVE_UART7,
+    SLAVE_UART8,
+    SLAVE_UART9,
+    SLAVE_UART10,
+    SLAVE_UART12,
+    SLAVE_UART13,
+    SLAVE_UART14,
+    SLAVE_UART15,
+    SLAVE_UART16,
+    SLAVE_CAN6,
+    SLAVE_CAN7,
+    SLAVE_CAN8,
+    SLAVE_CAN9,
+    SLAVE_CAN10,
+    SLAVE_CAN11,
+    SLAVE_CAN12,
+    SLAVE_CAN13,
+    SLAVE_CAN14,
+    SLAVE_CAN15,
+    SLAVE_CAN16,
+
+    SENSOR_TYPE_NUM
+} DATA_SensorType_E;
 
 /** ===================================================== **
  * VARIABLE
@@ -59,6 +137,8 @@ static int loop = 50;
 static int is_show_char = 1;
 static int debug_level = 0;
 static BramPtr_s s_stBram;
+
+static DATA_PerfAnalyse_S astPerf[SENSOR_TYPE_NUM] = {0};
 
 /** ===================================================== **
  * FUNCTION
@@ -329,7 +409,7 @@ void *receive(void *pth_arg)
         {
             iLen = ret;
 
-            if (3 < debug_level)
+            if (4 < debug_level)
             {
                 printf("\r\nip %s,port %d\r\n", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
                 printf("==send[%d], hex:\r\n", iLen);
@@ -347,10 +427,60 @@ void *receive(void *pth_arg)
                 break;
             }
 
-            if (3 < debug_level)
+            if (4 < debug_level)
             {
                 printf("==sent done: %d\r\n", bytes_sent);
             }
+        }
+    }
+}
+
+void *perf_analyse(void *pth_arg)
+{
+    int i;
+    struct timeval current_time;
+    float fDiffTime;
+
+    printf("start analyse thread\r\n");
+
+    while (loop)
+    {
+        sleep(2);
+        gettimeofday(&current_time, NULL);
+
+        for (i = 0; i < SENSOR_TYPE_NUM; i++)
+        {
+            fDiffTime = (current_time.tv_sec - astPerf[i].stLastTimeAnalyse.tv_sec)
+                      + (current_time.tv_usec - astPerf[i].stLastTimeAnalyse.tv_usec) / (float)1000000;
+            astPerf[i].fDataFreq = (astPerf[i].ulCnt - astPerf[i].ulLastCnt) / fDiffTime;
+            if (0 == astPerf[i].fDataFreq)
+            {
+                continue;
+            }
+
+            astPerf[i].ulLastCnt = astPerf[i].ulCnt;
+            astPerf[i].stLastTimeAnalyse.tv_sec = current_time.tv_sec;
+            astPerf[i].stLastTimeAnalyse.tv_usec = current_time.tv_usec;
+
+            if (0 < debug_level)
+            {
+                fprintf(stdout, "data[%d] cnt/delay/max/freq: %lu/%lu/%lu/%.2f, last: %u.%06u->%d.%06d\n",
+                        i,
+                        astPerf[i].ulCnt,
+                        astPerf[i].ulTimeDelayUs,
+                        astPerf[i].ulTimeDelayMaxUs,
+                        astPerf[i].fDataFreq,
+                        astPerf[i].uiLastDataTimeNsec, astPerf[i].uiLastDataTimeNsec / 1000,
+                        astPerf[i].stLastTimeRecv.tv_sec, astPerf[i].stLastTimeRecv.tv_usec);
+            }
+            _log_info("data[%d] cnt/delay/max/freq: %lu/%lu/%lu/%.2f, last: %u.%06u->%d.%06d\n",
+                    i,
+                    astPerf[i].ulCnt,
+                    astPerf[i].ulTimeDelayUs,
+                    astPerf[i].ulTimeDelayMaxUs,
+                    astPerf[i].fDataFreq,
+                    astPerf[i].uiLastDataTimeNsec, astPerf[i].uiLastDataTimeNsec / 1000,
+                    astPerf[i].stLastTimeRecv.tv_sec, astPerf[i].stLastTimeRecv.tv_usec);
         }
     }
 }
@@ -367,8 +497,11 @@ int main(int argc, char *argv[])
     int i, bytes_rcvd;
     int ret;
     int opt;
+    DATA_Sensor_S *pstSensor;
     unsigned short send_port;
-    unsigned char aucInitCmd[5] = {'H', 'E', 'L', 'L', 'O'};
+    char *str_def = "hello r5!";
+    struct timeval current_time;
+    float fDiffTime;
 
     /*ctrl + c*/
     struct sigaction act;
@@ -398,6 +531,11 @@ int main(int argc, char *argv[])
             display_help_msg();
             return 0;
         }
+    }
+
+    if (0 != log_init("/etc/common/zlog.conf"))
+    {
+        print_err("parse log config failed, please check zlog.conf", __LINE__, errno);
     }
 
     // 0, mapping bram mem
@@ -440,15 +578,23 @@ int main(int argc, char *argv[])
         print_err("pthread_create failed", __LINE__, errno);
     }
 
+    //5, 创建analyse线程，性能分析
+    pthread_t pth_analyse;
+    ret = pthread_create(&pth_analyse, NULL, perf_analyse, NULL);
+    if (-1 == ret)
+    {
+        exit_rpmsg();
+        print_err("pthread_create failed", __LINE__, errno);
+    }
+
+    //6, main task, receive r5 message, send by udp
     struct sockaddr_in addr0;
     addr0.sin_family = AF_INET;            //设置tcp协议族
     addr0.sin_port = htons(s_stBram.pstA53Data->usPortDataUp);     //设置端口号
     addr0.sin_addr.s_addr = inet_addr(s_stBram.pstA53Data->acIpAddrDest); //设置ip地址
 
-    //5, main task, receive r5 message, send by udp
-    // char *str_def = "hello r5!";
     printf("start wait for r5 msg\r\n");
-    if (0 >= write(eptfd, aucInitCmd, strlen(aucInitCmd)))
+    if (0 >= write(eptfd, str_def, strlen(str_def)))
     {
         exit_rpmsg();
         print_err("rpmsg send failed", __LINE__, errno);
@@ -460,7 +606,7 @@ int main(int argc, char *argv[])
         if (0 >= bytes_rcvd)
             continue;
 
-        if (0 < debug_level)
+        if (1 < debug_level)
         {
             printf("\r\n==recv[%d], hex:\r\n", bytes_rcvd);
             for (i = 0; i < bytes_rcvd; i++)
@@ -470,7 +616,7 @@ int main(int argc, char *argv[])
             printf("\r\n\r\n");
         }
 
-        if (1 < debug_level)
+        if (2 < debug_level)
         {
             printf("\r\n==recv[%d], char:\r\n", bytes_rcvd);
             for (i = 0; i < bytes_rcvd; i++)
@@ -481,20 +627,39 @@ int main(int argc, char *argv[])
         }
 
         //发送消息时需要绑定对方的ip和端口号
-        send_port = *(unsigned short *)aucRpmsgRecv;
-        addr0.sin_port = htons(send_port);
-        ret = sendto(socket_fd, aucRpmsgRecv + 4, bytes_rcvd - 4, 0, (struct sockaddr *)&addr0, sizeof(addr0));
+        pstSensor = (DATA_Sensor_S *)aucRpmsgRecv;
+        addr0.sin_port = htons(pstSensor->usUdpPort);
+        ret = sendto(socket_fd, aucRpmsgRecv + DATA_SENSOR_HEADER_LEN, bytes_rcvd - DATA_SENSOR_HEADER_LEN, 0, (struct sockaddr *)&addr0, sizeof(addr0));
         if (-1 == ret)
         {
             fprintf(stderr, "socket send failed", __LINE__, errno);
+        }
+
+        //performance analyse
+        if (0 == ((astPerf[pstSensor->ucType].ulCnt++) % s_stBram.pstA53Data->usSensorAnalysePerid))
+        {
+            gettimeofday(&current_time, NULL);
+            astPerf[pstSensor->ucType].ulTimeDelayUs = (current_time.tv_sec - pstSensor->uiTimeSec) * 1000000
+                                                     + (current_time.tv_usec - pstSensor->uiTimeNsec / 1000);
+            if (astPerf[pstSensor->ucType].ulTimeDelayMaxUs < astPerf[pstSensor->ucType].ulTimeDelayUs)
+            {
+                astPerf[pstSensor->ucType].ulTimeDelayMaxUs = astPerf[pstSensor->ucType].ulTimeDelayUs;
+            }
+
+            astPerf[pstSensor->ucType].uiLastDataTimeSec = pstSensor->uiTimeSec;
+            astPerf[pstSensor->ucType].uiLastDataTimeNsec = pstSensor->uiTimeNsec;
+            astPerf[pstSensor->ucType].stLastTimeRecv.tv_sec = current_time.tv_sec;
+            astPerf[pstSensor->ucType].stLastTimeRecv.tv_usec = current_time.tv_usec;
         }
     }
 
     printf("\r\n close...\r\n");
     shutdown(socket_fd, SHUT_RDWR);
+    pthread_join(pth_analyse, NULL);
     pthread_join(pth_socket_recv, NULL);
     exit_rpmsg();
     MAP_BlockRamClose(&s_stBram);
+    log_fini();
 
     return 0;
 }

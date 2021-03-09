@@ -34,7 +34,7 @@
 // #endif // __cplusplus
 
 #define VRESION_A53                 "v1.11"
-#define VERSION_DEBUG               0
+#define VERSION_DEBUG               3
 #define VERSION_A53_REG_ADDR        (0x8000017c)
 #define VERSION_R5_REG_ADDR         (0x80000178)
 
@@ -85,6 +85,7 @@ typedef struct A53Data {
     uint16_t usPortDataDown;        /*!< downlink data port */
     uint16_t usPortState;           /*!< uplink state port */
     uint16_t usTimeSyncPeriodMs;    /*!< time sync period, ms */
+    uint16_t usSensorAnalysePerid;  /*!< performace analyse, sensor data count period */
 } A53Data_s;
 
 typedef struct R5State {

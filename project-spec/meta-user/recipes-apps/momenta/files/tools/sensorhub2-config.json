@@ -5,7 +5,8 @@
         "port_data_up": 8766,
         "port_data_down": 8866,
         "port_state": 8000,
-        "time_sync_period_ms": 2000
+        "time_sync_period_ms": 2000,
+        "data_analyse_period": 1
     },
     "r5": {},
     "fpga": {},

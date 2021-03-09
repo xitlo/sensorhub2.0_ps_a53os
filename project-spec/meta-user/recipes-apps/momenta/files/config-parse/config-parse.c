@@ -29,7 +29,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define CONFIG_PARSE_VERSION "v1.7"
+#define CONFIG_PARSE_VERSION "v1.8"
 
 /** ===================================================== **
  * STRUCT
@@ -117,11 +117,11 @@ static void set_a53_version(void)
     char cmd_str[128] = "";
 
     sscanf(VRESION_A53, "v%d.%d", &ver_major, &ver_minor);
-    uiVerA53 = (uint32_t)(((VERSION_DEBUG & 0xFF) << 24) | ((ver_major & 0xFF) << 8) | (ver_minor & 0xFF));
+    uiVerA53 = (uint32_t)(((ver_major & 0xFF) << 16) | ((ver_minor & 0xFF) << 8) | (VERSION_DEBUG & 0xFF));
 
     sprintf(cmd_str, "devmem 0x%08x 32 0x%08x", VERSION_A53_REG_ADDR, uiVerA53);
     system(cmd_str);
-    printf("\nA53 version: %s, %d, 0x%04x\n%s\n\n", VRESION_A53, VERSION_DEBUG, uiVerA53, cmd_str);
+    printf("\nA53 version: %s-%d, 0x%04x\n%s\n\n", VRESION_A53, VERSION_DEBUG, uiVerA53, cmd_str);
 }
 
 static int config_file_init(char *pcPath)
@@ -256,6 +256,17 @@ static int config_file_a53(void)
     }
     s_stBram.pstA53Data->usTimeSyncPeriodMs = (uint16_t)iVal;
     printf("==%s: %d\n", pcItem, s_stBram.pstA53Data->usTimeSyncPeriodMs);
+
+    /* 7, data_analyse_period */
+    pcItem = "data_analyse_period";
+    iVal = config_file_get_int(pstJsonItem, "data_analyse_period");
+    if (0 > iVal)
+    {
+        fprintf(stderr, "%s: conf json parse err\n", __func__);
+        return -1;
+    }
+    s_stBram.pstA53Data->usSensorAnalysePerid = (uint16_t)iVal;
+    printf("==%s: %d\n", pcItem, s_stBram.pstA53Data->usSensorAnalysePerid);
 
     return 0;
 }
