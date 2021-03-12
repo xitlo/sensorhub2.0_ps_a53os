@@ -32,7 +32,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.14"
+#define VERSION "v1.15"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
@@ -48,20 +48,6 @@
 /** ===================================================== **
  * STRUCT
  ** ===================================================== **/
-typedef struct DATA_Sensor
-{
-    uint16_t usUdpPort;
-    uint16_t usReserved;
-    uint8_t ucHeadHigh;
-    uint8_t ucHeadLow;
-    uint8_t ucType;
-    uint8_t ucCrc;
-    uint32_t uiTimeSec;
-    uint32_t uiTimeNsec;
-    uint32_t uiDataLen;
-    uint8_t *pstData;
-} DATA_Sensor_S;
-
 typedef struct DATA_PerfAnalyse
 {
     unsigned int uiCnt;               /* frame count */
@@ -76,57 +62,54 @@ typedef struct DATA_PerfAnalyse
     struct timeval stLastTimeAnalyse; /* last analyse system time */
 } DATA_PerfAnalyse_S;
 
-typedef enum DATA_SensorType
-{
-    /* 0x00-0x7F，用于网络发送数据类型 */
-    MASTER_CAN3 = 0x00,
-    MASTER_CAN1,
-    MASTER_CAN2,
-    SLAVE_UART1,
-    SLAVE_UART2,
-    SLAVE_UART3,
-    SLAVE_UART4,
-    SLAVE_CAN4,
-    SLAVE_CAN5,
-    MOMENTA_TOTAL,
-    MOMENTA_POWER,
-    MOMENTA_POWERKEY,
-    MOMENTA_WIRE_BT,
-    MOMENTA_WIRE_SS,
-    MOMENTA_SENSORHUB_F7,
-    MOMENTA_SENSORHUB_F4,
-
-    /* SENSOR_DATA_TYPE_COUNT表示网络发送数据类型的数量 */
-    SENSOR_DATA_TYPE_COUNT,
-    SLAVE_UART5,
-    SLAVE_UART6,
-    SLAVE_UART7,
-    SLAVE_UART8,
-    SLAVE_UART9,
-    SLAVE_UART10,
-    SLAVE_UART12,
-    SLAVE_UART13,
-    SLAVE_UART14,
-    SLAVE_UART15,
-    SLAVE_UART16,
-    SLAVE_CAN6,
-    SLAVE_CAN7,
-    SLAVE_CAN8,
-    SLAVE_CAN9,
-    SLAVE_CAN10,
-    SLAVE_CAN11,
-    SLAVE_CAN12,
-    SLAVE_CAN13,
-    SLAVE_CAN14,
-    SLAVE_CAN15,
-    SLAVE_CAN16,
-
-    SENSOR_TYPE_NUM
-} DATA_SensorType_E;
-
 /** ===================================================== **
  * VARIABLE
  ** ===================================================== **/
+static const uint8_t sc_StateIndex[SENSOR_TYPE_NUM] =
+    {
+        STATE_CAN3,            // MASTER_CAN3 = 0x00,
+        STATE_CAN1,            // MASTER_CAN1,
+        STATE_CAN2,            // MASTER_CAN2,
+        STATE_UART1,           // SLAVE_UART1,
+        STATE_UART2,           // SLAVE_UART2,
+        STATE_UART3,           // SLAVE_UART3,
+        STATE_UART4,           // SLAVE_UART4,
+        STATE_CAN4,            // SLAVE_CAN4,
+        STATE_CAN5,            // SLAVE_CAN5,
+        STATE_SENSOR_TYPE_NUM, // MOMENTA_TOTAL,
+        STATE_SENSOR_TYPE_NUM, // MOMENTA_POWER,
+        STATE_SENSOR_TYPE_NUM, // MOMENTA_POWERKEY,
+        STATE_SENSOR_TYPE_NUM, // MOMENTA_WIRE_BT,
+        STATE_SENSOR_TYPE_NUM, // MOMENTA_WIRE_SS,
+        STATE_SENSOR_TYPE_NUM, // MOMENTA_SENSORHUB_F7,
+        STATE_SENSOR_TYPE_NUM, // MOMENTA_SENSORHUB_F4,
+
+        STATE_SENSOR_TYPE_NUM, // SENSOR_DATA_TYPE_COUNT,
+        STATE_UART5,           // SLAVE_UART5,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_UART6,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_UART7,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_UART8,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_UART9,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_UART10,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_UART11,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_UART12,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_UART13,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_UART14,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_UART15,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_UART16,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_CAN6,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_CAN7,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_CAN8,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_CAN9,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_CAN10,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_CAN11,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_CAN12,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_CAN13,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_CAN14,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_CAN15,
+        STATE_SENSOR_TYPE_NUM, // SLAVE_CAN16,
+};
+
 static int charfd = -1, eptfd = -1;
 static int socket_fd = -1;
 
@@ -497,14 +480,21 @@ void *perf_analyse(void *pth_arg)
                         astPerfUp[i].uiLastDataTimeSec, astPerfUp[i].uiLastDataTimeNsec / 1000,
                         astPerfUp[i].stLastTimeRecv.tv_sec, astPerfUp[i].stLastTimeRecv.tv_usec);
             }
+
+            if (STATE_SENSOR_TYPE_NUM != sc_StateIndex[i])
+            {
+                memcpy((uint8_t *)&s_stBram.pstA53State->astDataPerfUp[sc_StateIndex[i]],
+                       (uint8_t *)&astPerfUp[i], sizeof(DATA_Perf_S));
+            }
+
             _log_info("UpData[%d] cnt/delay/max/freq: %u/%d/%d/%d.%03d, last: %u.%06u->%d.%06d\n",
-                    i,
-                    astPerfUp[i].uiCnt,
-                    astPerfUp[i].iTimeDelayUs,
-                    astPerfUp[i].iTimeDelayMaxUs,
-                    astPerfUp[i].usFreqInteger, astPerfUp[i].usFreqDecimal,
-                    astPerfUp[i].uiLastDataTimeSec, astPerfUp[i].uiLastDataTimeNsec / 1000,
-                    astPerfUp[i].stLastTimeRecv.tv_sec, astPerfUp[i].stLastTimeRecv.tv_usec);
+                      i,
+                      astPerfUp[i].uiCnt,
+                      astPerfUp[i].iTimeDelayUs,
+                      astPerfUp[i].iTimeDelayMaxUs,
+                      astPerfUp[i].usFreqInteger, astPerfUp[i].usFreqDecimal,
+                      astPerfUp[i].uiLastDataTimeSec, astPerfUp[i].uiLastDataTimeNsec / 1000,
+                      astPerfUp[i].stLastTimeRecv.tv_sec, astPerfUp[i].stLastTimeRecv.tv_usec);
         }
 
         // downlink data
@@ -534,6 +524,13 @@ void *perf_analyse(void *pth_arg)
                         astPerfDown[i].uiLastDataTimeSec, astPerfDown[i].uiLastDataTimeNsec / 1000,
                         astPerfDown[i].stLastTimeRecv.tv_sec, astPerfDown[i].stLastTimeRecv.tv_usec);
             }
+
+            if (STATE_SENSOR_TYPE_NUM != sc_StateIndex[i])
+            {
+                memcpy((uint8_t *)&s_stBram.pstA53State->astDataPerfDown[sc_StateIndex[i]],
+                       (uint8_t *)&astPerfDown[i], sizeof(DATA_Perf_S));
+            }
+
             _log_info("DownData[%d] cnt/delay/max/freq: %u/%d/%d/%d.%03d, last: %u.%06u->%d.%06d\n",
                       i,
                       astPerfDown[i].uiCnt,

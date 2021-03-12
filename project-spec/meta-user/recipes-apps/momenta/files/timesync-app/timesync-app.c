@@ -23,7 +23,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.5"
+#define VERSION "v1.6"
 
 /** ===================================================== **
  * STRUCT
@@ -127,12 +127,12 @@ int main(int argc, char **argv)
         sleep(2);
         ret = read(fd, &readdata, sizeof(readdata));
 
-        s_stBram.pstA53State->uiTimeSyncBeginSec = (uint32_t)readdata.begin.tv_sec;
-        s_stBram.pstA53State->uiTimeSyncBeginNsec = (uint32_t)readdata.begin.tv_nsec;
+        // s_stBram.pstA53State->uiTimeSyncBeginSec = (uint32_t)readdata.begin.tv_sec;
+        // s_stBram.pstA53State->uiTimeSyncBeginNsec = (uint32_t)readdata.begin.tv_nsec;
         s_stBram.pstA53State->uiTimeSyncRealSec = (uint32_t)readdata.realtime.tv_sec;
         s_stBram.pstA53State->uiTimeSyncRealNsec = (uint32_t)readdata.realtime.tv_nsec;
-        s_stBram.pstA53State->uiTimeSyncEndSec = (uint32_t)readdata.end.tv_sec;
-        s_stBram.pstA53State->uiTimeSyncEndNsec = (uint32_t)readdata.end.tv_nsec;
+        // s_stBram.pstA53State->uiTimeSyncEndSec = (uint32_t)readdata.end.tv_sec;
+        // s_stBram.pstA53State->uiTimeSyncEndNsec = (uint32_t)readdata.end.tv_nsec;
         s_stBram.pstA53State->uiTimeSyncDiffR2B = (uint32_t)readdata.diff_real_b_ns;
         s_stBram.pstA53State->uiTimeSyncDiffE2B = (uint32_t)readdata.handle_e_b_ns;
 
