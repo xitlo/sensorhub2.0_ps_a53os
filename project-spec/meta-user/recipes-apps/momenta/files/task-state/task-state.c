@@ -32,9 +32,9 @@
  ** ===================================================== **/
 #define TASK_STATE_VERSION "v1.7"
 
-#define STATE_PL_SIZE (0x300)
-#define STATE_A53_SIZE (0x100)
-#define STATE_R5_SIZE (0x100)
+#define STATE_PL_SIZE (0x200)
+#define STATE_A53_SIZE (0x180)
+#define STATE_R5_SIZE (0x180)
 
 /** ===================================================== **
  * STRUCT

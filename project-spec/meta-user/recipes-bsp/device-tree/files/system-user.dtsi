@@ -107,15 +107,13 @@
     status = "disabled";
 };
 
-&CAN_BLK_can_7 {
+&CAN_BLK_canfd_7 {
     status = "disabled";
 };
 
-/*
 &INTERRUPT_axi_intc_0 {
     status = "disabled";
 };
-*/
 
 &gem3 {
     status = "okay";

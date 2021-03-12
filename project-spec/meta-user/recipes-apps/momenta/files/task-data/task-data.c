@@ -32,7 +32,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.11"
+#define VERSION "v1.13"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
@@ -43,7 +43,7 @@
 
 #define RPMSG_BUS_SYS "/sys/bus/rpmsg"
 
-#define DATA_SENSOR_HEADER_LEN   4
+#define DATA_SENSOR_HEADER_LEN 4
 
 /** ===================================================== **
  * STRUCT
@@ -64,15 +64,15 @@ typedef struct DATA_Sensor
 
 typedef struct DATA_PerfAnalyse
 {
-    unsigned long ulCnt;
-    unsigned long ulTimeDelayUs;        /* time delay between data timestamp to a53 recv */
-    unsigned long ulTimeDelayMaxUs;     /* max time delay between data timestamp to a53 recv */
-    float fDataFreq;                    /* data frequence */
-    unsigned int uiLastDataTimeSec;     /* last data timestamp, sec */
-    unsigned int uiLastDataTimeNsec;    /* last data timestamp, nsec */
-    struct timeval stLastTimeRecv;      /* last recv data system time */
-    unsigned long ulLastCnt;
-    struct timeval stLastTimeAnalyse;      /* last analyse system time */
+    unsigned int uiCnt;
+    int iTimeDelayUs;                 /* time delay between data timestamp to a53 recv */
+    int iTimeDelayMaxUs;              /* max time delay between data timestamp to a53 recv */
+    float fDataFreq;                  /* data frequence */
+    unsigned int uiLastDataTimeSec;   /* last data timestamp, sec */
+    unsigned int uiLastDataTimeNsec;  /* last data timestamp, nsec */
+    struct timeval stLastTimeRecv;    /* last recv data system time */
+    unsigned int uiLastCnt;           /* last analyse cnt */
+    struct timeval stLastTimeAnalyse; /* last analyse system time */
 } DATA_PerfAnalyse_S;
 
 typedef enum DATA_SensorType
@@ -138,7 +138,8 @@ static int is_show_char = 1;
 static int debug_level = 0;
 static BramPtr_s s_stBram;
 
-static DATA_PerfAnalyse_S astPerf[SENSOR_TYPE_NUM] = {0};
+static DATA_PerfAnalyse_S astPerfUp[SENSOR_TYPE_NUM] = {0};
+static DATA_PerfAnalyse_S astPerfDown[SENSOR_TYPE_NUM] = {0};
 
 /** ===================================================== **
  * FUNCTION
@@ -394,13 +395,16 @@ void *receive(void *pth_arg)
     int bytes_sent;
     struct sockaddr_in addr = {0};
     int addr_size = sizeof(addr);
+    DATA_Sensor_S *pstSensor;
+    struct timeval current_time;
+    float fDiffTime;
 
     printf("start wait for socket msg\r\n");
     //从对端ip和端口号中接收消息，指定addr0用于存放消息
     while (loop)
     {
         bzero(aucRpmsgSend, sizeof(aucRpmsgSend));
-        ret = recvfrom(socket_fd, aucRpmsgSend, sizeof(aucRpmsgSend), 0, (struct sockaddr *)&addr, &addr_size);
+        ret = recvfrom(socket_fd, aucRpmsgSend + DATA_SENSOR_HEADER_LEN, sizeof(aucRpmsgSend - DATA_SENSOR_HEADER_LEN), 0, (struct sockaddr *)&addr, &addr_size);
         if (-1 == ret)
         {
             fprintf(stderr, "socket recv failed", __LINE__, errno);
@@ -415,12 +419,12 @@ void *receive(void *pth_arg)
                 printf("==send[%d], hex:\r\n", iLen);
                 for (i = 0; i < iLen; i++)
                 {
-                    printf("%02x ", aucRpmsgSend[i]);
+                    printf("%02x ", aucRpmsgSend[DATA_SENSOR_HEADER_LEN + i]);
                 }
                 printf("\r\n");
             }
 
-            bytes_sent = write(eptfd, aucRpmsgSend, iLen);
+            bytes_sent = write(eptfd, aucRpmsgSend + DATA_SENSOR_HEADER_LEN, iLen);
             if (bytes_sent <= 0)
             {
                 printf("\r\n Error sending data\r\n");
@@ -430,6 +434,23 @@ void *receive(void *pth_arg)
             if (4 < debug_level)
             {
                 printf("==sent done: %d\r\n", bytes_sent);
+            }
+
+            //performance analyse
+            pstSensor = (DATA_Sensor_S *)aucRpmsgSend;
+            if (0 == ((++astPerfDown[pstSensor->ucType].uiCnt) % s_stBram.pstA53Data->usSensorAnalysePerid))
+            {
+                gettimeofday(&current_time, NULL);
+                astPerfDown[pstSensor->ucType].iTimeDelayUs = (current_time.tv_sec - pstSensor->uiTimeSec) * 1000000 + (current_time.tv_usec - pstSensor->uiTimeNsec / 1000);
+                if (astPerfDown[pstSensor->ucType].iTimeDelayMaxUs < astPerfDown[pstSensor->ucType].iTimeDelayUs)
+                {
+                    astPerfDown[pstSensor->ucType].iTimeDelayMaxUs = astPerfDown[pstSensor->ucType].iTimeDelayUs;
+                }
+
+                astPerfDown[pstSensor->ucType].uiLastDataTimeSec = pstSensor->uiTimeSec;
+                astPerfDown[pstSensor->ucType].uiLastDataTimeNsec = pstSensor->uiTimeNsec;
+                astPerfDown[pstSensor->ucType].stLastTimeRecv.tv_sec = current_time.tv_sec;
+                astPerfDown[pstSensor->ucType].stLastTimeRecv.tv_usec = current_time.tv_usec;
             }
         }
     }
@@ -448,39 +469,74 @@ void *perf_analyse(void *pth_arg)
         sleep(2);
         gettimeofday(&current_time, NULL);
 
+        // uplink data
         for (i = 0; i < SENSOR_TYPE_NUM; i++)
         {
-            fDiffTime = (current_time.tv_sec - astPerf[i].stLastTimeAnalyse.tv_sec)
-                      + (current_time.tv_usec - astPerf[i].stLastTimeAnalyse.tv_usec) / (float)1000000;
-            astPerf[i].fDataFreq = (astPerf[i].ulCnt - astPerf[i].ulLastCnt) / fDiffTime;
-            if (0 == astPerf[i].fDataFreq)
+            fDiffTime = (current_time.tv_sec - astPerfUp[i].stLastTimeAnalyse.tv_sec) + (current_time.tv_usec - astPerfUp[i].stLastTimeAnalyse.tv_usec) / (float)1000000;
+            astPerfUp[i].fDataFreq = (astPerfUp[i].uiCnt - astPerfUp[i].uiLastCnt) / fDiffTime;
+            if (0 == astPerfUp[i].fDataFreq)
             {
                 continue;
             }
 
-            astPerf[i].ulLastCnt = astPerf[i].ulCnt;
-            astPerf[i].stLastTimeAnalyse.tv_sec = current_time.tv_sec;
-            astPerf[i].stLastTimeAnalyse.tv_usec = current_time.tv_usec;
+            astPerfUp[i].uiLastCnt = astPerfUp[i].uiCnt;
+            astPerfUp[i].stLastTimeAnalyse.tv_sec = current_time.tv_sec;
+            astPerfUp[i].stLastTimeAnalyse.tv_usec = current_time.tv_usec;
 
             if (0 < debug_level)
             {
-                fprintf(stdout, "data[%d] cnt/delay/max/freq: %lu/%lu/%lu/%.2f, last: %u.%06u->%d.%06d\n",
+                fprintf(stdout, "UpData[%d] cnt/delay/max/freq: %lu/%lu/%lu/%.2f, last: %u.%06u->%d.%06d\n",
                         i,
-                        astPerf[i].ulCnt,
-                        astPerf[i].ulTimeDelayUs,
-                        astPerf[i].ulTimeDelayMaxUs,
-                        astPerf[i].fDataFreq,
-                        astPerf[i].uiLastDataTimeNsec, astPerf[i].uiLastDataTimeNsec / 1000,
-                        astPerf[i].stLastTimeRecv.tv_sec, astPerf[i].stLastTimeRecv.tv_usec);
+                        astPerfUp[i].uiCnt,
+                        astPerfUp[i].iTimeDelayUs,
+                        astPerfUp[i].iTimeDelayMaxUs,
+                        astPerfUp[i].fDataFreq,
+                        astPerfUp[i].uiLastDataTimeSec, astPerfUp[i].uiLastDataTimeNsec / 1000,
+                        astPerfUp[i].stLastTimeRecv.tv_sec, astPerfUp[i].stLastTimeRecv.tv_usec);
             }
-            _log_info("data[%d] cnt/delay/max/freq: %lu/%lu/%lu/%.2f, last: %u.%06u->%d.%06d\n",
-                    i,
-                    astPerf[i].ulCnt,
-                    astPerf[i].ulTimeDelayUs,
-                    astPerf[i].ulTimeDelayMaxUs,
-                    astPerf[i].fDataFreq,
-                    astPerf[i].uiLastDataTimeNsec, astPerf[i].uiLastDataTimeNsec / 1000,
-                    astPerf[i].stLastTimeRecv.tv_sec, astPerf[i].stLastTimeRecv.tv_usec);
+            _log_info("UpData[%d] cnt/delay/max/freq: %lu/%lu/%lu/%.2f, last: %u.%06u->%d.%06d\n",
+                      i,
+                      astPerfUp[i].uiCnt,
+                      astPerfUp[i].iTimeDelayUs,
+                      astPerfUp[i].iTimeDelayMaxUs,
+                      astPerfUp[i].fDataFreq,
+                      astPerfUp[i].uiLastDataTimeSec, astPerfUp[i].uiLastDataTimeNsec / 1000,
+                      astPerfUp[i].stLastTimeRecv.tv_sec, astPerfUp[i].stLastTimeRecv.tv_usec);
+        }
+
+        // downlink data
+        for (i = 0; i < SENSOR_TYPE_NUM; i++)
+        {
+            fDiffTime = (current_time.tv_sec - astPerfDown[i].stLastTimeAnalyse.tv_sec) + (current_time.tv_usec - astPerfDown[i].stLastTimeAnalyse.tv_usec) / (float)1000000;
+            astPerfDown[i].fDataFreq = (astPerfDown[i].uiCnt - astPerfDown[i].uiLastCnt) / fDiffTime;
+            if (0 == astPerfDown[i].fDataFreq)
+            {
+                continue;
+            }
+
+            astPerfDown[i].uiLastCnt = astPerfDown[i].uiCnt;
+            astPerfDown[i].stLastTimeAnalyse.tv_sec = current_time.tv_sec;
+            astPerfDown[i].stLastTimeAnalyse.tv_usec = current_time.tv_usec;
+
+            if (0 < debug_level)
+            {
+                fprintf(stdout, "DownData[%d] cnt/delay/max/freq: %lu/%lu/%lu/%.2f, last: %u.%06u->%d.%06d\n",
+                        i,
+                        astPerfDown[i].uiCnt,
+                        astPerfDown[i].iTimeDelayUs,
+                        astPerfDown[i].iTimeDelayMaxUs,
+                        astPerfDown[i].fDataFreq,
+                        astPerfDown[i].uiLastDataTimeSec, astPerfDown[i].uiLastDataTimeNsec / 1000,
+                        astPerfDown[i].stLastTimeRecv.tv_sec, astPerfDown[i].stLastTimeRecv.tv_usec);
+            }
+            _log_info("DownData[%d] cnt/delay/max/freq: %lu/%lu/%lu/%.2f, last: %u.%06u->%d.%06d\n",
+                      i,
+                      astPerfDown[i].uiCnt,
+                      astPerfDown[i].iTimeDelayUs,
+                      astPerfDown[i].iTimeDelayMaxUs,
+                      astPerfDown[i].fDataFreq,
+                      astPerfDown[i].uiLastDataTimeSec, astPerfDown[i].uiLastDataTimeNsec / 1000,
+                      astPerfDown[i].stLastTimeRecv.tv_sec, astPerfDown[i].stLastTimeRecv.tv_usec);
         }
     }
 }
@@ -553,9 +609,9 @@ int main(int argc, char *argv[])
 
     //2, 进行端口号和ip的绑定
     struct sockaddr_in addr;
-    addr.sin_family = AF_INET; //设置tcp协议族
+    addr.sin_family = AF_INET;                                  //设置tcp协议族
     addr.sin_port = htons(s_stBram.pstA53Data->usPortDataDown); //设置端口号
-    addr.sin_addr.s_addr = htonl(INADDR_ANY); //设置ip地址
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);                   //设置ip地址
     ret = bind(socket_fd, (struct sockaddr *)&addr, sizeof(addr));
     if (-1 == ret)
     {
@@ -589,8 +645,8 @@ int main(int argc, char *argv[])
 
     //6, main task, receive r5 message, send by udp
     struct sockaddr_in addr0;
-    addr0.sin_family = AF_INET;            //设置tcp协议族
-    addr0.sin_port = htons(s_stBram.pstA53Data->usPortDataUp);     //设置端口号
+    addr0.sin_family = AF_INET;                                           //设置tcp协议族
+    addr0.sin_port = htons(s_stBram.pstA53Data->usPortDataUp);            //设置端口号
     addr0.sin_addr.s_addr = inet_addr(s_stBram.pstA53Data->acIpAddrDest); //设置ip地址
 
     printf("start wait for r5 msg\r\n");
@@ -636,26 +692,26 @@ int main(int argc, char *argv[])
         }
 
         //performance analyse
-        if (0 == ((++astPerf[pstSensor->ucType].ulCnt) % s_stBram.pstA53Data->usSensorAnalysePerid))
+        if (0 == ((++astPerfUp[pstSensor->ucType].uiCnt) % s_stBram.pstA53Data->usSensorAnalysePerid))
         {
-            //skip type 0x00
-            if (MASTER_CAN3 == pstSensor->ucType)
+            //skip udp port
+            if (8772 == pstSensor->usUdpPort)
             {
+                // printf(">>skip: %d/%d\n", pstSensor->usUdpPort, pstSensor->ucType);
                 continue;
             }
 
             gettimeofday(&current_time, NULL);
-            astPerf[pstSensor->ucType].ulTimeDelayUs = (current_time.tv_sec - pstSensor->uiTimeSec) * 1000000
-                                                     + (current_time.tv_usec - pstSensor->uiTimeNsec / 1000);
-            if (astPerf[pstSensor->ucType].ulTimeDelayMaxUs < astPerf[pstSensor->ucType].ulTimeDelayUs)
+            astPerfUp[pstSensor->ucType].iTimeDelayUs = (current_time.tv_sec - pstSensor->uiTimeSec) * 1000000 + (current_time.tv_usec - pstSensor->uiTimeNsec / 1000);
+            if (astPerfUp[pstSensor->ucType].iTimeDelayMaxUs < astPerfUp[pstSensor->ucType].iTimeDelayUs)
             {
-                astPerf[pstSensor->ucType].ulTimeDelayMaxUs = astPerf[pstSensor->ucType].ulTimeDelayUs;
+                astPerfUp[pstSensor->ucType].iTimeDelayMaxUs = astPerfUp[pstSensor->ucType].iTimeDelayUs;
             }
 
-            astPerf[pstSensor->ucType].uiLastDataTimeSec = pstSensor->uiTimeSec;
-            astPerf[pstSensor->ucType].uiLastDataTimeNsec = pstSensor->uiTimeNsec;
-            astPerf[pstSensor->ucType].stLastTimeRecv.tv_sec = current_time.tv_sec;
-            astPerf[pstSensor->ucType].stLastTimeRecv.tv_usec = current_time.tv_usec;
+            astPerfUp[pstSensor->ucType].uiLastDataTimeSec = pstSensor->uiTimeSec;
+            astPerfUp[pstSensor->ucType].uiLastDataTimeNsec = pstSensor->uiTimeNsec;
+            astPerfUp[pstSensor->ucType].stLastTimeRecv.tv_sec = current_time.tv_sec;
+            astPerfUp[pstSensor->ucType].stLastTimeRecv.tv_usec = current_time.tv_usec;
         }
     }
 
