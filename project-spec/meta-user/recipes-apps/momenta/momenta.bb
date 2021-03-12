@@ -29,6 +29,7 @@ SRC_URI = "file://common/log.c \
 		file://tools/zlog.conf \
 		file://tools/sensorhub2-config.json \
 		file://tools/autostart.sh-time \
+		file://tools/api_cmd_test.sh \
 		  "
 
 S = "${WORKDIR}"
@@ -44,13 +45,14 @@ do_install() {
 		install -m 0755 timesync-app/timesync-app ${D}${bindir}
 		install -m 0755 config-parse/config-parse ${D}${bindir}
 		install -d ${D}${sysconfdir}/common
+		install -m 0755 tools/app-control.sh ${D}${sysconfdir}/common
 		install -m 0755 tools/deploy-emmc.sh ${D}${sysconfdir}/common
 		install -m 0755 tools/deploy-qspi.sh ${D}${sysconfdir}/common
-		install -m 0644 tools/sensorhub2-config.json ${D}${sysconfdir}/common
-		install -m 0644 tools/zlog.conf ${D}${sysconfdir}/common
 		install -m 0755 tools/test_time.sh ${D}${sysconfdir}/common
+		install -m 0644 tools/zlog.conf ${D}${sysconfdir}/common
+		install -m 0644 tools/sensorhub2-config.json ${D}${sysconfdir}/common
 		install -m 0755 tools/autostart.sh-time ${D}${sysconfdir}/common
-		install -m 0755 tools/app-control.sh ${D}${sysconfdir}/common
+		install -m 0755 tools/api_cmd_test.sh ${D}${sysconfdir}/common
 }
 
 RDEPENDS_${PN}_append += "bash"

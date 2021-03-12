@@ -4218,6 +4218,7 @@ CONFIG_imagefeature-debug-tweaks=y
 #
 # apps 
 #
+CONFIG_api-cmd=y
 CONFIG_autostart=y
 CONFIG_dosfstools=y
 # CONFIG_gpio-demo is not set
