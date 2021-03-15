@@ -32,7 +32,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.15"
+#define VERSION "v1.16"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
@@ -43,7 +43,8 @@
 
 #define RPMSG_BUS_SYS "/sys/bus/rpmsg"
 
-#define DATA_SENSOR_HEADER_LEN 4
+#define DATA_SENSOR_HEADER_LEN 4        /* usUdpPort + usReserved */
+#define DATA_SENSOR_CONTROL_LEN 16      /* ucHeadHigh + ucHeadLow + ucType + ucCrc + uiTimeSec + uiTimeNsec + uiDataLen */
 
 /** ===================================================== **
  * STRUCT
@@ -421,7 +422,15 @@ void *receive(void *pth_arg)
             }
 
             //performance analyse
+            /* check length and header skip if too short */
             pstSensor = (DATA_Sensor_S *)aucRpmsgSend;
+            if ((DATA_SENSOR_CONTROL_LEN > iLen)
+             || (0xAA != pstSensor->ucHeadHigh)
+             || (0x55 != pstSensor->ucHeadLow))
+            {
+                continue;
+            }
+
             if (0 == ((++astPerfDown[pstSensor->ucType].uiCnt) % s_stBram.pstA53Data->usSensorAnalysePerid))
             {
                 gettimeofday(&current_time, NULL);
@@ -471,7 +480,7 @@ void *perf_analyse(void *pth_arg)
 
             if (0 < debug_level)
             {
-                fprintf(stdout, "UpData[%d] cnt/delay/max/freq: %u/%d/%d/%d.%03d, last: %u.%06u->%d.%06d\n",
+                fprintf(stdout, "UpData[%d] cnt/delay/max/freq: %u/%d/%d/%d.%03d, last: %u.%06u->%d.%06ld\n",
                         i,
                         astPerfUp[i].uiCnt,
                         astPerfUp[i].iTimeDelayUs,
@@ -487,7 +496,7 @@ void *perf_analyse(void *pth_arg)
                        (uint8_t *)&astPerfUp[i], sizeof(DATA_Perf_S));
             }
 
-            _log_info("UpData[%d] cnt/delay/max/freq: %u/%d/%d/%d.%03d, last: %u.%06u->%d.%06d\n",
+            _log_info("UpData[%d] cnt/delay/max/freq: %u/%d/%d/%d.%03d, last: %u.%06u->%d.%06ld\n",
                       i,
                       astPerfUp[i].uiCnt,
                       astPerfUp[i].iTimeDelayUs,
@@ -515,7 +524,7 @@ void *perf_analyse(void *pth_arg)
 
             if (0 < debug_level)
             {
-                fprintf(stdout, "DownData[%d] cnt/delay/max/freq: %u/%d/%d/%d.%03d, last: %u.%06u->%d.%06d\n",
+                fprintf(stdout, "DownData[%d] cnt/delay/max/freq: %u/%d/%d/%d.%03d, last: %u.%06u->%d.%06ld\n",
                         i,
                         astPerfDown[i].uiCnt,
                         astPerfDown[i].iTimeDelayUs,
@@ -531,7 +540,7 @@ void *perf_analyse(void *pth_arg)
                        (uint8_t *)&astPerfDown[i], sizeof(DATA_Perf_S));
             }
 
-            _log_info("DownData[%d] cnt/delay/max/freq: %u/%d/%d/%d.%03d, last: %u.%06u->%d.%06d\n",
+            _log_info("DownData[%d] cnt/delay/max/freq: %u/%d/%d/%d.%03d, last: %u.%06u->%d.%06ld\n",
                       i,
                       astPerfDown[i].uiCnt,
                       astPerfDown[i].iTimeDelayUs,
@@ -684,6 +693,11 @@ int main(int argc, char *argv[])
             printf("\r\n\r\n");
         }
 
+        if (DATA_SENSOR_HEADER_LEN > bytes_rcvd)
+        {
+            continue;
+        }
+
         //发送消息时需要绑定对方的ip和端口号
         pstSensor = (DATA_Sensor_S *)aucRpmsgRecv;
         addr0.sin_port = htons(pstSensor->usUdpPort);
@@ -694,6 +708,14 @@ int main(int argc, char *argv[])
         }
 
         //performance analyse
+        /* check length and header skip if too short */
+        if ((DATA_SENSOR_HEADER_LEN + DATA_SENSOR_CONTROL_LEN > bytes_rcvd)
+         || (0xAA != pstSensor->ucHeadHigh)
+         || (0x55 != pstSensor->ucHeadLow))
+        {
+            continue;
+        }
+
         if (0 == ((++astPerfUp[pstSensor->ucType].uiCnt) % s_stBram.pstA53Data->usSensorAnalysePerid))
         {
             //skip udp port
