@@ -23,8 +23,13 @@
 };
 
 &axi_iic_a53 {
-	clock-frequency = <100000>;
+	clock-frequency = <200000>;
 	status = "okay";
+};
+
+&axi_uart16550_0 {
+	status = "okay";
+	current-speed = <921600>;
 };
 
 &qspi {
