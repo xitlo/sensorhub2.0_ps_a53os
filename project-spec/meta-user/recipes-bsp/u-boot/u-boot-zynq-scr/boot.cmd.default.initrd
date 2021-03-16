@@ -21,7 +21,7 @@ do
 		@@KERNEL_BOOTCMD@@ @@KERNEL_LOAD_ADDRESS@@ @@RAMDISK_IMAGE_ADDRESS@@ @@DEVICETREE_ADDRESS@@
 		exit;
 	fi
-	if test "${boot_target}" = "mmc0" || test "${boot_target}" = "mmc1" ; then
+	if test "${boot_target}" = "mmc0"; then
 		if test -e ${devtype} 0:1 /@@FIT_IMAGE@@; then
 			mw.b 0x80020006 0x00
 			fatload ${devtype} 0:1 @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE@@;
@@ -51,10 +51,19 @@ do
 		@@KERNEL_BOOTCMD@@ @@KERNEL_LOAD_ADDRESS@@ - @@DEVICETREE_ADDRESS@@
 		exit;
 	fi
+	if test "${boot_target}" = "mmc1"; then
+		if test -e ${devtype} 1:1 /@@FIT_IMAGE@@; then
+			mw.b 0x80020006 0x03
+			fatload ${devtype} 1:1 @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE@@;
+			bootm @@FIT_IMAGE_LOAD_ADDRESS@@;
+		fi
+		@@KERNEL_BOOTCMD@@ @@KERNEL_LOAD_ADDRESS@@ - @@DEVICETREE_ADDRESS@@
+		exit;
+	fi
 	if test "${boot_target}" = "xspi0" || test "${boot_target}" = "qspi" || test "${boot_target}" = "qspi0"; then
 		sf probe 0 0 0;
 		if test "@@QSPI_KERNEL_IMAGE@@" = "@@FIT_IMAGE@@"; then
-			mw.b 0x80020006 0x03
+			mw.b 0x80020006 0x04
 			sf read @@QSPI_FIT_IMAGE_LOAD_ADDRESS@@ @@QSPI_KERNEL_OFFSET@@ @@QSPI_FIT_IMAGE_SIZE@@;
 			bootm @@QSPI_FIT_IMAGE_LOAD_ADDRESS@@;
 			exit;

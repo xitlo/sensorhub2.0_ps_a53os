@@ -32,7 +32,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.16"
+#define VERSION "v1.18"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
@@ -216,14 +216,14 @@ static int bind_rpmsg_chrdev(const char *rpmsg_dev_name)
     fd = open(fpath, O_WRONLY);
     if (fd < 0)
     {
-        fprintf(stderr, "Failed to open %s, %s\n",
+        fprintf(stdout, "Failed to open %s, %s\n",
                 fpath, strerror(errno));
         return -EINVAL;
     }
     ret = write(fd, rpmsg_chdrv, strlen(rpmsg_chdrv) + 1);
     if (ret < 0)
     {
-        fprintf(stderr, "Failed to write %s to %s, %s\n",
+        fprintf(stdout, "Failed to write %s to %s, %s\n",
                 rpmsg_chdrv, fpath, strerror(errno));
         return -EINVAL;
     }
@@ -234,14 +234,14 @@ static int bind_rpmsg_chrdev(const char *rpmsg_dev_name)
     fd = open(fpath, O_WRONLY);
     if (fd < 0)
     {
-        fprintf(stderr, "Failed to open %s, %s\n",
+        fprintf(stdout, "Failed to open %s, %s\n",
                 fpath, strerror(errno));
         return -EINVAL;
     }
     ret = write(fd, rpmsg_dev_name, strlen(rpmsg_dev_name) + 1);
     if (ret < 0)
     {
-        fprintf(stderr, "Failed to write %s to %s, %s\n",
+        fprintf(stdout, "Failed to write %s to %s, %s\n",
                 rpmsg_dev_name, fpath, strerror(errno));
         return -EINVAL;
     }
@@ -263,7 +263,7 @@ static int get_rpmsg_chrdev_fd(const char *rpmsg_dev_name,
     dir = opendir(dpath);
     if (dir == NULL)
     {
-        fprintf(stderr, "Failed to open dir %s\n", dpath);
+        fprintf(stdout, "Failed to open dir %s\n", dpath);
         return -EINVAL;
     }
     while ((ent = readdir(dir)) != NULL)
@@ -276,8 +276,7 @@ static int get_rpmsg_chrdev_fd(const char *rpmsg_dev_name,
             fd = open(fpath, O_RDWR | O_NONBLOCK);
             if (fd < 0)
             {
-                fprintf(stderr,
-                        "Failed to open rpmsg char dev %s,%s\n",
+                fprintf(stdout, "Failed to open rpmsg char dev %s,%s\n",
                         fpath, strerror(errno));
                 return fd;
             }
@@ -286,7 +285,7 @@ static int get_rpmsg_chrdev_fd(const char *rpmsg_dev_name,
         }
     }
 
-    fprintf(stderr, "No rpmsg char dev file is found\n");
+    fprintf(stdout, "No rpmsg char dev file is found\n");
     return -EINVAL;
 }
 
@@ -313,7 +312,7 @@ static int init_rpmsg(void)
     sprintf(fpath, "%s/devices/%s", RPMSG_BUS_SYS, rpmsg_dev);
     if (access(fpath, F_OK))
     {
-        fprintf(stderr, "Not able to access rpmsg device %s, %s\n", fpath, strerror(errno));
+        fprintf(stdout, "Not able to access rpmsg device %s, %s\n", fpath, strerror(errno));
         stop_remote();
         return -EINVAL;
     }
@@ -392,7 +391,7 @@ void *receive(void *pth_arg)
         ret = recvfrom(socket_fd, aucRpmsgSend + DATA_SENSOR_HEADER_LEN, sizeof(aucRpmsgSend) - DATA_SENSOR_HEADER_LEN, 0, (struct sockaddr *)&addr, &addr_size);
         if (-1 == ret)
         {
-            fprintf(stderr, "socket recv failed", __LINE__, errno);
+            fprintf(stdout, "%d, socket recv failed, %s\r\n", __LINE__, strerror(errno));
         }
         else if (ret > 0)
         {
@@ -412,8 +411,9 @@ void *receive(void *pth_arg)
             bytes_sent = write(eptfd, aucRpmsgSend + DATA_SENSOR_HEADER_LEN, iLen);
             if (bytes_sent <= 0)
             {
-                printf("\r\n Error sending data\r\n");
-                break;
+                pstSensor = (DATA_Sensor_S *)aucRpmsgSend;
+                fprintf(stdout, "%d, Error sending data, %s, type/len, %d/%d\r\n", __LINE__, strerror(errno), pstSensor->ucType, iLen);
+                continue;
             }
 
             if (4 < debug_level)
@@ -578,7 +578,7 @@ int main(int argc, char *argv[])
 
     if (sigaction(SIGINT, &act, NULL) < 0)
     {
-        fprintf(stderr, "install sigal error\n");
+        fprintf(stdout, "install sigal error\n");
     }
 
     fprintf(stdout, "task-data: %s\n", VERSION);
@@ -704,7 +704,8 @@ int main(int argc, char *argv[])
         ret = sendto(socket_fd, aucRpmsgRecv + DATA_SENSOR_HEADER_LEN, bytes_rcvd - DATA_SENSOR_HEADER_LEN, 0, (struct sockaddr *)&addr0, sizeof(addr0));
         if (-1 == ret)
         {
-            fprintf(stderr, "socket send failed", __LINE__, errno);
+            fprintf(stdout, "%d, socket send failed, %s\r\n", __LINE__, strerror(errno));
+            continue;
         }
 
         //performance analyse
