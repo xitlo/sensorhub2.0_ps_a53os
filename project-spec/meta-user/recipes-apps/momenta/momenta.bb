@@ -30,6 +30,7 @@ SRC_URI = "file://common/log.c \
 		file://tools/sensorhub2-config.json \
 		file://tools/autostart.sh-time \
 		file://tools/api_cmd_test.sh \
+		file://tools/cam_ver.sh \
 		  "
 
 S = "${WORKDIR}"
@@ -53,6 +54,7 @@ do_install() {
 		install -m 0644 tools/sensorhub2-config.json ${D}${sysconfdir}/common
 		install -m 0755 tools/autostart.sh-time ${D}${sysconfdir}/common
 		install -m 0755 tools/api_cmd_test.sh ${D}${sysconfdir}/common
+		install -m 0755 tools/cam_ver.sh ${D}${sysconfdir}/common
 }
 
 RDEPENDS_${PN}_append += "bash"
