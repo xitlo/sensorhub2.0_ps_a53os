@@ -1,7 +1,7 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 SRC_URI += " \
-                file://dd.cfg \
+                file://custom.cfg \
                 file://inetd.conf \
                 "
 

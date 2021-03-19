@@ -41,7 +41,17 @@ fi
 if [ $1 -eq 3 ] ; then
     if [ $2 -eq 1 ]; then
         echo ">>>3, app ptp4l on!"
-        ptp4l -i eth0 -S -m >> /data/bsplog/ptp.log &
+
+        utime=`date +%Y%m%d_%H%M%S`
+        PTP_LOG_REAL=/data/bsplog/ptp-$utime.log
+        PTP_LOG_LINK=/data/bsplog/ptp.log
+        touch $PTP_LOG_REAL
+        ls -lt /data/bsplog/ptp-* | awk '{if(NR>8){print "rm " $9}}' | sh
+
+        rm -rf $PTP_LOG_LINK
+        ln -s $PTP_LOG_REAL $PTP_LOG_LINK
+
+        ptp4l -i eth0 -S -m > $PTP_LOG_LINK &
     else
         echo ">>>3, app ptp4l off!"
         ps -ef | grep ptp4l | grep -v grep | awk '{print $1}' | xargs kill -9
@@ -52,7 +62,7 @@ fi
 if [ $1 -eq 4 ] ; then
     if [ $2 -eq 1 ]; then
         echo ">>>4, app task-state on!"
-        task-state > /dev/null &
+        task-state &
     else
         echo ">>>4, app task-state off!"
         ps -ef | grep task-state | grep -v grep | awk '{print $1}' | xargs kill -9
@@ -63,7 +73,7 @@ fi
 if [ $1 -eq 5 ] ; then
     if [ $2 -eq 1 ]; then
         echo ">>>5, app task-data on!"
-        task-data > /dev/null &
+        task-data &
     else
         echo ">>>5, app task-data off!"
         ps -ef | grep task-data | grep -v grep | awk '{print $1}' | xargs kill -9

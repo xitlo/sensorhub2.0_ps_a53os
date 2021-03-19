@@ -1,14 +1,14 @@
 #!/bin/sh
 
-echo ">>> Sensorhub2.0 autostart begin!"
-echo ">>> script version: v0.12"
+echo -e "> Sensorhub2.0 autostart begin!"
+echo -e "> script version: v1.2"
 
 # 1, system set
-echo ">>1, system set"
+echo -e "\n>>1, system set"
 # telnetd
 
 # 2, remount emmc partition
-echo ">>2, remount emmc partition"
+echo -e "\n>>2, remount emmc partition"
 PART1=/dev/mmcblk0p1
 PART2=/dev/mmcblk0p2
 PART3=/dev/mmcblk0p3
@@ -20,7 +20,7 @@ PART2_NEW=/ldc
 PART3_NEW=/data
 
 if [ -d $PART1_OLD ]; then
-    echo ">>2.1, remount $PART1_NEW partition"
+    echo -e ">>>2.1, remount $PART1_NEW partition as ro"
     if [ ! -d $PART1_NEW ]; then
         mkdir $PART1_NEW
     fi
@@ -28,19 +28,19 @@ if [ -d $PART1_OLD ]; then
 
     TYPE=`fdisk -l | grep "$PART1" | awk '{print $10}'`
     if [ "FAT32" = "$TYPE" ]; then
-        echo ">>check $PART1 partition"
+        echo -e ">>check $PART1 partition"
         fsck.fat -a $PART1
     fi
 
-    mount $PART1 $PART1_NEW
+    mount -o ro $PART1 $PART1_NEW
     rmdir $PART1_OLD
 else
-    echo ">>2.1, can't find $PART1_OLD, pls check!"
+    echo -e ">>>2.1, can't find $PART1_OLD, pls check!"
     exit 1
 fi
 
 if [ -d $PART2_OLD ]; then
-    echo ">>2.2, remount $PART2_NEW partition"
+    echo -e ">>>2.2, remount $PART2_NEW partition"
     if [ ! -d $PART2_NEW ]; then
         mkdir $PART2_NEW
     fi
@@ -48,12 +48,12 @@ if [ -d $PART2_OLD ]; then
     mount $PART2 $PART2_NEW
     rmdir $PART2_OLD
 else
-    echo ">>2.2, can't find $PART2_OLD, pls check!"
+    echo -e ">>>2.2, can't find $PART2_OLD, pls check!"
     exit 1
 fi
 
 if [ -d $PART3_OLD ]; then
-    echo ">>2.3, remount $PART3_NEW partition"
+    echo -e ">>>2.3, remount $PART3_NEW partition"
     if [ ! -d $PART3_NEW ]; then
         mkdir $PART3_NEW
     fi
@@ -61,91 +61,103 @@ if [ -d $PART3_OLD ]; then
     mount $PART3 $PART3_NEW
     rmdir $PART3_OLD
 else
-    echo ">>2.3, can't find $PART3_OLD, pls check!"
+    echo -e ">>>2.3, can't find $PART3_OLD, pls check!"
     exit 1
 fi
 
 # 3, check and run script on emmc and usb
-echo ">>3, check and run script on emmc and usb"
+echo -e "\n>>3, check and run script on emmc and usb"
 
 USERHOOK_EMMC0=$PART3_NEW/autostart.sh
 USERHOOK_USB0=/run/media/sda1/autostart.sh
 
 if [ -f $USERHOOK_EMMC0 ]; then
-    echo "find in $USERHOOK_EMMC0, start run in background!"
+    echo -e ">>>3.1 find in $USERHOOK_EMMC0, start run in background!"
     sh $USERHOOK_EMMC0 &
 fi
 if [ -f $USERHOOK_USB0 ]; then
-    echo "find in $USERHOOK_USB0, start run in background!"
+    echo -e ">>>3.2 find in $USERHOOK_USB0, start run in background!"
     sh $USERHOOK_USB0 &
 fi
 
 # 4, config file check and parse
-echo ">>4, config file check and parse"
+echo -e "\n>>4, config file check and parse"
 CONFIG_FILE_DEST=$PART3_NEW/sensorhub2-config.json
 CONFIG_FILE_DEFAULT=/etc/common/sensorhub2-config.json
 
 if [ ! -f $CONFIG_FILE_DEST ]; then
-    echo "not find config file, copy default $CONFIG_FILE_DEFAULT to $CONFIG_FILE_DEST"
+    echo -e ">>>4.1 not find config file, copy default $CONFIG_FILE_DEFAULT to $CONFIG_FILE_DEST"
     cp -rfpd $CONFIG_FILE_DEFAULT $CONFIG_FILE_DEST
 fi
-echo "config file parse: $CONFIG_FILE_DEST"
+echo -e ">>>4.2 config file parse: $CONFIG_FILE_DEST"
 config-parse -p $CONFIG_FILE_DEST
 sleep 2
 
+# 5, read camera version in background
+echo -e "\n>>5, read camera version in background"
+/etc/common/cam_ver.sh > /dev/null &
 
-# 5, check and copy r5 firmware
-echo ">>5, check and copy r5 firmware"
+# 6, check and copy r5 firmware
+echo -e "\n>>6, check and copy r5 firmware"
 
 USER_R5FW_EMMC0=$PART3_NEW/sensorhub.elf
 USER_R5FW_USB0=/run/media/sda1/sensorhub.elf
 
 if [ -f $USER_R5FW_EMMC0 ]; then
-    echo "find in $USER_R5FW_EMMC0, copy to /lib/firmware!"
+    echo -e ">>>6.1 find in $USER_R5FW_EMMC0, copy to /lib/firmware!"
     cp $USER_R5FW_EMMC0 /lib/firmware
 fi
 if [ -f $USER_R5FW_USB0 ]; then
-    echo "find in $USER_R5FW_USB0, copy to /lib/firmware!"
+    echo -e ">>>6.2 find in $USER_R5FW_USB0, copy to /lib/firmware!"
     cp $USER_R5FW_USB0 /lib/firmware
 fi
 
-# 6, check if stop run app
-echo ">>6, check if stop run app"
+# 7, check if stop run app
+echo -e "\n>>7, check if stop run app"
 
 USERSTOP_EMMC0=$PART3_NEW/STOP
 USERSTOP_USB0=/run/media/sda1/STOP
 
 if [ -f $USERSTOP_EMMC0 ] || [ -f $USERSTOP_USB0 ]; then
     if [ -f $USERSTOP_EMMC0 ]; then
-        echo "find $USERSTOP_EMMC0, stop app run!"
+        echo -e ">>>7.1 find $USERSTOP_EMMC0, stop app run!"
     else
-        echo "find $USERSTOP_USB0, stop app run!"
+        echo -e ">>>7.2 find $USERSTOP_USB0, stop app run!"
     fi
 else
-    # 6.1, start r5 and wait a while
-    echo ">>6.1, start r5!"
+    # 7.1, start r5 and wait a while
+    echo -e ">>>7.1, start r5!"
     /etc/common/app-control.sh 1 1
-    echo ">>sleep 2s, pls wait..."
+    echo -e ">>>sleep 2s, pls wait..."
     sleep 2
 
-    # 6.2, start timesync
-    echo ">>6.2, start timesync, period 2s!"
+    # 7.2, start timesync
+    echo -e ">>>7.2, start timesync, period 2s!"
     /etc/common/app-control.sh 2 1
     sleep 4
 
-    # 6.3, start ptp
-    echo ">>6.3, start ptp4l!"
+    # 7.3, start ptp
+    echo -e ">>>7.3, start ptp4l!"
     /etc/common/app-control.sh 3 1
 
-    # 6.4, start task-data
-    echo ">>6.4, start task-data!"
+    # 7.4, start task-data
+    echo -e ">>>7.4, start task-data!"
     /etc/common/app-control.sh 5 1
 
-    # 6.5, start task-state
-    echo ">>6.5, start task-state!"
+    # 7.5, start task-state
+    echo -e ">>>7.5, start task-state!"
     /etc/common/app-control.sh 4 1
 
 fi
 
-echo ">>> Sensorhub2.0 autostart done!"
+# 8, check files ota
+echo -e "\n>>8, check if ota file exits"
+if [ -f /ldc/sensorhub_fw*.tar.gz ]; then
+    echo -e ">>>8.1, find ota file, run ota-update.sh"
+    /etc/common/ota-update.sh
+else
+    echo -e ">>>8.1, no ota file"
+fi
+
+echo -e "\n> Sensorhub2.0 autostart done!"
 exit 0
