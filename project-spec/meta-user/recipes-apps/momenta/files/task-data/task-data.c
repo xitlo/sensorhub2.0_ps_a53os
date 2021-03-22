@@ -32,7 +32,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.18"
+#define VERSION "v1.20"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
@@ -413,6 +413,7 @@ void *receive(void *pth_arg)
             {
                 pstSensor = (DATA_Sensor_S *)aucRpmsgSend;
                 fprintf(stdout, "%d, Error sending data, %s, type/len, %d/%d\r\n", __LINE__, strerror(errno), pstSensor->ucType, iLen);
+                fprintf(stderr, "%d, Error sending data, %s, type/len, %d/%d\r\n", __LINE__, strerror(errno), pstSensor->ucType, iLen);
                 continue;
             }
 
@@ -426,7 +427,8 @@ void *receive(void *pth_arg)
             pstSensor = (DATA_Sensor_S *)aucRpmsgSend;
             if ((DATA_SENSOR_CONTROL_LEN > iLen)
              || (0xAA != pstSensor->ucHeadHigh)
-             || (0x55 != pstSensor->ucHeadLow))
+             || (0x55 != pstSensor->ucHeadLow)
+             || (SENSOR_TYPE_NUM <= pstSensor->ucType))
             {
                 continue;
             }
@@ -712,7 +714,8 @@ int main(int argc, char *argv[])
         /* check length and header skip if too short */
         if ((DATA_SENSOR_HEADER_LEN + DATA_SENSOR_CONTROL_LEN > bytes_rcvd)
          || (0xAA != pstSensor->ucHeadHigh)
-         || (0x55 != pstSensor->ucHeadLow))
+         || (0x55 != pstSensor->ucHeadLow)
+         || (SENSOR_TYPE_NUM <= pstSensor->ucType))
         {
             continue;
         }
