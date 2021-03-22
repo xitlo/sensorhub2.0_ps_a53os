@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_VERSION=v2.1
+SCRIPT_VERSION=v2.2
 CAM_LOG_DIR=/data/bsplog
 CAM_LOG=$CAM_LOG_DIR/cam.log
 
@@ -90,7 +90,7 @@ print_log -e "cam_ver.sh VER: $SCRIPT_VERSION"
 
 
 print_log -e "\n>>1, fakra powerup"
-devmem 0x80000020 32 0xfffffff0
+devmem 0x80000020 32 0x0000fff0
 
 print_log -e "\n>>2, sleep 2s, wait isp normal"
 sleep 2
@@ -102,6 +102,6 @@ do
 done
 
 print_log -e "\n>>4, fakra poweroff"
-devmem 0x80000020 32 0x0
+devmem 0x80000020 32 0xffff0000
 
 print_log -e "\n>>5, all done!"
