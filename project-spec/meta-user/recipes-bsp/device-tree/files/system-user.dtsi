@@ -23,13 +23,92 @@
 };
 
 &axi_iic_a53 {
-	clock-frequency = <200000>;
-	status = "okay";
+    clock-frequency = <200000>;
+    status = "okay";
 };
 
-&axi_uart16550_0 {
-	status = "okay";
-	current-speed = <921600>;
+&INTERRUPT_axi_intc_1 {
+    status = "ok";
+};
+
+&ISP_UART_BLK_axi_uart16550_0 {
+    status = "okay";
+    current-speed = <921600>;
+};
+
+&ISP_UART_BLK_axi_uart16550_1 {
+    status = "okay";
+    current-speed = <921600>;
+};
+
+&ISP_UART_BLK_axi_uart16550_2 {
+    status = "okay";
+    current-speed = <921600>;
+};
+
+&ISP_UART_BLK_axi_uart16550_3 {
+    status = "okay";
+    current-speed = <921600>;
+};
+
+&ISP_UART_BLK_axi_uart16550_4 {
+    status = "okay";
+    current-speed = <921600>;
+};
+
+&ISP_UART_BLK_axi_uart16550_5 {
+    status = "okay";
+    current-speed = <921600>;
+};
+
+&ISP_UART_BLK_axi_uart16550_6 {
+    status = "okay";
+    current-speed = <921600>;
+};
+
+&ISP_UART_BLK_axi_uart16550_7 {
+    status = "okay";
+    current-speed = <921600>;
+};
+
+&ISP_UART_BLK_axi_uart16550_8 {
+    status = "okay";
+    current-speed = <921600>;
+};
+
+&ISP_UART_BLK_axi_uart16550_9 {
+    status = "okay";
+    current-speed = <921600>;
+};
+
+&ISP_UART_BLK_axi_uart16550_10 {
+    status = "okay";
+    current-speed = <921600>;
+};
+
+&ISP_UART_BLK_axi_uart16550_11 {
+    status = "okay";
+    current-speed = <921600>;
+};
+
+&ISP_UART_BLK_axi_uart16550_12 {
+    status = "okay";
+    current-speed = <921600>;
+};
+
+&ISP_UART_BLK_axi_uart16550_13 {
+    status = "okay";
+    current-speed = <921600>;
+};
+
+&ISP_UART_BLK_axi_uart16550_14 {
+    status = "okay";
+    current-speed = <921600>;
+};
+
+&ISP_UART_BLK_axi_uart16550_15 {
+    status = "okay";
+    current-speed = <921600>;
 };
 
 &qspi {
