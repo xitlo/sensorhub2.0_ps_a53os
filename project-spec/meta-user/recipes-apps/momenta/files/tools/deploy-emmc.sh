@@ -45,7 +45,8 @@ EOF
 #1, umount
 echo -e "\n>>1, df & umount &fdisk"
 df
-if [ -e '/dev/mmcblk0p1' ]; then
+has_mount=`df | grep mmcblk0 | head -1  | awk '{print $1}'`
+if [ "" != $has_mount ]; then
     umount /dev/mmcblk0p*
 fi
 fdisk -l
@@ -57,7 +58,8 @@ run_mmc_case
 #3, format partitions
 sleep 1
 echo -e "\n>>3, format"
-if [ -e '/dev/mmcblk0p1' ]; then
+has_mount=`df | grep mmcblk0 | head -1  | awk '{print $1}'`
+if [ "" != $has_mount ]; then
     umount /dev/mmcblk0p*
 fi
 mkfs.vfat /dev/mmcblk0p1
