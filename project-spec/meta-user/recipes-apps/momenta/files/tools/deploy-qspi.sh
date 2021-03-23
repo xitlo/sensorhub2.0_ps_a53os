@@ -10,6 +10,7 @@ if [ $# -gt 0 ] ; then
     FW_DIR=$1
 fi
 echo -e "\n>>0, firmware dir: $FW_DIR"
+date_start=$(date +%s)
 
 #1, cat /proc/mtd
 echo -e "\n>>1, cat /proc/mtd"
@@ -47,3 +48,6 @@ rm $WORK_DIR/BOOT-Q.BIN
 rm $WORK_DIR/image-Q.ub
 rm $WORK_DIR/boot-Q.scr
 echo -e "\n>>7, all done"
+date_end=$(date +%s)
+duration=$(($date_end-$date_start))
+print_log -e "time: start/end/duration(s): $date_start/$date_end/$duration"
