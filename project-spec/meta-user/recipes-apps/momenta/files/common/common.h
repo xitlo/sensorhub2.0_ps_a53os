@@ -37,6 +37,7 @@
 #define VERSION_DEBUG               15
 #define VERSION_A53_REG_ADDR        (0x8000017c)
 #define VERSION_R5_REG_ADDR         (0x80000178)
+#define VERSION_PL_REG_ADDR         (0x80000174)
 
 #define BRAM_BASE_ADDR              (0x80020000)
 #define BRAM_MAX_SIZE               (0x10000)

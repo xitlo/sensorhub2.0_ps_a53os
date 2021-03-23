@@ -30,7 +30,8 @@ if [ $? -eq 0 ]; then
 fi
 
 echo "load timesync driver"
-insmod /lib/modules/5.4.0-xilinx-v2020.1/extra/timesync.ko
+timesync_path=`find /lib/modules/ -name timesync.ko`
+insmod $timesync_path
 sleep 2
 
 #6, run timesync-test
