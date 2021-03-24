@@ -34,7 +34,7 @@
 // #endif // __cplusplus
 
 #define VRESION_A53                 "v1.12"
-#define VERSION_DEBUG               15
+#define VERSION_DEBUG               17
 #define VERSION_A53_REG_ADDR        (0x8000017c)
 #define VERSION_R5_REG_ADDR         (0x80000178)
 #define VERSION_PL_REG_ADDR         (0x80000174)
@@ -50,6 +50,8 @@
 #define BRAM_R5_STATE_SIZE          (0x1000)
 #define BRAM_R5_DATA_BASE_ADDR      (BRAM_R5_STATE_BASE_ADDR + BRAM_R5_STATE_SIZE)      /*!< r5 data, e.g. confige data */
 #define BRAM_R5_DATA_SIZE           (0x1000)
+#define BRAM_CAM_VER_BASE_ADDR      (BRAM_R5_DATA_BASE_ADDR + BRAM_R5_DATA_SIZE)        /*!< cam version, 5 uint32_t * 16 cam */
+#define BRAM_CAM_VER_SIZE           (0x1000)
 
 #define STATE_PL_ADDR               (0x80010000)
 #define STATE_PL_SIZE               (0x300)
