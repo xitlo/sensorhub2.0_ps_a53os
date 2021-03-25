@@ -1,5 +1,5 @@
 {
-    "version": 1.3,
+    "version": "1.4",
     "a53": {
         "ip_local": "192.168.2.160",
         "ip_dest": "192.168.2.2",
@@ -21,11 +21,116 @@
     "fpga": {},
     "camera": {
         "cam0": {
+            "enable": 0,
+            "name": "490-0",
+            "rom_type": 0,
+            "tty_port": 0,
+            "ver_addr": "0x80024000"
+        },
+        "cam1": {
+            "enable": 0,
+            "name": "490-1",
+            "rom_type": 0,
+            "tty_port": 1,
+            "ver_addr": "0x80024020"
+        },
+        "cam2": {
+            "enable": 0,
+            "name": "490-2",
+            "rom_type": 0,
+            "tty_port": 8,
+            "ver_addr": "0x80024040"
+        },
+        "cam3": {
+            "enable": 0,
+            "name": "490-3",
+            "rom_type": 0,
+            "tty_port": 9,
+            "ver_addr": "0x80024060"
+        },
+        "cam4": {
             "enable": 1,
-            "name": "front100",
-            "reg_set": {
-                "0x300a": "0x56"
-            }
+            "name": "F30",
+            "rom_type": 0,
+            "tty_port": 10,
+            "ver_addr": "0x80024080"
+        },
+        "cam5": {
+            "enable": 1,
+            "name": "F120",
+            "rom_type": 1,
+            "tty_port": 11,
+            "ver_addr": "0x800240a0"
+        },
+        "cam6": {
+            "enable": 1,
+            "name": "LF100",
+            "rom_type": 2,
+            "tty_port": 12,
+            "ver_addr": "0x800240c0"
+        },
+        "cam7": {
+            "enable": 1,
+            "name": "RF100",
+            "rom_type": 2,
+            "tty_port": 13,
+            "ver_addr": "0x800240e0"
+        },
+        "cam8": {
+            "enable": 1,
+            "name": "LR60",
+            "rom_type": 3,
+            "tty_port": 14,
+            "ver_addr": "0x80024100"
+        },
+        "cam9": {
+            "enable": 1,
+            "name": "RR60",
+            "rom_type": 3,
+            "tty_port": 15,
+            "ver_addr": "0x80024120"
+        },
+        "cam10": {
+            "enable": 1,
+            "name": "RU60",
+            "rom_type": 3,
+            "tty_port": 2,
+            "ver_addr": "0x80024140"
+        },
+        "cam11": {
+            "enable": 1,
+            "name": "RD60",
+            "rom_type": 3,
+            "tty_port": 3,
+            "ver_addr": "0x80024160"
+        },
+        "cam12": {
+            "enable": 1,
+            "name": "Front197",
+            "rom_type": 4,
+            "tty_port": 4,
+            "ver_addr": "0x80024180"
+        },
+        "cam13": {
+            "enable": 1,
+            "name": "Right197",
+            "rom_type": 4,
+            "tty_port": 5,
+            "ver_addr": "0x800241a0"
+        },
+        "cam14": {
+            "enable": 1,
+            "name": "Rear197",
+            "rom_type": 4,
+            "tty_port": 6,
+            "ver_addr": "0x800241c0"
+        },
+        "cam15": {
+            "enable": 1,
+            "name": "Left197",
+            "rom_type": 4,
+            "tty_port": 7,
+            "ver_addr": "0x800241e0"
         }
     },
     "other": {}

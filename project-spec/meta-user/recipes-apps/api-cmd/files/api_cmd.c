@@ -448,6 +448,7 @@ int main(int argc, char *argv[])
     int displayTime = 0;
     int verbosityLevel = 0;
     int i2cAddr = 0;
+    int notShowData = 0;
 
     //***************************************************
     // Variables related to the phase of W5comCallApi()
@@ -564,6 +565,9 @@ int main(int argc, char *argv[])
                     NULL, 0, 0),
         OPT_INTEGER('v', "verbosity_level", &verbosityLevel,
                     "Set verbosity level: 0 - normal (default); 1 - verbose\n",
+                    NULL, 0, 0),
+        OPT_INTEGER('n', "not show data", &notShowData,
+                    "Set switch: 0 - show; 1 - not show\n",
                     NULL, 0, 0),
 
         OPT_HELP(),
@@ -817,14 +821,15 @@ int main(int argc, char *argv[])
             }
         } // !if (pScriptFile)
 
-        printf("API code = 0x%x\n", apiCode);
-        printf("Chunk# = 0x%04x\n", writeChunkNum);
-        printf("Data = ");
-        for (i = 0; i < writeSize; i++) {
-            printf("%.2x ", writeBuf[i]);
+        printf("API code = 0x%x\nChunk# = 0x%04x\n", apiCode, writeChunkNum);
+        if (0 == notShowData)
+        {
+            printf("Data = ");
+            for (i = 0; i < writeSize; i++) {
+                printf("%.2x ", writeBuf[i]);
+            }
+            printf("\n");
         }
-        printf("\n");
-
 
         //Send command to W5 using W5comCallApi()
         clockStart = clock();

@@ -2,7 +2,7 @@
 
 CONFIG_FILE_VERSION="1.3"
 echo -e "> Sensorhub2.0 autostart begin!"
-echo -e "> script version: v1.5"
+echo -e "> script version: v1.6"
 
 # 1, system set
 echo -e "\n>>1, system set"
@@ -87,12 +87,13 @@ CONFIG_FILE_DEST=$PART3_NEW/sensorhub2-config.json
 CONFIG_FILE_DEFAULT=/etc/common/sensorhub2-config.json
 
 scr_ver=`cat $CONFIG_FILE_DEST | jq .version`
+scr_ver=`echo $scr_ver | sed 's/\"//g'`
 if [ ! -f $CONFIG_FILE_DEST ]; then
     echo -e ">>>4.1 not find config file, copy default $CONFIG_FILE_DEFAULT to $CONFIG_FILE_DEST"
     cp -rfpd $CONFIG_FILE_DEFAULT $CONFIG_FILE_DEST && sync
 elif [ $CONFIG_FILE_VERSION != $scr_ver ]; then
     echo -e ">>>4.2 script version $scr_ver not match, reset to $CONFIG_FILE_VERSION"
-    rm $CONFIG_FILE_DEST && sync
+    mv $CONFIG_FILE_DEST $CONFIG_FILE_DEST.old && sync
     cp -rfpd $CONFIG_FILE_DEFAULT $CONFIG_FILE_DEST && sync
 fi
 echo -e ">>>4.3 config file parse: $CONFIG_FILE_DEST"

@@ -1,24 +1,9 @@
 #!/bin/bash
 
-SCRIPT_VERSION=v3.3
+SCRIPT_VERSION=v3.4
+CONFIG_FILE=/data/sensorhub2-config.json
 CAM_LOG_DIR=/data/bsplog
 CAM_LOG=$CAM_LOG_DIR/cam.log
-
-# tty port number for cam 0-15
-TTY_PORT=(
-	0	1	8	9
-	10	11	12	13
-	14	15	2	3
-	4	5	6	7
-)
-
-# version registers start address for cam 0-15
-REG_ADDR=(
-	0x80024000 0x80024020 0x80024040 0x80024060
-	0x80024080 0x800240a0 0x800240c0 0x800240e0
-	0x80024100 0x80024120 0x80024140 0x80024160
-	0x80024180 0x800241a0 0x800241c0 0x800241e0
-)
 
 print_log() {
 	echo $1 $2 >> $CAM_LOG
@@ -35,11 +20,14 @@ CamReadVer(){
 
 	# dev_ch=$(printf "%02x" $1)
 	print_log -e ">>>cam[$1], 1, read cam version, 16bytes"
+	local tty_port=`cat $CONFIG_FILE | jq .camera.cam$1.tty_port`
+
 	id=0
 	for((i=0;i<16;i++))
 	do
+
 		# ver1=`api_cmd -U 1 0x53 1 0500000000fa000001000000 | grep "PAYLOAD\[00\:00\]" | awk '{print $2}'`
-		local cmd_line=$(printf "api_cmd -U${TTY_PORT[$1]} 0x53 1 0500000000fa0000%02x000000 | grep \"PAYLOAD\\[00\\:00\\]\" | awk \'{print \$2}\'" $id)
+		local cmd_line=$(printf "api_cmd -U$tty_port 0x53 1 0500000000fa0000%02x000000 | grep \"PAYLOAD\\[00\\:00\\]\" | awk \'{print \$2}\'" $id)
 		# print_log $cmd_line
 		local ver[$i]=`eval $cmd_line`
 		# print_log ${ver[$i]}
@@ -105,10 +93,15 @@ print_log -e "\n>>2, sleep 2s, wait isp normal"
 sleep 2
 
 print_log -e "\n>>3, read and set version for cam 4-15"
-for((ch=4;ch<16;ch++))
+for((ch=0;ch<16;ch++))
 do
 {
-	CamReadVer $ch ${REG_ADDR[$ch]}
+	ch_en=`cat $CONFIG_FILE | jq .camera.cam$ch.enable`
+	ver_addr=`cat $CONFIG_FILE | jq .camera.cam$ch.reg_addr`
+	ver_addr=`echo $ver_addr | sed 's/\"//g'`
+	if [ 0 != ch_en ]; then
+		CamReadVer $ch $ver_addr
+	fi
 }&
 done
 wait

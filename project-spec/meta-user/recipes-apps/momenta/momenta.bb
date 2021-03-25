@@ -32,6 +32,7 @@ SRC_URI = "file://common/log.c \
 		file://tools/api_cmd_test.sh \
 		file://tools/cam_ver.sh \
 		file://tools/ota-update.sh \
+		file://tools/ispota.sh \
 		  "
 
 S = "${WORKDIR}"
@@ -57,6 +58,7 @@ do_install() {
 		install -m 0755 tools/api_cmd_test.sh ${D}${sysconfdir}/common
 		install -m 0755 tools/cam_ver.sh ${D}${sysconfdir}/common
 		install -m 0755 tools/ota-update.sh ${D}${sysconfdir}/common
+		install -m 0755 tools/ispota.sh ${D}${sysconfdir}/common
 }
 
 RDEPENDS_${PN}_append += "bash"
