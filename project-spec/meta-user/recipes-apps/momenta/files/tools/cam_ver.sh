@@ -1,9 +1,10 @@
 #!/bin/bash
 
-SCRIPT_VERSION=v3.4
+SCRIPT_VERSION=v3.7
 CONFIG_FILE=/data/sensorhub2-config.json
 CAM_LOG_DIR=/data/bsplog
 CAM_LOG=$CAM_LOG_DIR/cam.log
+VER_BYTE_NUM=18
 
 print_log() {
 	echo $1 $2 >> $CAM_LOG
@@ -15,15 +16,15 @@ print_log() {
 # input 2: version register start address to set, hex, e.g. 0x800001d4
 CamReadVer(){
 	local id i j
-	local REG0 REG1 REG2 REG3 temp
-	local VER0 VER1 VER2 VER3 VERSION
+	local REG0 REG1 REG2 REG3 REG4 temp
+	local VER0 VER1 VER2 VER3 VER4 VERSION
 
 	# dev_ch=$(printf "%02x" $1)
-	print_log -e ">>>cam[$1], 1, read cam version, 16bytes"
+	print_log -e ">>>cam[$1], 1, read cam version, ${VER_BYTE_NUM}bytes"
 	local tty_port=`cat $CONFIG_FILE | jq .camera.cam$1.tty_port`
 
 	id=0
-	for((i=0;i<16;i++))
+	for((i=0;i<${VER_BYTE_NUM};i++))
 	do
 
 		# ver1=`api_cmd -U 1 0x53 1 0500000000fa000001000000 | grep "PAYLOAD\[00\:00\]" | awk '{print $2}'`
@@ -33,7 +34,7 @@ CamReadVer(){
 		# print_log ${ver[$i]}
 
 		if [ ! -n "${ver[$i]}" ] ; then
-			for((j=0;j<16;j++))
+			for((j=0;j<${VER_BYTE_NUM};j++))
 			do
 				ver[$j]=00
 			done
@@ -43,7 +44,7 @@ CamReadVer(){
 		let id+=1
 	done
 
-	for((j=0;j<16;j++))
+	for((j=0;j<${VER_BYTE_NUM};j++))
 	do
 		VERSION=$VERSION${ver[$j]}
 	done
@@ -56,18 +57,22 @@ CamReadVer(){
 	REG2=$(printf "0x%08x" $temp)
 	temp=$(($REG2 + 0x04))
 	REG3=$(printf "0x%08x" $temp)
+	temp=$(($REG3 + 0x04))
+	REG4=$(printf "0x%08x" $temp)
 
 	# little endian convert
 	VER0=0x${ver[3]}${ver[2]}${ver[1]}${ver[0]}
 	VER1=0x${ver[7]}${ver[6]}${ver[5]}${ver[4]}
 	VER2=0x${ver[11]}${ver[10]}${ver[9]}${ver[8]}
 	VER3=0x${ver[15]}${ver[14]}${ver[13]}${ver[12]}
+	VER4=0x0000${ver[17]}${ver[16]}
 	
-	print_log -e ">>>cam[$1], 3, set version to reg: $REG0/$REG1/$REG2/$REG3"
+	print_log -e ">>>cam[$1], 3, set version to reg: $REG0/$REG1/$REG2/$REG3/$REG4"
 	devmem $REG0 32 $VER0
 	devmem $REG1 32 $VER1
 	devmem $REG2 32 $VER2
 	devmem $REG3 32 $VER3
+	devmem $REG4 32 $VER4
 
 	print_log -e ">>>cam[$1], 4, done"
 }
@@ -92,14 +97,14 @@ devmem 0x80000020 32 0x0000fff0
 print_log -e "\n>>2, sleep 2s, wait isp normal"
 sleep 2
 
-print_log -e "\n>>3, read and set version for cam 4-15"
+print_log -e "\n>>3, read and set version for cam 0-15"
 for((ch=0;ch<16;ch++))
 do
 {
 	ch_en=`cat $CONFIG_FILE | jq .camera.cam$ch.enable`
-	ver_addr=`cat $CONFIG_FILE | jq .camera.cam$ch.reg_addr`
+	ver_addr=`cat $CONFIG_FILE | jq .camera.cam$ch.ver_addr`
 	ver_addr=`echo $ver_addr | sed 's/\"//g'`
-	if [ 0 != ch_en ]; then
+	if [ 0 -ne $ch_en ]; then
 		CamReadVer $ch $ver_addr
 	fi
 }&

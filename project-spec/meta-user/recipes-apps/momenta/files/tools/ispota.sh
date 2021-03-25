@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_VERSION=v1.5
+SCRIPT_VERSION=v1.6
 CONFIG_FILE=/data/sensorhub2-config.json
 ISP_LOG_DIR=/data/bsplog
 ISP_LOG=$ISP_LOG_DIR/ispota.log
@@ -18,7 +18,7 @@ IspFirmwareOta(){
 	local tty_port=`cat $CONFIG_FILE | jq .camera.cam$1.tty_port`
 
 	# 1, enter failsafe mode
-	print_log -e ">>>cam[$1], 1, enter failsafe mode"
+	print_log -e ">>>cam[$1], 1, enter failsafe mode, port[tty$tty_port]"
 	api_cmd -U${tty_port} 0x12 noquery 0100000000000000 > $API_CMD_LOG
 	if [ 0 -ne $? ]; then
 		print_log -e ">>>cam[$1], error, exit"
@@ -28,14 +28,14 @@ IspFirmwareOta(){
 	# 2, check status
 	print_log -e ">>>cam[$1], 2, check status"
 	api_cmd -U${tty_port} 0x10 max >> $API_CMD_LOG
-
-	# 3, update full rom
-	print_log -e ">>>cam[$1], 3, update full rom, need 3min!"
-	api_cmd -U${tty_port} 0x19 max AD >> $API_CMD_LOG
 	if [ 0 -ne $? ]; then
 		print_log -e ">>>cam[$1], error, exit"
 		exit 2
 	fi
+
+	# 3, update full rom
+	print_log -e ">>>cam[$1], 3, update full rom, need 3min!"
+	api_cmd -U${tty_port} 0x19 max AD >> $API_CMD_LOG
 
 	sleep 1
 	api_cmd -U${tty_port} 0x84 max EE00000000000001 -i $2 >> $API_CMD_LOG
@@ -134,7 +134,7 @@ do
 done
 wait
 
-if [ 0 -eq ${ota_ret}]; then
+if [ 0 -eq $ota_ret ]; then
 	print_log -e "\n>>4, fakra poweroff"
 	devmem 0x80000020 32 0xffff0000
 else

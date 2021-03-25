@@ -749,7 +749,7 @@ int main(int argc, char *argv[])
     printf(">>2, main loop\n");
     //main loop
     do {
-        int ret = 0;
+        // int ret = 0;
 
         // the below if statement should set the following variables, except loop-invariant ones:
         // apiCode, sizeToRead, noQuery, noSizeGiven, writeChunkNum, readChunkNum, writeSize, writeBuf[]
@@ -997,5 +997,5 @@ int main(int argc, char *argv[])
 
     //Disconnect from W5
     W5comDisconnect(&w5ComHandle);
-    return 0;
+    return ret;
 }
