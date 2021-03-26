@@ -119,12 +119,12 @@ static void set_a53_version(void)
     sscanf(VRESION_A53, "v%d.%d", &ver_major, &ver_minor);
     uiVerA53 = (uint32_t)(((ver_major & 0xFF) << 16) | ((ver_minor & 0xFF) << 8) | (VERSION_DEBUG & 0xFF));
 
-    sprintf(cmd_str, "devmem 0x%08x 32 0x%08x", VERSION_A53_REG_ADDR, uiVerA53);
+    sprintf(cmd_str, "/sbin/devmem 0x%08x 32 0x%08x", VERSION_A53_REG_ADDR, uiVerA53);
     system(cmd_str);
     printf("\nA53 version: %s-%d, 0x%08x\n", VRESION_A53, VERSION_DEBUG, uiVerA53);
 
     memset(cmd_str, 0, sizeof(cmd_str));
-    sprintf(cmd_str, "echo -n \"PL version: \" && devmem 0x%08x", VERSION_PL_REG_ADDR);
+    sprintf(cmd_str, "echo -n \"PL version: \" && /sbin/devmem 0x%08x", VERSION_PL_REG_ADDR);
     system(cmd_str);
     printf("\n");
 }

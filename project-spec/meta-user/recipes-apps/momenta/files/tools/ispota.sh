@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_VERSION=v1.6
+SCRIPT_VERSION=v1.7
 CONFIG_FILE=/data/sensorhub2-config.json
 ISP_LOG_DIR=/data/bsplog
 ISP_LOG=$ISP_LOG_DIR/ispota.log
@@ -28,10 +28,6 @@ IspFirmwareOta(){
 	# 2, check status
 	print_log -e ">>>cam[$1], 2, check status"
 	api_cmd -U${tty_port} 0x10 max >> $API_CMD_LOG
-	if [ 0 -ne $? ]; then
-		print_log -e ">>>cam[$1], error, exit"
-		exit 2
-	fi
 
 	# 3, update full rom
 	print_log -e ">>>cam[$1], 3, update full rom, need 3min!"
@@ -87,7 +83,7 @@ date_start=$(date +%s)
 
 # 3, start
 print_log -e "\n>>1, fakra powerup"
-devmem 0x80000020 32 0x0000ffff
+/sbin/devmem 0x80000020 32 0x0000ffff
 
 print_log -e "\n>>2, sleep 2s, wait isp normal"
 sleep 2
@@ -136,7 +132,7 @@ wait
 
 if [ 0 -eq $ota_ret ]; then
 	print_log -e "\n>>4, fakra poweroff"
-	devmem 0x80000020 32 0xffff0000
+	/sbin/devmem 0x80000020 32 0xffff0000
 else
 	print_log -e "\n>>4, fakra not poweroff, since chan update err, pls check!!"
 fi

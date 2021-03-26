@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_VERSION=v3.7
+SCRIPT_VERSION=v3.8
 CONFIG_FILE=/data/sensorhub2-config.json
 CAM_LOG_DIR=/data/bsplog
 CAM_LOG=$CAM_LOG_DIR/cam.log
@@ -68,11 +68,11 @@ CamReadVer(){
 	VER4=0x0000${ver[17]}${ver[16]}
 	
 	print_log -e ">>>cam[$1], 3, set version to reg: $REG0/$REG1/$REG2/$REG3/$REG4"
-	devmem $REG0 32 $VER0
-	devmem $REG1 32 $VER1
-	devmem $REG2 32 $VER2
-	devmem $REG3 32 $VER3
-	devmem $REG4 32 $VER4
+	/sbin/devmem $REG0 32 $VER0
+	/sbin/devmem $REG1 32 $VER1
+	/sbin/devmem $REG2 32 $VER2
+	/sbin/devmem $REG3 32 $VER3
+	/sbin/devmem $REG4 32 $VER4
 
 	print_log -e ">>>cam[$1], 4, done"
 }
@@ -92,7 +92,7 @@ print_log -e "cam_ver.sh VER: $SCRIPT_VERSION"
 date_start=$(date +%s)
 
 print_log -e "\n>>1, fakra powerup"
-devmem 0x80000020 32 0x0000fff0
+/sbin/devmem 0x80000020 32 0x0000fff0
 
 print_log -e "\n>>2, sleep 2s, wait isp normal"
 sleep 2
@@ -112,7 +112,7 @@ done
 wait
 
 print_log -e "\n>>4, fakra poweroff"
-devmem 0x80000020 32 0xffff0000
+/sbin/devmem 0x80000020 32 0xffff0000
 
 print_log -e "\n>>5, all done!"
 date_end=$(date +%s)
