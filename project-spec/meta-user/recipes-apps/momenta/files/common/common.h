@@ -33,8 +33,8 @@
 // {
 // #endif // __cplusplus
 
-#define VRESION_A53                 "v1.12"
-#define VERSION_DEBUG               20
+#define VRESION_A53                 "v1.13"
+#define VERSION_DEBUG               0
 #define VERSION_A53_REG_ADDR        (0x8000017c)
 #define VERSION_R5_REG_ADDR         (0x80000178)
 #define VERSION_PL_REG_ADDR         (0x80000174)
