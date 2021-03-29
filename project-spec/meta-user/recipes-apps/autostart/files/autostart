@@ -2,7 +2,7 @@
 
 CONFIG_FILE_VERSION="1.4"
 echo -e "> Sensorhub2.0 autostart begin!"
-echo -e "> script version: v1.6"
+echo -e "> script version: v1.6-1"
 
 # 1, system set
 echo -e "\n>>1, system set"
@@ -107,23 +107,34 @@ if [ 0 != $flag ]; then
     /etc/common/cam_ver.sh > /dev/null &
 fi
 
-# 6, check and copy r5 firmware
-echo -e "\n>>6, check and copy r5 firmware"
+# 6, check and copy dropbear key
+echo -e "\n>>check and copy dropbear key"
+DROPBEAR_KEY=/etc/common/dropbear_rsa_host_key
+DROPBEAR_DIR=/etc/dropbear
+if [ -f $DROPBEAR_KEY ]; then
+    echo -e ">>>6.1 copy $DROPBEAR_KEY to $DROPBEAR_DIR!"
+    cp -rfpd $DROPBEAR_KEY $DROPBEAR_DIR
+else
+    echo -e ">>>6.2 error, can't find $DROPBEAR_KEY!"
+fi
+
+# 7, check and copy r5 firmware
+echo -e "\n>>7, check and copy r5 firmware"
 
 USER_R5FW_EMMC0=$PART3_NEW/sensorhub.elf
 USER_R5FW_USB0=/run/media/sda1/sensorhub.elf
 
 if [ -f $USER_R5FW_EMMC0 ]; then
-    echo -e ">>>6.1 find in $USER_R5FW_EMMC0, copy to /lib/firmware!"
+    echo -e ">>>7.1 find in $USER_R5FW_EMMC0, copy to /lib/firmware!"
     cp $USER_R5FW_EMMC0 /lib/firmware
 fi
 if [ -f $USER_R5FW_USB0 ]; then
-    echo -e ">>>6.2 find in $USER_R5FW_USB0, copy to /lib/firmware!"
+    echo -e ">>>7.2 find in $USER_R5FW_USB0, copy to /lib/firmware!"
     cp $USER_R5FW_USB0 /lib/firmware
 fi
 
-# 7, check if stop run app
-echo -e "\n>>7, check if stop run app"
+# 8, check if stop run app
+echo -e "\n>>8, check if stop run app"
 
 flag=`cat $CONFIG_FILE_DEST | jq .a53.autostart_autorun_app`
 USERSTOP_EMMC0=$PART3_NEW/STOP
@@ -131,62 +142,62 @@ USERSTOP_USB0=/run/media/sda1/STOP
 
 if [ 0 == $flag ] || [ -f $USERSTOP_EMMC0 ] || [ -f $USERSTOP_USB0 ]; then
     if [ 0 == $flag ]; then
-        echo -e ">>>7.1 config file switch off, stop app run!"
+        echo -e ">>>8.1 config file switch off, stop app run!"
     elif [ -f $USERSTOP_EMMC0 ]; then
-        echo -e ">>>7.1 find $USERSTOP_EMMC0, stop app run!"
+        echo -e ">>>8.1 find $USERSTOP_EMMC0, stop app run!"
     else
-        echo -e ">>>7.2 find $USERSTOP_USB0, stop app run!"
+        echo -e ">>>8.2 find $USERSTOP_USB0, stop app run!"
     fi
 else
 
-    # 7.1, start r5 and wait a while
+    # 8.1, start r5 and wait a while
     flag=`cat $CONFIG_FILE_DEST | jq .a53.autostart_start_r5`
     if [ 0 != $flag ]; then
-        echo -e ">>>7.1, start r5!"
+        echo -e ">>>8.1, start r5!"
         /etc/common/app-control.sh 1 1
         echo -e ">>>sleep 2s, pls wait..."
         sleep 2
     fi
 
-    # 7.2, start timesync
+    # 8.2, start timesync
     flag=`cat $CONFIG_FILE_DEST | jq .a53.autostart_start_timesync`
     if [ 0 != $flag ]; then
-        echo -e ">>>7.2, start timesync, period 2s!"
+        echo -e ">>>8.2, start timesync, period 2s!"
         /etc/common/app-control.sh 2 1
         sleep 4
     fi
 
-    # 7.3, start ptp
+    # 8.3, start ptp
     flag=`cat $CONFIG_FILE_DEST | jq .a53.autostart_start_ptp`
     if [ 0 != $flag ]; then
-        echo -e ">>>7.3, start ptp4l!"
+        echo -e ">>>8.3, start ptp4l!"
         /etc/common/app-control.sh 3 1
     fi
 
-    # 7.4, start task-data
+    # 8.4, start task-data
     flag=`cat $CONFIG_FILE_DEST | jq .a53.autostart_start_task_data`
     if [ 0 != $flag ]; then
-        echo -e ">>>7.4, start task-data!"
+        echo -e ">>>8.4, start task-data!"
         /etc/common/app-control.sh 5 1
     fi
 
-    # 7.5, start task-state
-    echo -e ">>>7.5, start task-state!"
+    # 8.5, start task-state
+    echo -e ">>>8.5, start task-state!"
     flag=`cat $CONFIG_FILE_DEST | jq .a53.autostart_start_task_state`
     if [ 0 != $flag ]; then
         /etc/common/app-control.sh 4 1
     fi
 fi
 
-# 8, check files ota
+# 9, check files ota
 flag=`cat $CONFIG_FILE_DEST | jq .a53.autostart_check_ota`
 if [ 0 != $flag ]; then
-    echo -e "\n>>8, check if ota file exits"
+    echo -e "\n>>9, check if ota file exits"
     if [ -f /ldc/sensorhub_fw*.tar.gz ]; then
-        echo -e ">>>8.1, find ota file, run ota-update.sh"
+        echo -e ">>>9.1, find ota file, run ota-update.sh"
         /etc/common/ota-update.sh
     else
-        echo -e ">>>8.1, no ota file"
+        echo -e ">>>9.1, no ota file"
     fi
 fi
 
