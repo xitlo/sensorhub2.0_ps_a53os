@@ -33,7 +33,7 @@ SRC_URI = "file://common/log.c \
 		file://tools/cam_ver.sh \
 		file://tools/ota-update.sh \
 		file://tools/ispota.sh \
-		file://tools/dropbear_rsa_host_key \
+		file://tools/authorized_keys \
 		  "
 
 S = "${WORKDIR}"
@@ -60,7 +60,7 @@ do_install() {
 		install -m 0755 tools/cam_ver.sh ${D}${sysconfdir}/common
 		install -m 0755 tools/ota-update.sh ${D}${sysconfdir}/common
 		install -m 0755 tools/ispota.sh ${D}${sysconfdir}/common
-		install -m 0755 tools/dropbear_rsa_host_key ${D}${sysconfdir}/common
+		install -m 0644 tools/authorized_keys ${D}${sysconfdir}/common
 }
 
 RDEPENDS_${PN}_append += "bash"

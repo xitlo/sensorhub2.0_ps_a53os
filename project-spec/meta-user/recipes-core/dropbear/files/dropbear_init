@@ -49,7 +49,7 @@ gen_keys() {
 case "$1" in
   start)
 	echo -n "Starting $DESC: "
-	gen_keys
+	# gen_keys
 	start-stop-daemon -S -p $PIDFILE \
 	  -x "$DAEMON" -- -r $DROPBEAR_RSAKEY \
 	    -p "$DROPBEAR_PORT" $DROPBEAR_EXTRA_ARGS
