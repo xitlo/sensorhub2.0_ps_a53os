@@ -32,7 +32,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.21"
+#define VERSION "v1.22"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
@@ -52,12 +52,15 @@
 typedef struct DATA_PerfAnalyse
 {
     unsigned int uiCnt;               /* frame count */
-    int iTimeDelayUs;                 /* time delay between data timestamp to a53 recv */
-    int iTimeDelayMaxUs;              /* max time delay between data timestamp to a53 recv */
+    int iDelayAmpUs;                 /* time delay between data timestamp to a53 recv */
+    int iDelayAmpMaxUs;              /* max time delay between data timestamp to a53 recv */
     unsigned short usFreqInteger;     /* Integer of Frequence */
     unsigned short usFreqDecimal;     /* Decimal of Frequence */
     unsigned int uiLastDataTimeSec;   /* last data timestamp, sec */
     unsigned int uiLastDataTimeNsec;  /* last data timestamp, nsec */
+
+    int iDelayUdpUs;
+    int iDelayUdpMaxUs;
     struct timeval stLastTimeRecv;    /* last recv data system time */
     unsigned int uiLastCnt;           /* last analyse cnt */
     struct timeval stLastTimeAnalyse; /* last analyse system time */
@@ -380,7 +383,7 @@ void *receive(void *pth_arg)
     struct sockaddr_in addr = {0};
     int addr_size = sizeof(addr);
     DATA_Sensor_S *pstSensor;
-    struct timeval current_time;
+    struct timeval start_time, current_time;
     float fDiffTime;
 
     printf("start wait for socket msg\r\n");
@@ -407,6 +410,8 @@ void *receive(void *pth_arg)
                 }
                 printf("\r\n");
             }
+
+            gettimeofday(&start_time, NULL);
 
             bytes_sent = write(eptfd, aucRpmsgSend + DATA_SENSOR_HEADER_LEN, iLen);
             if (bytes_sent <= 0)
@@ -436,10 +441,15 @@ void *receive(void *pth_arg)
             if (0 == ((++astPerfDown[pstSensor->ucType].uiCnt) % s_stBram.pstA53Data->usSensorAnalysePerid))
             {
                 gettimeofday(&current_time, NULL);
-                astPerfDown[pstSensor->ucType].iTimeDelayUs = (current_time.tv_sec - pstSensor->uiTimeSec) * 1000000 + (current_time.tv_usec - pstSensor->uiTimeNsec / 1000);
-                if (astPerfDown[pstSensor->ucType].iTimeDelayMaxUs < astPerfDown[pstSensor->ucType].iTimeDelayUs)
+                astPerfDown[pstSensor->ucType].iDelayUdpUs = (start_time.tv_sec - pstSensor->uiTimeSec) * 1000000 + (start_time.tv_usec - pstSensor->uiTimeNsec / 1000);
+                if (astPerfDown[pstSensor->ucType].iDelayUdpMaxUs < astPerfDown[pstSensor->ucType].iDelayUdpUs)
                 {
-                    astPerfDown[pstSensor->ucType].iTimeDelayMaxUs = astPerfDown[pstSensor->ucType].iTimeDelayUs;
+                    astPerfDown[pstSensor->ucType].iDelayUdpMaxUs = astPerfDown[pstSensor->ucType].iDelayUdpUs;
+                }
+                astPerfDown[pstSensor->ucType].iDelayAmpUs = (current_time.tv_sec - start_time.tv_sec) * 1000000 + (current_time.tv_usec - start_time.tv_usec);
+                if (astPerfDown[pstSensor->ucType].iDelayAmpMaxUs < astPerfDown[pstSensor->ucType].iDelayAmpUs)
+                {
+                    astPerfDown[pstSensor->ucType].iDelayAmpMaxUs = astPerfDown[pstSensor->ucType].iDelayAmpUs;
                 }
 
                 astPerfDown[pstSensor->ucType].uiLastDataTimeSec = pstSensor->uiTimeSec;
@@ -482,11 +492,13 @@ void *perf_analyse(void *pth_arg)
 
             if (0 < debug_level)
             {
-                fprintf(stdout, "UpData[%d] cnt/delay/max/freq: %u/%d/%d/%d.%03d, last: %u.%06u->%d.%06ld\n",
+                fprintf(stdout, "UpData[%d] cnt/amp_d/amp_m/udp_d/udp_m/freq: %u/%d/%d/%d/%d/%d.%03d, last: %u.%06u->%d.%06ld\n",
                         i,
                         astPerfUp[i].uiCnt,
-                        astPerfUp[i].iTimeDelayUs,
-                        astPerfUp[i].iTimeDelayMaxUs,
+                        astPerfUp[i].iDelayAmpUs,
+                        astPerfUp[i].iDelayAmpMaxUs,
+                        astPerfUp[i].iDelayUdpUs,
+                        astPerfUp[i].iDelayUdpMaxUs,
                         astPerfUp[i].usFreqInteger, astPerfUp[i].usFreqDecimal,
                         astPerfUp[i].uiLastDataTimeSec, astPerfUp[i].uiLastDataTimeNsec / 1000,
                         astPerfUp[i].stLastTimeRecv.tv_sec, astPerfUp[i].stLastTimeRecv.tv_usec);
@@ -498,11 +510,13 @@ void *perf_analyse(void *pth_arg)
                        (uint8_t *)&astPerfUp[i], sizeof(DATA_Perf_S));
             }
 
-            _log_info("UpData[%d] cnt/delay/max/freq: %u/%d/%d/%d.%03d, last: %u.%06u->%d.%06ld\n",
+            _log_info("UpData[%d] cnt/amp_d/amp_m/udp_d/udp_m/freq: %u/%d/%d/%d/%d/%d.%03d, last: %u.%06u->%d.%06ld\n",
                       i,
                       astPerfUp[i].uiCnt,
-                      astPerfUp[i].iTimeDelayUs,
-                      astPerfUp[i].iTimeDelayMaxUs,
+                      astPerfUp[i].iDelayAmpUs,
+                      astPerfUp[i].iDelayAmpMaxUs,
+                      astPerfUp[i].iDelayUdpUs,
+                      astPerfUp[i].iDelayUdpMaxUs,
                       astPerfUp[i].usFreqInteger, astPerfUp[i].usFreqDecimal,
                       astPerfUp[i].uiLastDataTimeSec, astPerfUp[i].uiLastDataTimeNsec / 1000,
                       astPerfUp[i].stLastTimeRecv.tv_sec, astPerfUp[i].stLastTimeRecv.tv_usec);
@@ -526,11 +540,13 @@ void *perf_analyse(void *pth_arg)
 
             if (0 < debug_level)
             {
-                fprintf(stdout, "DownData[%d] cnt/delay/max/freq: %u/%d/%d/%d.%03d, last: %u.%06u->%d.%06ld\n",
+                fprintf(stdout, "DownData[%d] cnt/amp_d/amp_m/udp_d/udp_m/freq: %u/%d/%d/%d/%d/%d.%03d, last: %u.%06u->%d.%06ld\n",
                         i,
                         astPerfDown[i].uiCnt,
-                        astPerfDown[i].iTimeDelayUs,
-                        astPerfDown[i].iTimeDelayMaxUs,
+                        astPerfDown[i].iDelayAmpUs,
+                        astPerfDown[i].iDelayAmpMaxUs,
+                        astPerfDown[i].iDelayUdpUs,
+                        astPerfDown[i].iDelayUdpMaxUs,
                         astPerfDown[i].usFreqInteger, astPerfDown[i].usFreqDecimal,
                         astPerfDown[i].uiLastDataTimeSec, astPerfDown[i].uiLastDataTimeNsec / 1000,
                         astPerfDown[i].stLastTimeRecv.tv_sec, astPerfDown[i].stLastTimeRecv.tv_usec);
@@ -542,11 +558,13 @@ void *perf_analyse(void *pth_arg)
                        (uint8_t *)&astPerfDown[i], sizeof(DATA_Perf_S));
             }
 
-            _log_info("DownData[%d] cnt/delay/max/freq: %u/%d/%d/%d.%03d, last: %u.%06u->%d.%06ld\n",
+            _log_info("DownData[%d] cnt/amp_d/amp_m/udp_d/udp_m/freq: %u/%d/%d/%d/%d/%d.%03d, last: %u.%06u->%d.%06ld\n",
                       i,
                       astPerfDown[i].uiCnt,
-                      astPerfDown[i].iTimeDelayUs,
-                      astPerfDown[i].iTimeDelayMaxUs,
+                      astPerfDown[i].iDelayAmpUs,
+                      astPerfDown[i].iDelayAmpMaxUs,
+                      astPerfDown[i].iDelayUdpUs,
+                      astPerfDown[i].iDelayUdpMaxUs,
                       astPerfDown[i].usFreqInteger, astPerfDown[i].usFreqDecimal,
                       astPerfDown[i].uiLastDataTimeSec, astPerfDown[i].uiLastDataTimeNsec / 1000,
                       astPerfDown[i].stLastTimeRecv.tv_sec, astPerfDown[i].stLastTimeRecv.tv_usec);
@@ -569,7 +587,7 @@ int main(int argc, char *argv[])
     DATA_Sensor_S *pstSensor;
     unsigned short send_port;
     char *str_def = "hello r5!";
-    struct timeval current_time;
+    struct timeval start_time, current_time;
     float fDiffTime;
 
     /*ctrl + c*/
@@ -675,6 +693,8 @@ int main(int argc, char *argv[])
         if (0 >= bytes_rcvd)
             continue;
 
+        gettimeofday(&start_time, NULL);
+
         if (1 < debug_level)
         {
             printf("\r\n==recv[%d], hex:\r\n", bytes_rcvd);
@@ -730,10 +750,16 @@ int main(int argc, char *argv[])
             }
 
             gettimeofday(&current_time, NULL);
-            astPerfUp[pstSensor->ucType].iTimeDelayUs = (current_time.tv_sec - pstSensor->uiTimeSec) * 1000000 + (current_time.tv_usec - pstSensor->uiTimeNsec / 1000);
-            if (astPerfUp[pstSensor->ucType].iTimeDelayMaxUs < astPerfUp[pstSensor->ucType].iTimeDelayUs)
+            astPerfUp[pstSensor->ucType].iDelayAmpUs = (start_time.tv_sec - pstSensor->uiTimeSec) * 1000000 + (start_time.tv_usec - pstSensor->uiTimeNsec / 1000);
+            if (astPerfUp[pstSensor->ucType].iDelayAmpMaxUs < astPerfUp[pstSensor->ucType].iDelayAmpUs)
             {
-                astPerfUp[pstSensor->ucType].iTimeDelayMaxUs = astPerfUp[pstSensor->ucType].iTimeDelayUs;
+                astPerfUp[pstSensor->ucType].iDelayAmpMaxUs = astPerfUp[pstSensor->ucType].iDelayAmpUs;
+            }
+
+            astPerfUp[pstSensor->ucType].iDelayUdpUs = (current_time.tv_sec - start_time.tv_sec) * 1000000 + (current_time.tv_usec - start_time.tv_usec);
+            if (astPerfUp[pstSensor->ucType].iDelayUdpMaxUs < astPerfUp[pstSensor->ucType].iDelayUdpUs)
+            {
+                astPerfUp[pstSensor->ucType].iDelayUdpMaxUs = astPerfUp[pstSensor->ucType].iDelayUdpUs;
             }
 
             astPerfUp[pstSensor->ucType].uiLastDataTimeSec = pstSensor->uiTimeSec;
