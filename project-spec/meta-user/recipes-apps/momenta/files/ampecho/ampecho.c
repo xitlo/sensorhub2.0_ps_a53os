@@ -25,14 +25,14 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.8"
+#define VERSION "v1.9"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
 #define RPMSG_GET_FREE_SPACE 3
 
 #define RPMSG_HEADER_LEN 16
-#define MAX_RPMSG_BUFF_SIZE (512 - RPMSG_HEADER_LEN)
+#define MAX_RPMSG_BUFF_SIZE (2048 - RPMSG_HEADER_LEN)
 
 #define RPMSG_BUS_SYS "/sys/bus/rpmsg"
 
@@ -211,11 +211,11 @@ static int get_rpmsg_chrdev_fd(const char *rpmsg_dev_name,
 
 /*************************************************
 Function:       string2hex
-Description:    ×Ö·û´®×ª»»³Éhex,ÒªÇóstrÖ»ÄÜÊÇ´óĞ´×ÖÄ¸ABCDEFºÍÊı×Ö
-Input:          str:Òª×ª»»µÄ×Ö·û´®
-Output:         hex:×ª»»ºóµÄhex×Ö·ûÊı×é
-Return:         -1 ²»·ûºÏ¹æÔò£¬Ê§°Ü
-                >0 ³É¹¦£¬×ª»»µÄ×Ö½ÚÊı
+Description:    å­—ç¬¦ä¸²è½¬æ¢æˆhex,è¦æ±‚stråªèƒ½æ˜¯å¤§å†™å­—æ¯ABCDEFå’Œæ•°å­—
+Input:          str:è¦è½¬æ¢çš„å­—ç¬¦ä¸²
+Output:         hex:è½¬æ¢åçš„hexå­—ç¬¦æ•°ç»„
+Return:         -1 ä¸ç¬¦åˆè§„åˆ™ï¼Œå¤±è´¥
+                >0 æˆåŠŸï¼Œè½¬æ¢çš„å­—èŠ‚æ•°
 *************************************************/
 static int string2hex(char *str, uint8_t *hex)
 {
@@ -291,7 +291,7 @@ static int string2hex(char *str, uint8_t *hex)
     return j;
 }
 
-//½ÓÊÕÏß³Ìº¯Êı
+//æ¥æ”¶çº¿ç¨‹å‡½æ•°
 void *receive(void *pth_arg)
 {
     int i, bytes_rcvd;
@@ -432,7 +432,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    //´´½¨Ïß³Ìº¯Êı£¬ÓÃÓÚ´¦ÀíÊı¾İ½ÓÊÕ
+    //åˆ›å»ºçº¿ç¨‹å‡½æ•°ï¼Œç”¨äºå¤„ç†æ•°æ®æ¥æ”¶
     printf("create thread for r5 msg recevie\r\n");
     pthread_t pth_r5_recv;
     ret = pthread_create(&pth_r5_recv, NULL, receive, NULL);

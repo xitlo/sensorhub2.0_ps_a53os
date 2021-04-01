@@ -21,6 +21,8 @@ SRC_URI = "file://common/log.c \
 		file://task-state/task-state.c \
 		file://timesync-app/timesync-app.c \
 		file://config-parse/config-parse.c \
+		file://ampperf/ampperf.c \
+		file://ampecho/ampecho.c \
 		file://Makefile \
 		file://tools/app-control.sh \
 		file://tools/deploy-emmc.sh \
@@ -48,6 +50,8 @@ do_install() {
 		install -m 0755 task-state/task-state ${D}${bindir}
 		install -m 0755 timesync-app/timesync-app ${D}${bindir}
 		install -m 0755 config-parse/config-parse ${D}${bindir}
+		install -m 0755 ampperf/ampperf ${D}${bindir}
+		install -m 0755 ampecho/ampecho ${D}${bindir}
 		install -d ${D}${sysconfdir}/common
 		install -m 0755 tools/app-control.sh ${D}${sysconfdir}/common
 		install -m 0755 tools/deploy-emmc.sh ${D}${sysconfdir}/common

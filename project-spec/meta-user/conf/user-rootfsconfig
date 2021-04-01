@@ -10,7 +10,6 @@ CONFIG_zlog
 CONFIG_iperf3
 CONFIG_dosfstools
 CONFIG_timesync
-CONFIG_openamp-test
 CONFIG_r5files
 CONFIG_momenta
 CONFIG_api-cmd

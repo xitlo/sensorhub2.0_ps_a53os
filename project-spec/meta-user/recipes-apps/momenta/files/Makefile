@@ -22,12 +22,18 @@ APP3_SRC = $(APP3).c
 APP4 = ./config-parse/config-parse
 APP4_SRC = $(APP4).c
 
+APP5 = ./ampperf/ampperf
+APP5_SRC = $(APP5).c
+
+APP6 = ./ampecho/ampecho
+APP6_SRC = $(APP6).c
+
 LDFLAGS += -I ./common
 LDLIBS += -lpthread -lzlog
 
 all: build
 
-build: $(APP1) $(APP2) $(APP3) $(APP4)
+build: $(APP1) $(APP2) $(APP3) $(APP4) $(APP5) $(APP6)
 
 $(APP1): $(APP1_SRC) $(COMMON_SRCS)
 	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
@@ -41,6 +47,12 @@ $(APP3): $(APP3_SRC) $(COMMON_SRCS)
 $(APP4): $(APP4_SRC) $(COMMON_SRCS)
 	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
+$(APP5): $(APP5_SRC) $(COMMON_SRCS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+
+$(APP6): $(APP6_SRC) $(COMMON_SRCS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+
 clean:
-	rm -f $(APP1) $(APP2) $(APP3) $(APP4) *.o
+	rm -f $(APP1) $(APP2) $(APP3) $(APP4) $(APP5) $(APP6) *.o
 
