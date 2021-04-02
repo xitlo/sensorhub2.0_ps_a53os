@@ -34,7 +34,7 @@
 // #endif // __cplusplus
 
 #define VRESION_A53                 "v1.13"
-#define VERSION_DEBUG               12
+#define VERSION_DEBUG               13
 #define VERSION_A53_REG_ADDR        (0x8000017c)
 #define VERSION_R5_REG_ADDR         (0x80000178)
 #define VERSION_PL_REG_ADDR         (0x80000174)
@@ -162,6 +162,12 @@ typedef struct DATA_Perf
     unsigned short usFreqDecimal;   /*!< Decimal of Frequence */
 } DATA_Perf_S;
 
+typedef struct A53SelfCheck
+{
+    uint32_t uiSelfCheckFlag;       /*!< self check flag, every bit indicate one thing, 0-ok, 1-err */
+    uint32_t uiCamIspCheckFlag;     /*!< self check flag for camera isp, every bit indicate one channel, 0-ok, 1-err */
+} A53SelfCheck_S;
+
 typedef struct A53State
 {
     uint32_t uiHeader;              /*!< fix to 0xAABBCCDD */
@@ -169,7 +175,9 @@ typedef struct A53State
     uint8_t ucBootScrVer;           /*!< boot script file version */
     uint8_t ucImageVal;             /*!< image file num val, image.ub start check */
     uint8_t ucReserved;
+    uint32_t uiUbootCustomVer;      /*!< custom version of Uboot */
     uint32_t uiA53Version;          /*!< version of A53 */
+    A53SelfCheck_S stSelfCheck;     /*!< selfcheck */
     uint32_t uiTimeSyncRealSec;     /*!< timesync read pl real time second */
     uint32_t uiTimeSyncRealNsec;    /*!< timesync read pl real time nand second */
     uint32_t uiTimeSyncDiffR2B;     /*!< timesync diff real -> begin */

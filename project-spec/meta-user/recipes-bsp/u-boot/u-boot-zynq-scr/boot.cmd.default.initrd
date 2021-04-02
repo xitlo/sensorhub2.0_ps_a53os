@@ -11,8 +11,11 @@ mw 0x80020000 0xAABBCCDD
 # read multiboot reg, set to 0x80020004
 zynqmp mmio_read 0xFFCA0010 0x80020004
 
+# set custom uboot version to 0x80020008
+zynqmp version 0x80020008
+
 # set boot.scr version to 0x80020005, byte
-mw.b 0x80020005 0x02
+mw.b 0x80020005 0x03
 
 for boot_target in ${boot_targets};
 do

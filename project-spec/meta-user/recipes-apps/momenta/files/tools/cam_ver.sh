@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_VERSION=v3.8
+SCRIPT_VERSION=v3.9
 CONFIG_FILE=/data/sensorhub2-config.json
 CAM_LOG_DIR=/data/bsplog
 CAM_LOG=$CAM_LOG_DIR/cam.log
@@ -79,6 +79,7 @@ CamReadVer(){
 
 # 0, create log file, only save latest 8 log file
 utime=`date +%Y%m%d_%H%M%S`
+mkdir -p $CAM_LOG_DIR
 touch $CAM_LOG_DIR/cam-$utime.log
 ls -lt $CAM_LOG_DIR/cam-* | awk '{if(NR>8){print "rm " $9}}' | sh
 

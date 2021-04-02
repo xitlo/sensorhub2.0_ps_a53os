@@ -338,6 +338,22 @@ static int do_zynqmp_sha3(cmd_tbl_t *cmdtp, int flag,
 	return CMD_RET_SUCCESS;
 }
 
+#define CUSTOM_UBOOT_VER	(0x00010200)
+static int do_zynqmp_uboot_version(cmd_tbl_t *cmdtp, int flag, int argc,
+			       char * const argv[])
+{
+	u32 *out_addr;
+
+	if (argc != cmdtp->maxargs)
+		return CMD_RET_USAGE;
+
+	out_addr = (u32 *)simple_strtoul(argv[2], NULL, 16);
+	printf("set custom uboot version 0x%08x to addr 0x%08x\n", CUSTOM_UBOOT_VER, out_addr);
+	*out_addr = CUSTOM_UBOOT_VER;
+
+	return 0;
+}
+
 static cmd_tbl_t cmd_zynqmp_sub[] = {
 	U_BOOT_CMD_MKENT(secure, 5, 0, do_zynqmp_verify_secure, "", ""),
 	U_BOOT_CMD_MKENT(mmio_read, 4, 0, do_zynqmp_mmio_read, "", ""),
@@ -345,6 +361,7 @@ static cmd_tbl_t cmd_zynqmp_sub[] = {
 	U_BOOT_CMD_MKENT(aes, 9, 0, do_zynqmp_aes, "", ""),
 	U_BOOT_CMD_MKENT(rsa, 7, 0, do_zynqmp_rsa, "", ""),
 	U_BOOT_CMD_MKENT(sha3, 4, 0, do_zynqmp_sha3, "", ""),
+	U_BOOT_CMD_MKENT(version, 3, 0, do_zynqmp_uboot_version, "", ""),
 #ifdef CONFIG_DEFINE_TCM_OCM_MMAP
 	U_BOOT_CMD_MKENT(tcminit, 3, 0, do_zynqmp_tcm_init, "", ""),
 #endif

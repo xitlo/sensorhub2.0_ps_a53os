@@ -1,4 +1,5 @@
 #!/bin/sh
+SCRIPT_VERSION=v2.1
 set -e
 
 run_mmc_case()
@@ -42,13 +43,18 @@ EOF
     echo -e "MMC test fails \n\n"
 }
 
+echo -e "$0 VER: $SCRIPT_VERSION"
+
 #1, umount
 echo -e "\n>>1, df & umount &fdisk"
 df
 has_mount=`df | grep mmcblk0 | head -1  | awk '{print $1}'`
-if [ "" != $has_mount ]; then
-    umount /dev/mmcblk0p*
-fi
+while [ "" != $has_mount ]
+do
+    umount $has_mount
+    has_mount=`df | grep mmcblk0 | head -1  | awk '{print $1}'`
+done
+
 fdisk -l
 
 #2, re-partition
@@ -59,9 +65,12 @@ run_mmc_case
 sleep 1
 echo -e "\n>>3, format"
 has_mount=`df | grep mmcblk0 | head -1  | awk '{print $1}'`
-if [ "" != $has_mount ]; then
-    umount /dev/mmcblk0p*
-fi
+while [ "" != $has_mount ]
+do
+    umount $has_mount
+    has_mount=`df | grep mmcblk0 | head -1  | awk '{print $1}'`
+done
+
 mkfs.vfat /dev/mmcblk0p1
 mkfs.ext4 -E nodiscard -F /dev/mmcblk0p2
 mkfs.ext4 -E nodiscard -F /dev/mmcblk0p3
