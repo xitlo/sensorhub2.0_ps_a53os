@@ -117,8 +117,8 @@ static const uint8_t sc_StateIndex[SENSOR_TYPE_NUM] =
 static int charfd = -1, eptfd = -1;
 static int socket_fd = -1;
 
-uint8_t aucRpmsgRecv[MAX_RPMSG_BUFF_SIZE] = {0};
-uint8_t aucRpmsgSend[1024] = {0};
+uint8_t aucRpmsgRecv[2048] = {0};
+uint8_t aucRpmsgSend[2048] = {0};
 
 static int loop = 50;
 

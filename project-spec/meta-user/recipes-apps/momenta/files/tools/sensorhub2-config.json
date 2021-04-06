@@ -1,5 +1,5 @@
 {
-    "version": "1.4",
+    "version": "1.5",
     "a53": {
         "ip_local": "192.168.2.160",
         "ip_dest": "192.168.2.2",
@@ -20,6 +20,8 @@
     "r5": {},
     "fpga": {},
     "camera": {
+        "flag_addr": "0x80020014",
+        "ver_byte_num": 18,
         "cam0": {
             "enable": 0,
             "name": "490-0",

@@ -1,10 +1,11 @@
 #!/bin/bash
 
-SCRIPT_VERSION=v3.9
-CONFIG_FILE=/data/sensorhub2-config.json
+SCRIPT_VERSION=v4.0
+CONFIG_FILE=/data/sensorhub2-config-test.json
 CAM_LOG_DIR=/data/bsplog
 CAM_LOG=$CAM_LOG_DIR/cam.log
-VER_BYTE_NUM=18
+VER_BYTE_NUM=`cat $CONFIG_FILE | jq .camera.ver_byte_num`
+CAM_FLAG_ADDR=`cat $CONFIG_FILE | jq .camera.flag_addr | sed 's/\"//g'`
 
 print_log() {
 	echo $1 $2 >> $CAM_LOG
@@ -15,8 +16,8 @@ print_log() {
 # input 1: channel num, 0-15, e.g. 4
 # input 2: version register start address to set, hex, e.g. 0x800001d4
 CamReadVer(){
-	local id i j
-	local REG0 REG1 REG2 REG3 REG4 temp
+	local id i j ret
+	local REG0 REG1 REG2 REG3 REG4 REGFlag
 	local VER0 VER1 VER2 VER3 VER4 VERSION
 
 	# dev_ch=$(printf "%02x" $1)
@@ -24,6 +25,7 @@ CamReadVer(){
 	local tty_port=`cat $CONFIG_FILE | jq .camera.cam$1.tty_port`
 
 	id=0
+	ret=0
 	for((i=0;i<${VER_BYTE_NUM};i++))
 	do
 
@@ -38,6 +40,7 @@ CamReadVer(){
 			do
 				ver[$j]=00
 			done
+			ret=1
 			break;
 		fi
 
@@ -51,14 +54,11 @@ CamReadVer(){
 	print_log -e ">>>cam[$1], 2, VERSION: $VERSION"
 
 	REG0=$2
-	temp=$(($REG0 + 0x04))
-	REG1=$(printf "0x%08x" $temp)
-	temp=$(($REG1 + 0x04))
-	REG2=$(printf "0x%08x" $temp)
-	temp=$(($REG2 + 0x04))
-	REG3=$(printf "0x%08x" $temp)
-	temp=$(($REG3 + 0x04))
-	REG4=$(printf "0x%08x" $temp)
+	REG1=$(printf "0x%08x" $(($2 + 0x04)))
+	REG2=$(printf "0x%08x" $(($2 + 0x08)))
+	REG3=$(printf "0x%08x" $(($2 + 0x0C)))
+	REG4=$(printf "0x%08x" $(($2 + 0x10)))
+	REGFlag=$(printf "0x%08x" $(($2 + 0x1F)))
 
 	# little endian convert
 	VER0=0x${ver[3]}${ver[2]}${ver[1]}${ver[0]}
@@ -74,7 +74,10 @@ CamReadVer(){
 	/sbin/devmem $REG3 32 $VER3
 	/sbin/devmem $REG4 32 $VER4
 
-	print_log -e ">>>cam[$1], 4, done"
+	print_log -e ">>>cam[$1], 4, set ret[$ret] to $REGFlag"
+	/sbin/devmem $REGFlag 8 $ret
+
+	print_log -e ">>>cam[$1], 5, done"
 }
 
 # 0, create log file, only save latest 8 log file
@@ -93,7 +96,7 @@ print_log -e "cam_ver.sh VER: $SCRIPT_VERSION"
 date_start=$(date +%s)
 
 print_log -e "\n>>1, fakra powerup"
-/sbin/devmem 0x80000020 32 0x0000fff0
+/sbin/devmem 0x80000020 32 0x0000ffff
 
 print_log -e "\n>>2, sleep 2s, wait isp normal"
 sleep 2
@@ -102,11 +105,17 @@ print_log -e "\n>>3, read and set version for cam 0-15"
 for((ch=0;ch<16;ch++))
 do
 {
-	ch_en=`cat $CONFIG_FILE | jq .camera.cam$ch.enable`
-	ver_addr=`cat $CONFIG_FILE | jq .camera.cam$ch.ver_addr`
-	ver_addr=`echo $ver_addr | sed 's/\"//g'`
-	if [ 0 -ne $ch_en ]; then
-		CamReadVer $ch $ver_addr
+	ch_en[$ch]=`cat $CONFIG_FILE | jq .camera.cam$ch.enable`
+	ver_addr[$ch]=`cat $CONFIG_FILE | jq .camera.cam$ch.ver_addr | sed 's/\"//g'`
+}
+done
+
+for((ch=0;ch<16;ch++))
+do
+{
+	# ch_en[$ch]=`cat $CONFIG_FILE | jq .camera.cam$ch.enable`
+	if [ 0 -ne ${ch_en[$ch]} ]; then
+		CamReadVer $ch ${ver_addr[$ch]}
 	fi
 }&
 done
@@ -115,7 +124,24 @@ wait
 print_log -e "\n>>4, fakra poweroff"
 /sbin/devmem 0x80000020 32 0xffff0000
 
-print_log -e "\n>>5, all done!"
+cam_flag_val=0
+for((ch=0;ch<16;ch++))
+do
+{
+	if [ 0 -ne ${ch_en[$ch]} ]; then
+		reg_flag=$(printf "0x%08x" $((${ver_addr[$ch]} + 0x1F)))
+		err_flag=$(printf "%d" $(/sbin/devmem $reg_flag 8))
+		# echo "$ch, $reg_flag, $err_flag"
+		if [ 0 -ne $err_flag ]; then
+			cam_flag_val=$(printf "0x%02x" $(($cam_flag_val+(1<<$ch))))
+		fi
+	fi
+}
+done
+/sbin/devmem $CAM_FLAG_ADDR 32 $cam_flag_val
+print_log -e "\n>>5, set cam_flag_val $cam_flag_val to $CAM_FLAG_ADDR"
+
+print_log -e "\n>>6, all done!"
 date_end=$(date +%s)
 duration=$(($date_end-$date_start))
 print_log -e "time: start/end/duration(s): $date_start/$date_end/$duration"
