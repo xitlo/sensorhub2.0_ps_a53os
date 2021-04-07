@@ -17,8 +17,9 @@
         "autostart_start_task_data": 1,
         "autostart_start_task_state": 1,
         "autostart_check_ota": 1,
+        "autostart_start_selftest": 1,
         "self_test_addr": "0x80020010",
-        "self_test_period_s": 10,
+        "self_test_period_s": 5,
         "self_test_imu_cnt": "0x80020048",
         "self_test_boot_addr": "0x80020004",
         "self_test_boot_normal": "0x00000300"

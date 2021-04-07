@@ -34,7 +34,7 @@
 // #endif // __cplusplus
 
 #define VRESION_A53                 "v1.14"
-#define VERSION_DEBUG               1
+#define VERSION_DEBUG               2
 #define VERSION_A53_REG_ADDR        (0x8000017c)
 #define VERSION_R5_REG_ADDR         (0x80000178)
 #define VERSION_PL_REG_ADDR         (0x80000174)
@@ -172,6 +172,7 @@ typedef struct A53SelfCheck
     uint32_t bErrTaskData        : 1;
     uint32_t bErrTaskState       : 1;
     uint32_t bErrUpDataLink      : 1;
+    uint32_t bReserved           : 25;
     uint32_t uiCamIspCheckFlag;     /*!< self check flag for camera isp, every bit indicate one channel, 0-ok, 1-err */
 } A53SelfCheck_S;
 

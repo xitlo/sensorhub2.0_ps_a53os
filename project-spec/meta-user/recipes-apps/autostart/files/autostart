@@ -2,7 +2,7 @@
 
 CONFIG_FILE_VERSION="1.5"
 echo -e "> Sensorhub2.0 autostart begin!"
-echo -e "> script version: v1.7"
+echo -e "> script version: v1.8"
 
 # 1, system set
 echo -e "\n>>1, system set"
@@ -199,6 +199,13 @@ if [ 0 != $flag ]; then
     else
         echo -e ">>>8.1, no ota file"
     fi
+fi
+
+# 9, run self test script
+flag=`cat $CONFIG_FILE_DEST | jq .a53.autostart_start_selftest`
+if [ 0 != $flag ]; then
+    echo -e "\n>>9, run self test script"
+    /etc/common/app-control.sh 6 1
 fi
 
 echo -e "\n> Sensorhub2.0 autostart done!"
