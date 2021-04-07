@@ -29,7 +29,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define CONFIG_PARSE_VERSION "v1.11"
+#define CONFIG_PARSE_VERSION "v1.12"
 
 /** ===================================================== **
  * STRUCT
@@ -283,6 +283,17 @@ static int config_file_a53(void)
     }
     s_stBram.pstA53Data->ucStateUdpPeriodS = (uint8_t)iVal;
     printf("==%s: %d\n", pcItem, s_stBram.pstA53Data->ucStateUdpPeriodS);
+
+    /* 9, data_delay_reset_period */
+    pcItem = "data_delay_reset_period";
+    iVal = config_file_get_int(pstJsonItem, "data_delay_reset_period");
+    if (0 > iVal)
+    {
+        fprintf(stderr, "%s: conf json parse err\n", __func__);
+        return -1;
+    }
+    s_stBram.pstA53Data->ucDelayResetPeriod = (uint8_t)iVal;
+    printf("==%s: %d\n", pcItem, s_stBram.pstA53Data->ucDelayResetPeriod);
 
     return 0;
 }

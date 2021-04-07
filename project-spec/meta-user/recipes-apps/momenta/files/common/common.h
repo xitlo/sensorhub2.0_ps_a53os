@@ -34,7 +34,7 @@
 // #endif // __cplusplus
 
 #define VRESION_A53                 "v1.14"
-#define VERSION_DEBUG               2
+#define VERSION_DEBUG               3
 #define VERSION_A53_REG_ADDR        (0x8000017c)
 #define VERSION_R5_REG_ADDR         (0x80000178)
 #define VERSION_PL_REG_ADDR         (0x80000174)
@@ -204,7 +204,7 @@ typedef struct A53Data
     uint16_t usTimeSyncPeriodMs;    /*!< time sync period, ms */
     uint16_t usSensorAnalysePerid;  /*!< performace analyse, sensor data count period */
     uint8_t ucStateUdpPeriodS;      /*!< period to send state udp */
-    uint8_t ucReserved;
+    uint8_t ucDelayResetPeriod;     /*!< period to reset max delay value in task-data, unit: count */
 } A53Data_s;
 
 typedef struct R5State

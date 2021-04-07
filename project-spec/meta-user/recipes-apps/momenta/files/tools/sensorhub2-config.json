@@ -9,6 +9,7 @@
         "state_udp_period_s": 1,
         "time_sync_period_ms": 2000,
         "data_analyse_period": 1,
+        "data_delay_reset_period": 10,
         "autostart_read_cam_ver": 1,
         "autostart_autorun_app": 1,
         "autostart_start_r5": 1,

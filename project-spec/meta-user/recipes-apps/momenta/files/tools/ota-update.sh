@@ -1,13 +1,14 @@
 #!/bin/sh
 set -e
 
-SCRIPT_VERSION=v2.0
+SCRIPT_VERSION=v2.1
 OTA_DIR=/ldc
 BOOT_DIR=/boot
 BOOT_PART=/dev/mmcblk0p1
 OTA_FILE_BASE_NAME=sensorhub_fw
 OTA_FILE_NAME=$OTA_DIR/$OTA_FILE_BASE_NAME*.tar.gz
 OTA_LOG=$OTA_DIR/ota.log
+R5_ELF_FILE=/data/sensorhub.elf
 
 BASE_BOOT_SCR=$BOOT_DIR/boot.scr
 BASE_BOOT_BIN=$BOOT_DIR/BOOT.BIN
@@ -165,4 +166,11 @@ fi
 print_log -e "\n>>8, delete ota files"
 rm -rf $OTA_FILE_NAME $NEW_BOOT_SCR $NEW_BOOT_BIN $NEW_IMAGE_UB
 
-print_log -e "\n>>9, all done, valid after next reboot"
+# 9, check and move /data/sensorhub.elf to /data/sensorhub.elf.old
+print_log -e "\n>>9, check $R5_ELF_FILE"
+if [ -f $R5_ELF_FILE ]; then
+	print_log -e ">>9.1, move $R5_ELF_FILE to $R5_ELF_FILE.old"
+	mv $R5_ELF_FILE $R5_ELF_FILE.old && sync
+fi
+
+print_log -e "\n>>10, all done, valid after next reboot"

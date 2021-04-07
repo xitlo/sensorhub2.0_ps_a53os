@@ -32,7 +32,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.22"
+#define VERSION "v1.23"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
@@ -64,6 +64,7 @@ typedef struct DATA_PerfAnalyse
     struct timeval stLastTimeRecv;    /* last recv data system time */
     unsigned int uiLastCnt;           /* last analyse cnt */
     struct timeval stLastTimeAnalyse; /* last analyse system time */
+    unsigned int uiCntPerf;
 } DATA_PerfAnalyse_S;
 
 /** ===================================================== **
@@ -124,8 +125,9 @@ static int loop = 50;
 
 static int is_show_char = 1;
 static int debug_level = 0;
-static BramPtr_s s_stBram;
+static int delay_reset_period_cnt = 10;
 
+static BramPtr_s s_stBram;
 static DATA_PerfAnalyse_S astPerfUp[SENSOR_TYPE_NUM] = {0};
 static DATA_PerfAnalyse_S astPerfDown[SENSOR_TYPE_NUM] = {0};
 
@@ -520,6 +522,12 @@ void *perf_analyse(void *pth_arg)
                       astPerfUp[i].usFreqInteger, astPerfUp[i].usFreqDecimal,
                       astPerfUp[i].uiLastDataTimeSec, astPerfUp[i].uiLastDataTimeNsec / 1000,
                       astPerfUp[i].stLastTimeRecv.tv_sec, astPerfUp[i].stLastTimeRecv.tv_usec);
+
+            if ((++astPerfUp[i].uiCntPerf) % delay_reset_period_cnt)
+            {
+                astPerfUp[i].iDelayAmpMaxUs = astPerfUp[i].iDelayAmpUs;
+                astPerfUp[i].iDelayUdpMaxUs = astPerfUp[i].iDelayUdpUs;
+            }
         }
 
         // downlink data
@@ -568,6 +576,12 @@ void *perf_analyse(void *pth_arg)
                       astPerfDown[i].usFreqInteger, astPerfDown[i].usFreqDecimal,
                       astPerfDown[i].uiLastDataTimeSec, astPerfDown[i].uiLastDataTimeNsec / 1000,
                       astPerfDown[i].stLastTimeRecv.tv_sec, astPerfDown[i].stLastTimeRecv.tv_usec);
+
+            if ((++astPerfDown[i].uiCntPerf) % delay_reset_period_cnt)
+            {
+                astPerfDown[i].iDelayAmpMaxUs = astPerfDown[i].iDelayAmpUs;
+                astPerfDown[i].iDelayUdpMaxUs = astPerfDown[i].iDelayUdpUs;
+            }
         }
     }
 }
@@ -666,6 +680,7 @@ int main(int argc, char *argv[])
     }
 
     //5, 创建analyse线程，性能分析
+    delay_reset_period_cnt = s_stBram.pstA53Data->ucDelayResetPeriod;
     pthread_t pth_analyse;
     ret = pthread_create(&pth_analyse, NULL, perf_analyse, NULL);
     if (-1 == ret)
