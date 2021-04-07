@@ -30,7 +30,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define TASK_STATE_VERSION "v1.7"
+#define TASK_STATE_VERSION "v1.8"
 
 #define STATE_PL_SIZE (0x200)
 #define STATE_A53_SIZE (0x180)
@@ -71,11 +71,17 @@ void print_err(char *str, int line, int err_no)
     _exit(-1);
 }
 
+void self_test(void)
+{
+
+}
+
 int main()
 {
     struct sockaddr_in addr0;
     int ret = -1;
     unsigned int uiCnt = 0;
+    unsigned int period = 1;
 
     /*1, ctrl + c*/
     struct sigaction act;
@@ -120,11 +126,11 @@ int main()
     }
     addr0.sin_addr.s_addr = inet_addr(s_stBram.pstA53Data->acIpAddrDest); // ip
 
-
+    period = s_stBram.pstA53Data->ucStateUdpPeriodS;
     /* 4, periodly collect state and send */
     while (loop)
     {
-        sleep(1);
+        sleep(period);
 
         /* a, collect pl state */
         memcpy(s_stState.aucStateA53, (uint8_t *)s_stBram.pstA53State, STATE_A53_SIZE);

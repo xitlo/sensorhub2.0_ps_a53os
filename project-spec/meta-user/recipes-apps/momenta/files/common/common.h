@@ -164,7 +164,14 @@ typedef struct DATA_Perf
 
 typedef struct A53SelfCheck
 {
-    uint32_t uiSelfCheckFlag;       /*!< self check flag, every bit indicate one thing, 0-ok, 1-err */
+    // uint32_t uiSelfCheckFlag;       /*!< self check flag, every bit indicate one thing, 0-ok, 1-err */
+    uint32_t bErrFirmware        : 1;
+    uint32_t bErrR5Power         : 1;
+    uint32_t bErrTimeSync        : 1;
+    uint32_t bErrPtp             : 1;
+    uint32_t bErrTaskData        : 1;
+    uint32_t bErrTaskState       : 1;
+    uint32_t bErrUpDataLink      : 1;
     uint32_t uiCamIspCheckFlag;     /*!< self check flag for camera isp, every bit indicate one channel, 0-ok, 1-err */
 } A53SelfCheck_S;
 
@@ -195,6 +202,8 @@ typedef struct A53Data
     uint16_t usPortState;           /*!< uplink state port */
     uint16_t usTimeSyncPeriodMs;    /*!< time sync period, ms */
     uint16_t usSensorAnalysePerid;  /*!< performace analyse, sensor data count period */
+    uint8_t ucStateUdpPeriodS;      /*!< period to send state udp */
+    uint8_t ucReserved;
 } A53Data_s;
 
 typedef struct R5State

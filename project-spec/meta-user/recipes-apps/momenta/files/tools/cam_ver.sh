@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_VERSION=v4.0
-CONFIG_FILE=/data/sensorhub2-config-test.json
+CONFIG_FILE=/data/sensorhub2-config.json
 CAM_LOG_DIR=/data/bsplog
 CAM_LOG=$CAM_LOG_DIR/cam.log
 VER_BYTE_NUM=`cat $CONFIG_FILE | jq .camera.ver_byte_num`

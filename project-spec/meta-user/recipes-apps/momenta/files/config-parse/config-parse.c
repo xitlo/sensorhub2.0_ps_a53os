@@ -29,7 +29,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define CONFIG_PARSE_VERSION "v1.10"
+#define CONFIG_PARSE_VERSION "v1.11"
 
 /** ===================================================== **
  * STRUCT
@@ -272,6 +272,17 @@ static int config_file_a53(void)
     }
     s_stBram.pstA53Data->usSensorAnalysePerid = (uint16_t)iVal;
     printf("==%s: %d\n", pcItem, s_stBram.pstA53Data->usSensorAnalysePerid);
+
+    /* 8, state_udp_period_s */
+    pcItem = "state_udp_period_s";
+    iVal = config_file_get_int(pstJsonItem, "state_udp_period_s");
+    if (0 > iVal)
+    {
+        fprintf(stderr, "%s: conf json parse err\n", __func__);
+        return -1;
+    }
+    s_stBram.pstA53Data->ucStateUdpPeriodS = (uint8_t)iVal;
+    printf("==%s: %d\n", pcItem, s_stBram.pstA53Data->ucStateUdpPeriodS);
 
     return 0;
 }
