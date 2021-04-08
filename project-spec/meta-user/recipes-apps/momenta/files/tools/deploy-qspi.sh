@@ -50,4 +50,4 @@ rm $WORK_DIR/boot-Q.scr
 echo -e "\n>>7, all done"
 date_end=$(date +%s)
 duration=$(($date_end-$date_start))
-print_log -e "time: start/end/duration(s): $date_start/$date_end/$duration"
+echo -e "time: start/end/duration(s): $date_start/$date_end/$duration"
