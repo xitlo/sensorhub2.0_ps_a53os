@@ -1,0 +1,96 @@
+# This is a boot script for U-Boot
+# Generate boot.scr:
+# mkimage -c none -A arm -T script -d boot.cmd.default boot.scr
+#
+################
+@@PRE_BOOTENV@@
+
+# set HEADER, fix to 0xAABBCCDD
+mw 0x80020000 0xAABBCCDD
+
+# read multiboot reg, set to 0x80020004
+zynqmp mmio_read 0xFFCA0010 0x80020004
+
+# set custom uboot version to 0x80020008
+zynqmp version 0x80020008
+
+# set boot.scr version to 0x80020005, byte
+mw.b 0x80020005 0x03
+
+for boot_target in ${boot_targets};
+do
+	echo "boot_target/devtype: ${boot_target}/${devtype}"
+	if test "${boot_target}" = "jtag" ; then
+		@@KERNEL_BOOTCMD@@ @@KERNEL_LOAD_ADDRESS@@ @@RAMDISK_IMAGE_ADDRESS@@ @@DEVICETREE_ADDRESS@@
+		exit;
+	fi
+	if test "${boot_target}" = "mmc0"; then
+		if test -e ${devtype} 0:1 /@@FIT_IMAGE@@; then
+			mw.b 0x80020006 0x00
+			fatload ${devtype} 0:1 @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE@@;
+			bootm @@FIT_IMAGE_LOAD_ADDRESS@@;
+		fi
+		if test -e ${devtype} 0:1 /@@FIT_IMAGE_BAK@@; then
+			mw.b 0x80020006 0x01
+			fatload ${devtype} 0:1 @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE_BAK@@;
+			bootm @@FIT_IMAGE_LOAD_ADDRESS@@;
+		fi
+		if test -e ${devtype} 0:1 /@@FIT_IMAGE_ORIGIN@@; then
+			mw.b 0x80020006 0x02
+			fatload ${devtype} 0:1 @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE_ORIGIN@@;
+			bootm @@FIT_IMAGE_LOAD_ADDRESS@@;
+		fi
+		if test -e ${devtype} 0:1 /@@KERNEL_IMAGE@@; then
+			fatload ${devtype} 0:1 @@KERNEL_LOAD_ADDRESS@@ @@KERNEL_IMAGE@@;;
+		fi
+		if test -e ${devtype} 0:1 /system.dtb; then
+			fatload ${devtype} 0:1 @@DEVICETREE_ADDRESS@@ system.dtb;
+		fi
+		if test -e ${devtype} 0:1 /@@RAMDISK_IMAGE@@; then
+			fatload ${devtype} 0:1 @@RAMDISK_IMAGE_ADDRESS@@ @@RAMDISK_IMAGE@@;
+			@@KERNEL_BOOTCMD@@ @@KERNEL_LOAD_ADDRESS@@ @@RAMDISK_IMAGE_ADDRESS@@ @@DEVICETREE_ADDRESS@@
+			exit;
+		fi
+		@@KERNEL_BOOTCMD@@ @@KERNEL_LOAD_ADDRESS@@ - @@DEVICETREE_ADDRESS@@
+		exit;
+	fi
+	if test "${boot_target}" = "mmc1"; then
+		if test -e ${devtype} 1:1 /@@FIT_IMAGE@@; then
+			mw.b 0x80020006 0x03
+			fatload ${devtype} 1:1 @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE@@;
+			bootm @@FIT_IMAGE_LOAD_ADDRESS@@;
+		fi
+		@@KERNEL_BOOTCMD@@ @@KERNEL_LOAD_ADDRESS@@ - @@DEVICETREE_ADDRESS@@
+		exit;
+	fi
+	if test "${boot_target}" = "xspi0" || test "${boot_target}" = "qspi" || test "${boot_target}" = "qspi0"; then
+		sf probe 0 0 0;
+		if test "@@QSPI_KERNEL_IMAGE@@" = "@@FIT_IMAGE@@"; then
+			mw.b 0x80020006 0x04
+			sf read @@QSPI_FIT_IMAGE_LOAD_ADDRESS@@ @@QSPI_KERNEL_OFFSET@@ @@QSPI_FIT_IMAGE_SIZE@@;
+			bootm @@QSPI_FIT_IMAGE_LOAD_ADDRESS@@;
+			exit;
+		fi
+		if test "@@QSPI_KERNEL_IMAGE@@" = "@@KERNEL_IMAGE@@"; then
+			sf read @@KERNEL_LOAD_ADDRESS@@ @@QSPI_KERNEL_OFFSET@@ @@QSPI_KERNEL_SIZE@@;
+			sf read @@RAMDISK_IMAGE_ADDRESS@@ @@QSPI_RAMDISK_OFFSET@@ @@QSPI_RAMDISK_SIZE@@
+			@@KERNEL_BOOTCMD@@ @@KERNEL_LOAD_ADDRESS@@ @@RAMDISK_IMAGE_ADDRESS@@ @@DEVICETREE_ADDRESS@@
+			exit;
+		fi
+		exit;
+	fi
+	if test "${boot_target}" = "nand" || test "${boot_target}" = "nand0"; then
+		nand info
+		if test "@@NAND_KERNEL_IMAGE@@" = "@@FIT_IMAGE@@"; then
+			nand read @@NAND_FIT_IMAGE_LOAD_ADDRESS@@ @@NAND_KERNEL_OFFSET@@ @@NAND_FIT_IMAGE_SIZE@@;
+			bootm @@NAND_FIT_IMAGE_LOAD_ADDRESS@@;
+			exit;
+		fi
+		if test "@@NAND_KERNEL_IMAGE@@" = "@@KERNEL_IMAGE@@"; then
+			nand read @@KERNEL_LOAD_ADDRESS@@ @@NAND_KERNEL_OFFSET@@ @@NAND_KERNEL_SIZE@@;
+			nand read @@RAMDISK_IMAGE_ADDRESS@@ @@NAND_RAMDISK_OFFSET@@  @@NAND_RAMDISK_SIZE@@;
+			@@KERNEL_BOOTCMD@@ @@KERNEL_LOAD_ADDRESS@@ @@RAMDISK_IMAGE_ADDRESS@@ @@DEVICETREE_ADDRESS@@
+			exit;
+		fi
+	fi
+done
