@@ -32,7 +32,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.23"
+#define VERSION "v1.24"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
@@ -523,8 +523,15 @@ void *perf_analyse(void *pth_arg)
                       astPerfUp[i].uiLastDataTimeSec, astPerfUp[i].uiLastDataTimeNsec / 1000,
                       astPerfUp[i].stLastTimeRecv.tv_sec, astPerfUp[i].stLastTimeRecv.tv_usec);
 
-            if ((++astPerfUp[i].uiCntPerf) % delay_reset_period_cnt)
+            if (delay_reset_period_cnt && (0 == ((++astPerfUp[i].uiCntPerf) % delay_reset_period_cnt)))
             {
+                if (0 < debug_level)
+                {
+                    fprintf(stdout, ">up[%d] reset cnt, %d/%d/%d/%d/%d/%d\n",
+                            i, astPerfUp[i].uiCntPerf, delay_reset_period_cnt,
+                            astPerfUp[i].iDelayAmpMaxUs, astPerfUp[i].iDelayAmpUs,
+                            astPerfUp[i].iDelayUdpMaxUs, astPerfUp[i].iDelayUdpUs);
+                }
                 astPerfUp[i].iDelayAmpMaxUs = astPerfUp[i].iDelayAmpUs;
                 astPerfUp[i].iDelayUdpMaxUs = astPerfUp[i].iDelayUdpUs;
             }
@@ -577,8 +584,15 @@ void *perf_analyse(void *pth_arg)
                       astPerfDown[i].uiLastDataTimeSec, astPerfDown[i].uiLastDataTimeNsec / 1000,
                       astPerfDown[i].stLastTimeRecv.tv_sec, astPerfDown[i].stLastTimeRecv.tv_usec);
 
-            if ((++astPerfDown[i].uiCntPerf) % delay_reset_period_cnt)
+            if (delay_reset_period_cnt && (0 == ((++astPerfDown[i].uiCntPerf) % delay_reset_period_cnt)))
             {
+                if (0 < debug_level)
+                {
+                    fprintf(stdout, ">down[%d] reset cnt, %d/%d/%d/%d/%d/%d\n",
+                            i, astPerfDown[i].uiCntPerf, delay_reset_period_cnt,
+                            astPerfDown[i].iDelayAmpMaxUs, astPerfDown[i].iDelayAmpUs,
+                            astPerfDown[i].iDelayUdpMaxUs, astPerfDown[i].iDelayUdpUs);
+                }
                 astPerfDown[i].iDelayAmpMaxUs = astPerfDown[i].iDelayAmpUs;
                 astPerfDown[i].iDelayUdpMaxUs = astPerfDown[i].iDelayUdpUs;
             }
