@@ -1,5 +1,5 @@
 {
-    "version": "1.5",
+    "version": "1.6",
     "a53": {
         "ip_local": "192.168.2.160",
         "ip_dest": "192.168.2.2",
@@ -19,6 +19,7 @@
         "autostart_start_task_state": 1,
         "autostart_check_ota": 1,
         "autostart_start_selftest": 1,
+        "irq_affinity_en": 1,
         "self_test_addr": "0x80020010",
         "self_test_period_s": 5,
         "self_test_imu_cnt": "0x80020048",

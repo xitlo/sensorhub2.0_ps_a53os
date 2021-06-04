@@ -37,6 +37,7 @@ SRC_URI = "file://common/log.c \
 		file://tools/ispota.sh \
 		file://tools/authorized_keys \
 		file://tools/selftest.sh \
+		file://tools/irq-affinity.sh \
 		  "
 
 S = "${WORKDIR}"
@@ -67,6 +68,7 @@ do_install() {
 		install -m 0755 tools/ispota.sh ${D}${sysconfdir}/common
 		install -m 0644 tools/authorized_keys ${D}${sysconfdir}/common
 		install -m 0755 tools/selftest.sh ${D}${sysconfdir}/common
+		install -m 0755 tools/irq-affinity.sh ${D}${sysconfdir}/common
 }
 
 RDEPENDS_${PN}_append += "bash"
