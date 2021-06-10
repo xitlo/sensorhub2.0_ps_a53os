@@ -35,6 +35,7 @@ SRC_URI = "file://common/log.c \
 		file://tools/cam_ver.sh \
 		file://tools/ota-update.sh \
 		file://tools/ispota.sh \
+		file://tools/table_ispota.sh \
 		file://tools/authorized_keys \
 		file://tools/selftest.sh \
 		file://tools/irq-affinity.sh \
@@ -66,6 +67,7 @@ do_install() {
 		install -m 0755 tools/cam_ver.sh ${D}${sysconfdir}/common
 		install -m 0755 tools/ota-update.sh ${D}${sysconfdir}/common
 		install -m 0755 tools/ispota.sh ${D}${sysconfdir}/common
+		install -m 0755 tools/table_ispota.sh ${D}${sysconfdir}/common
 		install -m 0644 tools/authorized_keys ${D}${sysconfdir}/common
 		install -m 0755 tools/selftest.sh ${D}${sysconfdir}/common
 		install -m 0755 tools/irq-affinity.sh ${D}${sysconfdir}/common
