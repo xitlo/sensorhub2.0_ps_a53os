@@ -304,6 +304,7 @@ W5ComReturn_e W5connSerialConfigure(W5Connection_s *connPtr,
     // as \000 chars
     options.c_iflag &= ~IGNBRK; // disable break processing
     options.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
+    options.c_iflag &= ~(INLCR | ICRNL); // shut 0x0d -> 0x0a
 
     options.c_oflag = 0; // no remapping, no delays
 
