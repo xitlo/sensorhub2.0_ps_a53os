@@ -34,7 +34,7 @@
 // #endif // __cplusplus
 
 #define VRESION_A53                 "v1.18"
-#define VERSION_DEBUG               6
+#define VERSION_DEBUG               7
 #define VERSION_A53_REG_ADDR        (0x8000017c)
 #define VERSION_R5_REG_ADDR         (0x80000178)
 #define VERSION_PL_REG_ADDR         (0x80000174)
@@ -144,6 +144,8 @@ typedef struct DATA_Sensor
 {
     uint16_t usUdpPort;
     uint16_t usReserved;
+    uint32_t uiAmpTimeSec;
+    uint32_t uiAmpTimeNsec;
     uint8_t ucHeadHigh;
     uint8_t ucHeadLow;
     uint8_t ucType;
