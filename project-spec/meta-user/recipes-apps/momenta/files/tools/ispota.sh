@@ -1,6 +1,9 @@
 #!/bin/bash
+# Author: hanfangzheng <hanfangzheng@Momenta.ai>
+# Last modify: hanfangzheng <hanfangzheng@Momenta.ai>
+# Last modify date: 2021-6-24 11:57:01
 
-SCRIPT_VERSION=v1.7
+SCRIPT_VERSION=v1.9
 CONFIG_FILE=/data/sensorhub2-config.json
 ISP_LOG_DIR=/data/bsplog
 ISP_LOG=$ISP_LOG_DIR/ispota.log
@@ -22,7 +25,7 @@ IspFirmwareOta(){
 	api_cmd -U${tty_port} 0x12 noquery 0100000000000000 > $API_CMD_LOG
 	if [ 0 -ne $? ]; then
 		print_log -e ">>>cam[$1], error, exit"
-		exit 1
+		return 1
 	fi
 
 	# 2, check status
@@ -37,7 +40,7 @@ IspFirmwareOta(){
 	api_cmd -U${tty_port} 0x84 max EE00000000000001 -i $2 >> $API_CMD_LOG
 	if [ 0 -ne $? ]; then
 		print_log -e ">>>cam[$1], error, exit"
-		exit 3
+		return 3
 	fi
 
 	# 4, exit failsafe mode
@@ -45,11 +48,12 @@ IspFirmwareOta(){
 	api_cmd -U${tty_port} 0x12 noquery 0000000000000000 >> $API_CMD_LOG
 	if [ 0 -ne $? ]; then
 		print_log -e ">>>cam[$1], error, exit"
-		exit 4
+		return 4
 	fi
 
 	# 5, done
 	print_log -e ">>>cam[$1], 5, done"
+	return 0
 }
 
 # 1, check param
@@ -89,11 +93,11 @@ print_log -e "\n>>2, sleep 2s, wait isp normal"
 sleep 2
 
 print_log -e "\n>>3, isp update for cam 0-15"
-ota_ret=0
+err_mask=0
 for((ch=0;ch<16;ch++))
 do
 {
-	mask=$(printf "0x%02x" $((1 << $ch)))
+	mask=$(printf "0x%04x" $((1 << $ch)))
 	flag=$(printf "%d" $(($1 & $mask)))
 	# echo "ch/mask/flag: $ch/$mask/$flag"
 
@@ -118,26 +122,48 @@ do
 		if [ -f $rom_file ]; then
 			echo "cam[$ch] start update rom, type/file: $rom_type/$rom_file"
 			IspFirmwareOta $ch $rom_file
-			if [ 3 -eq $? ]; then
+			if [ $? -ne 0 ]; then
 				echo "cam[$ch] update rom err, type/file: $rom_type/$rom_file"
-				ota_ret=1
+				ret=$(printf "%d" $((1 + $ch)))
+				echo "cam[$ch] update rom err, exit $ret"
+				exit $ret
 			fi
 		else
 			echo "cam[$ch] rom not find, skip!"
 		fi
 	fi
+	exit 0
 }&
 done
-wait
 
-if [ 0 -eq $ota_ret ]; then
-	print_log -e "\n>>4, fakra poweroff"
+for pid in $(jobs -p)
+do
+	wait $pid
+	status=$?
+	if [ $status -ne 0 ];then
+		ch=$(printf "%d" $(($status - 1)))
+		mask=$(printf "0x%04x" $((1 << $ch)))
+		err_mask=$(printf "0x%04x" $(($err_mask | $mask)))
+		print_log -e "cam[$ch] ota have some error!, err_mask is $err_mask"
+	fi
+done
+
+# 4, fakra
+echo -e ">------------------------4, fakra------------------------<"
+if [ "0" == "$err_mask" ]; then
+	print_log -e "\n>>-4, fakra poweroff"
 	/sbin/devmem 0x80000020 32 0xffff0000
+	ota_ret=0
 else
-	print_log -e "\n>>4, fakra not poweroff, since chan update err, pls check!!"
+	print_log -e "\e[1;31m\n>>4, fakra not poweroff, since chan update err, mask $err_mask, pls check!! \e[0m"
+	ota_ret=1
 fi
 
-print_log -e "\n>>5, all done!"
+# 5, printf:time
+echo -e ">------------------------5, end------------------------<"
+print_log -e "\n>>-5, ispota.sh end!!!"
 date_end=$(date +%s)
 duration=$(($date_end-$date_start))
 print_log -e "time: start/end/duration(s): $date_start/$date_end/$duration"
+
+exit $ota_ret

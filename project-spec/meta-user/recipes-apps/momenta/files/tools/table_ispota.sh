@@ -1,6 +1,9 @@
 #!/bin/bash
+# Author: chenshan <chenshan1@Momenta.ai>
+# Last modify: hanfangzheng <hanfangzheng@Momenta.ai>
+# Last modify date: 2021-6-24 10:43:00
 
-SCRIPT_VERSION=v1.10 #old:v1.8
+SCRIPT_VERSION=v1.11
 CONFIG_FILE=/data/sensorhub2-config.json
 ISP_LOG_DIR=/data/bsplog
 ISP_LOG=$ISP_LOG_DIR/isptableota.log
@@ -8,7 +11,6 @@ ISP_LOG=$ISP_LOG_DIR/isptableota.log
 SET="IMX390"
 #IMX="IMX390" #表示390 IMX=490表示490
 IMX=  
-VAL_EXIT=0
 ROM_DIR=/home/root
 
 #--------------------------------  function   --------------------------------#
@@ -34,10 +36,10 @@ IspFirmwareOta_Table(){
 	#echo "$VAR" #调试用
 	CommandStatus=`cat $API_CMD_LOG | grep success`
 	if [ "$CommandStatus" = "" ] ; then
-		echo -e "\e[1;31m======cam[$1],1.enter failsafe mode error 1, \e[0m"
-		VAL_EXIT=1
+		print_log -e "\e[1;31m======cam[$1],1.enter failsafe mode error 1, \e[0m"
+		return 1
 	else
-		echo -e "\e[1;32m======cam[$1],1.enter failsafe mode====111ok \e[0m"
+		print_log -e "\e[1;32m======cam[$1],1.enter failsafe mode====111ok \e[0m"
 	fi
 
 	##2.app.bin
@@ -47,11 +49,11 @@ IspFirmwareOta_Table(){
 	#echo "$VAR"
 	CommandStatus=`cat $API_CMD_LOG | grep Done`
 	if [ "$CommandStatus" = "" ] ; then
-		echo -e "\e[1;31m=cam[$1],error 2, \e[0m"
-		echo -e "this error can ignore,this step is slow,pls wait... " 
+		print_log -e "\e[1;31m=cam[$1],error 2, \e[0m"
+		print_log -e "this error can ignore,this step is slow,pls wait... "
 	else
-		echo -e "\e[1;32m=cam[$1],ok APP_NAME：$APP_NAME\e[0m"
-		echo -e "this step is slow,pls wait... " #这一步等待时间较久，给与提示
+		print_log -e "\e[1;32m=cam[$1],ok APP_NAME：$APP_NAME\e[0m"
+		print_log -e "this step is slow,pls wait... " #这一步等待时间较久，给与提示
 	fi
 	sleep 1
 	api_cmd -U${tty_port} 0x84 max 0300000000000000 -i $APP_NAME > $API_CMD_LOG
@@ -59,10 +61,10 @@ IspFirmwareOta_Table(){
 	#echo "$VAR"  #太长了
 	CommandStatus=`cat $API_CMD_LOG | grep Done`
 	if [ "$CommandStatus" = "" ] ; then
-		echo -e "\e[1;31m====cam[$1],2.update app.bin error 2, \e[0m"
-		VAL_EXIT=2
+		print_log -e "\e[1;31m====cam[$1],2.update app.bin error 2, \e[0m"
+		return 2
 	else
-		echo -e "\e[1;32m======cam[$1],2.update app.bin====222ok \e[0m"
+		print_log -e "\e[1;32m======cam[$1],2.update app.bin====222ok \e[0m"
 	fi
 
 	##3.syscfg=table_0x140000.jbf
@@ -86,10 +88,10 @@ IspFirmwareOta_Table(){
 	#echo "$VAR" #调试用
 	CommandStatus=`cat $API_CMD_LOG | grep Done`
 	if [ "$CommandStatus" = "" ] ; then
-		echo -e "\e[1;31m====cam[$1],3.update syscfg-table_0x140000.jbf error 3, \e[0m"
-		VAL_EXIT=3
+		print_log -e "\e[1;31m====cam[$1],3.update syscfg-table_0x140000.jbf error 3, \e[0m"
+		return 3
 	else
-		echo -e "\e[1;32m====cam[$1],3.update syscfg-table_0x140000.jbf====333ok \e[0m"
+		print_log -e "\e[1;32m====cam[$1],3.update syscfg-table_0x140000.jbf====333ok \e[0m"
 	fi
 
 	##4.warpcfg=table_0x148000.jbf
@@ -107,16 +109,16 @@ IspFirmwareOta_Table(){
 		HIGHBYTE=`echo $BYTE_LENGTH | cut -b 3-4`
 		LOWBYTE=`echo $BYTE_LENGTH | cut -b 1-2`
 	fi
-	echo "WARPCFG_NAME:$WARPCFG_NAME"
+	print_log "WARPCFG_NAME:$WARPCFG_NAME"
 	api_cmd -U${tty_port} 0x90 0 0080140001003503${HIGHBYTE}${LOWBYTE}0000 -i $WARPCFG_NAME > $API_CMD_LOG
 	VAR=`cat $API_CMD_LOG`
 	#echo "$VAR"
 	CommandStatus=`cat $API_CMD_LOG | grep Done`
 	if [ "$CommandStatus" = "" ] ; then
-		echo -e "\e[1;31m====cam[$1],4.update warpcfg=table_0x148000.jbf error 4, \e[0m"
-		VAL_EXIT=4
+		print_log -e "\e[1;31m====cam[$1],4.update warpcfg=table_0x148000.jbf error 4, \e[0m"
+		return 4
 	else
-		echo -e "\e[1;32m====cam[$1],4.update warpcfg=table_0x148000.jbf====444ok \e[0m"
+		print_log -e "\e[1;32m====cam[$1],4.update warpcfg=table_0x148000.jbf====444ok \e[0m"
 	fi
 
 	##5.update ispcfg=table_0x150000.jbf
@@ -134,16 +136,16 @@ IspFirmwareOta_Table(){
 		HIGHBYTE=`echo $BYTE_LENGTH | cut -b 3-4`
 		LOWBYTE=`echo $BYTE_LENGTH | cut -b 1-2`
 	fi
-	echo "ISPCFG_NAME:$ISPCFG_NAME"
+	print_log "ISPCFG_NAME:$ISPCFG_NAME"
 	api_cmd -U${tty_port} 0x90 0 0000150001003505${HIGHBYTE}${LOWBYTE}0000 -i $ISPCFG_NAME > $API_CMD_LOG
 	VAR=`cat $API_CMD_LOG`
 	#echo "$VAR"
 	CommandStatus=`cat $API_CMD_LOG | grep Done`
 	if [ "$CommandStatus" = "" ] ; then
-		echo -e "\e[1;31m====cam[$1],5.update ispcfg=table_0x150000.jbf error 5, \e[0m"
-		VAL_EXIT=5
+		print_log -e "\e[1;31m====cam[$1],5.update ispcfg=table_0x150000.jbf error 5, \e[0m"
+		return 5
 	else
-		echo -e "\e[1;32m====cam[$1],5.update ispcfg=table_0x150000.jbf====555ok \e[0m"
+		print_log -e "\e[1;32m====cam[$1],5.update ispcfg=table_0x150000.jbf====555ok \e[0m"
 	fi
 
 	##6.update geocfg=table_0x170000.jbf
@@ -161,16 +163,16 @@ IspFirmwareOta_Table(){
 		HIGHBYTE=`echo $BYTE_LENGTH | cut -b 3-4`
 		LOWBYTE=`echo $BYTE_LENGTH | cut -b 1-2`
 	fi
-	echo "GEOCFG_NAME:$GEOCFG_NAME"
+	print_log "GEOCFG_NAME:$GEOCFG_NAME"
 	api_cmd -U${tty_port} 0x90 0 0000170001003507${HIGHBYTE}${LOWBYTE}0000 -i $GEOCFG_NAME > $API_CMD_LOG
 	VAR=`cat $API_CMD_LOG`
 	#echo "$VAR"
 	CommandStatus=`cat $API_CMD_LOG | grep Done`
 	if [ "$CommandStatus" = "" ] ; then
-		echo -e "\e[1;31m====cam[$1],6.update geocfg=table_0x170000.jbf error 6, \e[0m"
-		VAL_EXIT=6
+		print_log -e "\e[1;31m====cam[$1],6.update geocfg=table_0x170000.jbf error 6, \e[0m"
+		return 6
 	else
-		echo -e "\e[1;32m====cam[$1],6.update geocfg=table_0x170000.jbf====666ok \e[0m"
+		print_log -e "\e[1;32m====cam[$1],6.update geocfg=table_0x170000.jbf====666ok \e[0m"
 	fi
 
 	#-----------imx390为ssm48.dat  imx490为ssm48.bin---------------------------#
@@ -191,16 +193,16 @@ IspFirmwareOta_Table(){
 			HIGHBYTE=`echo $BYTE_LENGTH | cut -b 3-4`
 			LOWBYTE=`echo $BYTE_LENGTH | cut -b 1-2`
 		fi
-		echo "SSM47_NAME:$SSM47_NAME"
+		print_log "SSM47_NAME:$SSM47_NAME"
 		api_cmd -U${tty_port} 0x90 0 2F00000000003601${HIGHBYTE}${LOWBYTE}0000 -i $SSM47_NAME > $API_CMD_LOG
 		VAR=`cat $API_CMD_LOG`
 		##echo "$VAR"
 		CommandStatus=`cat $API_CMD_LOG | grep Done`
 		if [ "$CommandStatus" = "" ] ; then
-			echo -e "\e[1;31m==390==cam[$1],7.update ssm47=table_ssm47.bin error 7 \e[0m"
-			VAL_EXIT=7
+			print_log -e "\e[1;31m==390==cam[$1],7.update ssm47=table_ssm47.bin error 7 \e[0m"
+			return 7
 		else
-			echo -e "\e[1;32m==390==cam[$1],7.update ssm47=table_ssm47.bin==390==777ok \e[0m"
+			print_log -e "\e[1;32m==390==cam[$1],7.update ssm47=table_ssm47.bin==390==777ok \e[0m"
 		fi
 
 		##8.upgrade ssm48=table_ssm48.dat
@@ -218,16 +220,16 @@ IspFirmwareOta_Table(){
 			HIGHBYTE=`echo $BYTE_LENGTH | cut -b 3-4`
 			LOWBYTE=`echo $BYTE_LENGTH | cut -b 1-2`
 		fi
-		echo "SSM48_NAME_DAT:$SSM48_NAME_DAT"
+		print_log "SSM48_NAME_DAT:$SSM48_NAME_DAT"
 		api_cmd -U${tty_port} 0x90 0 3000000000003701${HIGHBYTE}${LOWBYTE}0000 -i $SSM48_NAME_DAT > $API_CMD_LOG
 		VAR=`cat $API_CMD_LOG`
 		#echo "$VAR"
 		CommandStatus=`cat $API_CMD_LOG | grep Done`
 		if [ "$CommandStatus" = "" ] ; then
-			echo -e "\e[1;31m==390==cam[$1],8-end.update ssm48=table_ssm48.dat error 8 \e[0m"
-			VAL_EXIT=8
+			print_log -e "\e[1;31m==390==cam[$1],8-end.update ssm48=table_ssm48.dat error 8 \e[0m"
+			return 8
 		else
-			echo -e "\e[1;32m==390==cam[$1],8-end.update ssm48=table_ssm48.dat==390==8end ok \e[0m"
+			print_log -e "\e[1;32m==390==cam[$1],8-end.update ssm48=table_ssm48.dat==390==8end ok \e[0m"
 		fi
 	
 	#--------------------------imx490-----------------------------#
@@ -247,16 +249,16 @@ IspFirmwareOta_Table(){
 			HIGHBYTE=`echo $BYTE_LENGTH | cut -b 3-4`
 			LOWBYTE=`echo $BYTE_LENGTH | cut -b 1-2`
 		fi
-		echo "SSM44_NAME:$SSM44_NAME"
+		print_log "SSM44_NAME:$SSM44_NAME"
 		api_cmd -U${tty_port} 0x90 0 2C00000000003601${HIGHBYTE}${LOWBYTE}0000 -i $SSM44_NAME > $API_CMD_LOG
 		VAR=`cat $API_CMD_LOG`
 		#echo "$VAR"
 		CommandStatus=`cat $API_CMD_LOG | grep Done`
 		if [ "$CommandStatus" = "" ] ; then
-			echo -e "\e[1;31m==490==cam[$1],7.update table_ssm44.bin error 9, \e[0m"
-			VAL_EXIT=9
+			print_log -e "\e[1;31m==490==cam[$1],7.update table_ssm44.bin error 9, \e[0m"
+			return 9
 		else
-			echo -e "\e[1;32m==490==cam[$1],7.update table_ssm44.bin==490==777ok \e[0m"
+			print_log -e "\e[1;32m==490==cam[$1],7.update table_ssm44.bin==490==777ok \e[0m"
 		fi
 		
 		##8.table_ssm45.bin
@@ -279,10 +281,10 @@ IspFirmwareOta_Table(){
 		#echo "$VAR"
 		CommandStatus=`cat $API_CMD_LOG | grep Done`
 		if [ "$CommandStatus" = "" ] ; then
-			echo -e "\e[1;31m==490==cam[$1],8.update table_ssm45.bin error 10, \e[0m"
-			VAL_EXIT=10
+			print_log -e "\e[1;31m==490==cam[$1],8.update table_ssm45.bin error 10, \e[0m"
+			return 10
 		else
-			echo -e "\e[1;32m==490==cam[$1],8.update table_ssm45.bin==490==888ok \e[0m"
+			print_log -e "\e[1;32m==490==cam[$1],8.update table_ssm45.bin==490==888ok \e[0m"
 		fi
 
 		##9.table_ssm46.dat
@@ -305,10 +307,10 @@ IspFirmwareOta_Table(){
 		##echo "$VAR"
 		CommandStatus=`cat $API_CMD_LOG | grep Done`
 		if [ "$CommandStatus" = "" ] ; then
-			echo -e "\e[1;31m==490==cam[$1],9.update table_ssm46.dat error 11, \e[0m"
-			VAL_EXIT=11
+			print_log -e "\e[1;31m==490==cam[$1],9.update table_ssm46.dat error 11, \e[0m"
+			return 11
 		else
-			echo -e "\e[1;32m==490==cam[$1],9.update table_ssm46.dat==490==999ok \e[0m"
+			print_log -e "\e[1;32m==490==cam[$1],9.update table_ssm46.dat==490==999ok \e[0m"
 		fi
 
 		##10.table_ssm47.bin
@@ -331,10 +333,10 @@ IspFirmwareOta_Table(){
 		##echo "$VAR"
 		CommandStatus=`cat $API_CMD_LOG | grep Done`
 		if [ "$CommandStatus" = "" ] ; then
-			echo -e "\e[1;31m==490==cam[$1],10.update table_ssm47.bin error 12, \e[0m"
-			VAL_EXIT=12
+			print_log -e "\e[1;31m==490==cam[$1],10.update table_ssm47.bin error 12, \e[0m"
+			return 12
 		else
-			echo -e "\e[1;32m==490==cam[$1],10.update table_ssm47.bin==490==10ok \e[0m"
+			print_log -e "\e[1;32m==490==cam[$1],10.update table_ssm47.bin==490==10ok \e[0m"
 		fi
 
 		##11.table_ssm48.bin
@@ -357,20 +359,16 @@ IspFirmwareOta_Table(){
 		#echo "$VAR"
 		CommandStatus=`cat $API_CMD_LOG | grep Done`
 		if [ "$CommandStatus" = "" ] ; then
-			echo -e "\e[1;31m==490==cam[$1], 11-end.update table_ssm48.bin error 13, \e[0m"
-			VAL_EXIT=13
+			print_log -e "\e[1;31m==490==cam[$1], 11-end.update table_ssm48.bin error 13, \e[0m"
+			return 13
 		else
-			echo -e "\e[1;32m==490==cam[$1], 11-end.update table_ssm48.bin==490==11-end ok \e[0m"
+			print_log -e "\e[1;32m==490==cam[$1], 11-end.update table_ssm48.bin==490==11-end ok \e[0m"
 		fi
 	fi
 
 	# , done
-	#有错误，打印最后错误。正常,打印done
-	if [ "$VAL_EXIT" != "0" ] ; then
-		echo -e "\e[1;31m----IspFirmwareOta_Table error:$VAL_EXIT---- \e[0m"
-	else
-		print_log -e ">>>cam[$1], end.IspFirmwareOta_Table done"
-	fi
+	print_log -e ">>>cam[$1], end.IspFirmwareOta_Table done"
+	return 0
 }
 
 #--------------------------------  start   --------------------------------#
@@ -406,11 +404,11 @@ print_log -e "\n>-----2, sleep 2s, wait isp normal-----<"
 sleep 2
 
 print_log -e "\n>-----3, isp update for cam 0-15-----<"
-ota_ret=0
+err_mask=0
 for((ch=0;ch<16;ch++))
 do
 {
-	mask=$(printf "0x%02x" $((1 << $ch)))
+	mask=$(printf "0x%04x" $((1 << $ch)))
 	flag=$(printf "%d" $(($1 & $mask)))
 	##echo "ch/mask/flag: $ch/$mask/$flag"
 
@@ -482,25 +480,40 @@ do
 		if [ -f $APP_NAME ]; then
 			echo ">-----4, cam[$ch] start update rom-----<"
 			IspFirmwareOta_Table $ch
-			if [ "$VAL_EXIT" != "0" ]; then
-				echo "cam[$ch] update rom err"
-				ota_ret=1  #有失败，则不下电
+			if [ $? -ne 0 ]; then
+				ret=$(printf "%d" $((1 + $ch)))
+				echo "cam[$ch] update rom err, exit $ret"
+				exit $ret
 			fi
 		else
 			echo "cam[$ch] rom $APP_NAME not find, skip!"
 		fi
 	fi
+	exit 0
 }&
 done
-wait
+
+for pid in $(jobs -p)
+do
+	wait $pid
+	status=$?
+	if [ $status -ne 0 ];then
+		ch=$(printf "%d" $(($status - 1)))
+		mask=$(printf "0x%04x" $((1 << $ch)))
+		err_mask=$(printf "0x%04x" $(($err_mask | $mask)))
+		print_log -e "cam[$ch] ota have some error!, err_mask is $err_mask"
+	fi
+done
 
 # 4, fakra
 echo -e ">------------------------4, fakra------------------------<"
-if [ 0 -eq $ota_ret ]; then
+if [ "0" == "$err_mask" ]; then
 	print_log -e "\n>>-4, fakra poweroff"
 	/sbin/devmem 0x80000020 32 0xffff0000
+	ota_ret=0
 else
-	print_log -e "\n>>4, fakra not poweroff, since chan update err, pls check!!"
+	print_log -e "\e[1;31m\n>>4, fakra not poweroff, since chan update err, mask $err_mask, pls check!! \e[0m"
+	ota_ret=1
 fi
 
 # 5, printf:time
@@ -509,3 +522,5 @@ print_log -e "\n>>-5, table_ispota.sh end!!!"
 date_end=$(date +%s)
 duration=$(($date_end-$date_start))
 print_log -e "time: start/end/duration(s): $date_start/$date_end/$duration"
+
+exit $ota_ret
