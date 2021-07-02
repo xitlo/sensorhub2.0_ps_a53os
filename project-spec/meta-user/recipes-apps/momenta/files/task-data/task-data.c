@@ -32,7 +32,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define VERSION "v1.25"
+#define VERSION "v1.26"
 
 #define RPMSG_GET_KFIFO_SIZE 1
 #define RPMSG_GET_AVAIL_DATA_SIZE 2
@@ -417,7 +417,7 @@ void *receive(void *pth_arg)
 
             gettimeofday(&start_time, NULL);
 
-            bytes_sent = write(eptfd, aucRpmsgSend + DATA_SENSOR_HEADER_LEN, iLen - DATA_SENSOR_HEADER_LEN);
+            bytes_sent = write(eptfd, aucRpmsgSend + DATA_SENSOR_HEADER_LEN, iLen);
             if (bytes_sent <= 0)
             {
                 pstSensor = (DATA_Sensor_S *)aucRpmsgSend;
