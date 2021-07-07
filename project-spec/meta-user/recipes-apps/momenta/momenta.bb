@@ -40,6 +40,7 @@ SRC_URI = "file://common/log.c \
 		file://tools/selftest.sh \
 		file://tools/irq-affinity.sh \
 	    file://tools/view_adjust.sh \
+		file://tools/OTP_cali_data.sh \
 		"
 
 S = "${WORKDIR}"
@@ -73,6 +74,7 @@ do_install() {
 		install -m 0755 tools/selftest.sh ${D}${sysconfdir}/common
 		install -m 0755 tools/irq-affinity.sh ${D}${sysconfdir}/common
 	    install -m 0755 tools/view_adjust.sh ${D}${sysconfdir}/common
+		install -m 0755 tools/OTP_cali_data.sh ${D}${sysconfdir}/common
 }
 
 RDEPENDS_${PN}_append += "bash"
