@@ -1,7 +1,9 @@
 #!/bin/bash
+SCRIPT_VERSION=v1.1
 
 #1, check param
 if [ $# -lt 2 ] || [ $1 -lt 1 ] || [ $1 -gt 6 ] ; then
+    echo "app-control, ver: ${SCRIPT_VERSION}"
     echo "Usage: $0 <app_id> <turn_on_1_off_0>"
     echo "app_id: 1, r5 control, 1-on, 2-reset, 0-off"
     echo "app_id: 2, timesync, 1-on, 0-off"
@@ -75,6 +77,8 @@ if [ $1 -eq 5 ] ; then
     if [ $2 -eq 1 ]; then
         echo ">>>>5, app task-data on!"
         task-data &
+        # set task-data on CPU3
+        ps -ef | grep task-data | grep -v grep | awk '{print $1}' | xargs taskset -p 8
     else
         echo ">>>>5, app task-data off!"
         ps -ef | grep task-data | grep -v grep | awk '{print $1}' | xargs kill -9

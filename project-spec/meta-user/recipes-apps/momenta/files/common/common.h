@@ -33,8 +33,8 @@
 // {
 // #endif // __cplusplus
 
-#define VRESION_A53                 "v1.16"
-#define VERSION_DEBUG               1
+#define VRESION_A53                 "v1.20"
+#define VERSION_DEBUG               0
 #define VERSION_A53_REG_ADDR        (0x8000017c)
 #define VERSION_R5_REG_ADDR         (0x80000178)
 #define VERSION_PL_REG_ADDR         (0x80000174)
@@ -55,6 +55,11 @@
 
 #define STATE_PL_ADDR               (0x80010000)
 #define STATE_PL_SIZE               (0x300)
+
+/* state udp packet data len 1280(0x500), A53+R5+PL */
+#define STATE_A53_SIZE              (0x1F0)
+#define STATE_R5_SIZE               (0x180)
+#define STATE_PL_SIZE               (0x190)
 
 typedef enum BramType
 {
@@ -112,18 +117,17 @@ typedef enum DATA_SensorType
     SENSOR_TYPE_NUM
 } DATA_SensorType_E;
 
+/* state udp packet, A53 0x1F0(496 Bytes), DATA_Perf_S 16 Bytes per sensor,
+   14_sensors_up_and_down -> 448 Byptes, max!!! */
 typedef enum State_SensorType
 {
-    STATE_CAN3 = 0x00,
-    STATE_CAN1,
+    STATE_CAN1 = 0x00,
     STATE_CAN2,
+    STATE_CAN3,
     STATE_CAN4,
     STATE_CAN5,
     STATE_CAN6,
     STATE_CAN7,
-    STATE_CAN8,
-    STATE_CAN9,
-    STATE_CAN10,
 
     STATE_UART1,
     STATE_UART2,
@@ -132,9 +136,6 @@ typedef enum State_SensorType
     STATE_UART5,
     STATE_UART6,
     STATE_UART7,
-    STATE_UART8,
-    STATE_UART9,
-    STATE_UART10,
 
     STATE_SENSOR_TYPE_NUM
 } State_SensorType_E;
@@ -143,6 +144,8 @@ typedef struct DATA_Sensor
 {
     uint16_t usUdpPort;
     uint16_t usReserved;
+    uint32_t uiAmpTimeSec;
+    uint32_t uiAmpTimeNsec;
     uint8_t ucHeadHigh;
     uint8_t ucHeadLow;
     uint8_t ucType;

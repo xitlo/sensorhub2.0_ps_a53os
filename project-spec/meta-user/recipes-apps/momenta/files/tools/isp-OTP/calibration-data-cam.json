@@ -1,5 +1,5 @@
 {
-    "version": "1.6",
+    "version": "1.0",
     "a53": {
         "ip_local": "192.168.2.160",
         "ip_dest": "192.168.2.2",
@@ -32,113 +32,113 @@
         "flag_addr": "0x80020014",
         "ver_byte_num": 18,
         "cam0": {
-            "enable": 0,
-            "name": "490-0",
+            "module_version0": 123456789012,
+            "cal_flag0": "0",
             "rom_type": 0,
             "tty_port": 0,
-            "ver_addr": "0x80024000"
+            "ver_addr0": 080024000
         },
         "cam1": {
-            "enable": 0,
-            "name": "490-1",
+            "module_version1": 0,
+            "cal_flag1": "490-1",
             "rom_type": 0,
             "tty_port": 1,
             "ver_addr": "0x80024020"
         },
         "cam2": {
-            "enable": 0,
-            "name": "490-2",
+            "module_version2": 0,
+            "cal_flag2": "490-2",
             "rom_type": 0,
             "tty_port": 8,
             "ver_addr": "0x80024040"
         },
         "cam3": {
-            "enable": 0,
-            "name": "490-3",
+            "module_version3": 0,
+            "cal_flag3": "490-3",
             "rom_type": 0,
             "tty_port": 9,
             "ver_addr": "0x80024060"
         },
         "cam4": {
-            "enable": 1,
-            "name": "F30",
+            "module_version4":"ffffffffffffffffffffff",
+            "cal_flag4":"490-3",
             "rom_type": 0,
             "tty_port": 10,
             "ver_addr": "0x80024080"
         },
         "cam5": {
-            "enable": 1,
-            "name": "F120",
+            "module_version5":"ffffffffffffffffffffff",
+            "cal_flag5":"490-3",
             "rom_type": 1,
             "tty_port": 11,
             "ver_addr": "0x800240a0"
         },
         "cam6": {
-            "enable": 1,
-            "name": "LF100",
+            "module_version6":"ffffffffffffffffffffff",
+            "cal_flag6":"390-3",
             "rom_type": 2,
             "tty_port": 12,
             "ver_addr": "0x800240c0"
         },
         "cam7": {
-            "enable": 1,
-            "name": "RF100",
+            "module_version7":"ffffffffffffffffffffff",
+            "cal_flag7":"390-3",
             "rom_type": 2,
             "tty_port": 13,
             "ver_addr": "0x800240e0"
         },
         "cam8": {
-            "enable": 1,
-            "name": "LR60",
+            "module_version8":"ffffffffffffffffffffff",
+            "cal_flag8":"390-3",
             "rom_type": 3,
             "tty_port": 14,
             "ver_addr": "0x80024100"
         },
         "cam9": {
-            "enable": 1,
-            "name": "RR60",
+            "module_version9":"ffffffffffffffffffffff",
+            "cal_flag9":"390-3",
             "rom_type": 3,
             "tty_port": 15,
             "ver_addr": "0x80024120"
         },
         "cam10": {
-            "enable": 1,
-            "name": "RU60",
+            "module_version10":"ffffffffffffffffffffff",
+            "cal_flag10":"390-3",
             "rom_type": 3,
             "tty_port": 2,
             "ver_addr": "0x80024140"
         },
         "cam11": {
-            "enable": 1,
-            "name": "RD60",
+            "module_version11":"ffffffffffffffffffffff",
+            "cal_flag11": "390-3",
             "rom_type": 3,
             "tty_port": 3,
             "ver_addr": "0x80024160"
         },
         "cam12": {
-            "enable": 1,
-            "name": "Front197",
+            "module_version12":"ffffffffffffffffffffff",
+            "cal_flag12":"390-3",
             "rom_type": 4,
             "tty_port": 4,
             "ver_addr": "0x80024180"
         },
         "cam13": {
-            "enable": 1,
-            "name": "Right197",
+            "module_version13":"ffffffffffffffffffffff",
+            "cal_flag13":"390-3",
             "rom_type": 4,
             "tty_port": 5,
             "ver_addr": "0x800241a0"
         },
         "cam14": {
-            "enable": 1,
-            "name": "Rear197",
+            "module_version14":"ffffffffffffffffffffff",
+            "cal_flag14":"390-3",
             "rom_type": 4,
             "tty_port": 6,
             "ver_addr": "0x800241c0"
         },
         "cam15": {
-            "enable": 1,
-            "name": "Left197",
+            "module_version15":"ffffffffffffffffffffff",
+            "cal_flag15":"390-3",
             "rom_type": 4,
             "tty_port": 7,
             "ver_addr": "0x800241e0"

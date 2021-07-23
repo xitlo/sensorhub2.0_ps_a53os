@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_VERSION=v4.0
+SCRIPT_VERSION=v5.0
 CONFIG_FILE=/data/sensorhub2-config.json
 CAM_LOG_DIR=/data/bsplog
 CAM_LOG=$CAM_LOG_DIR/cam.log
@@ -32,9 +32,23 @@ CamReadVer(){
 		# ver1=`api_cmd -U 1 0x53 1 0500000000fa000001000000 | grep "PAYLOAD\[00\:00\]" | awk '{print $2}'`
 		local cmd_line=$(printf "api_cmd -U$tty_port 0x53 1 0500000000fa0000%02x000000 | grep \"PAYLOAD\\[00\\:00\\]\" | awk \'{print \$2}\'" $id)
 		# print_log $cmd_line
-		local ver[$i]=`eval $cmd_line`
+		local ver[$i]=`eval $cmd_line` #eval 读取一连串的参数，再依据参数本身的特性来执行
 		# print_log ${ver[$i]}
 
+		##如果执行一次不成功，那么就进入反复执行程序
+		count=0;
+		while [ ! -n "${ver[$i]}" ]
+		do
+			local cmd_line=$(printf "api_cmd -U$tty_port 0x53 1 0500000000fa0000%02x000000 | grep \"PAYLOAD\\[00\\:00\\]\" | awk \'{print \$2}\'" $id)
+			local ver[$i]=`eval $cmd_line` #eval 读取一连串的参数，再依据参数本身的特性来执行
+			count=`expr $count + 1`
+			echo "count:$count"
+			if [ $count == 5 ]; then
+				break
+			fi
+		done
+
+		#反复执行5次还是不成功，版本号全置为0
 		if [ ! -n "${ver[$i]}" ] ; then
 			for((j=0;j<${VER_BYTE_NUM};j++))
 			do
@@ -49,7 +63,7 @@ CamReadVer(){
 
 	for((j=0;j<${VER_BYTE_NUM};j++))
 	do
-		VERSION=$VERSION${ver[$j]}
+		VERSION=$VERSION${ver[$j]} #把每一步读到的ver拼接起来
 	done
 	print_log -e ">>>cam[$1], 2, VERSION: $VERSION"
 
