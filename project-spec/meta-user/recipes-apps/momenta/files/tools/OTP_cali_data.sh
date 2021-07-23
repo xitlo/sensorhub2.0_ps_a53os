@@ -357,7 +357,7 @@ if [ $2 -eq 1 ]; then
 			FIX5_CSVFILE=/etc/common/isp-OTP/OTP5_fix.csv
 			FIX6_CSVFILE=/etc/common/isp-OTP/OTP6_fix.csv
 			FIX8_CSVFILE=/etc/common/isp-OTP/OTP8_fix.csv
-			FIX12_CSVFILE=/etc/common/isp-OTP/data/OTP12_fix.csv
+			FIX12_CSVFILE=/etc/common/isp-OTP/OTP12_fix.csv
 			TEMP_CSVFILE=/home/root/OTP${ch}_temp.csv
 
 			CSV2FILE=/home/root/OTP${ch}_read2.csv
