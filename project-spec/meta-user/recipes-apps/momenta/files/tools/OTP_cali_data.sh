@@ -246,7 +246,7 @@ Read_Calibration_Data(){
 Set_Flag(){
 	CAM=$1
 	print_log -e "\n>>>5, set flag <<<"
-	local JSONFILE=/data/calibration-data-cam.json
+	local JSONFILE=/etc/common/isp-OTP/calibration-data-cam.json
 	local API_CMD_LOG=$(printf "$CAM_LOG_DIR/cam_read_cali%02d.log" $CAM)
 	local tty_port=`cat $CONFIG_FILE | jq .camera.cam${CAM}.tty_port`
 
@@ -353,11 +353,11 @@ if [ $2 -eq 1 ]; then
 
 		if [ $flag -ne 0 ]; then
 			CSV1FILE=/home/root/OTP${ch}_read1.csv
-			FIX4_CSVFILE=/data/OTP4_fix.csv
-			FIX5_CSVFILE=/data/OTP5_fix.csv
-			FIX6_CSVFILE=/data/OTP6_fix.csv
-			FIX8_CSVFILE=/data/OTP8_fix.csv
-			FIX12_CSVFILE=/data/OTP12_fix.csv
+			FIX4_CSVFILE=/etc/common/isp-OTP/OTP4_fix.csv
+			FIX5_CSVFILE=/etc/common/isp-OTP/OTP5_fix.csv
+			FIX6_CSVFILE=/etc/common/isp-OTP/OTP6_fix.csv
+			FIX8_CSVFILE=/etc/common/isp-OTP/OTP8_fix.csv
+			FIX12_CSVFILE=/etc/common/isp-OTP/data/OTP12_fix.csv
 			TEMP_CSVFILE=/home/root/OTP${ch}_temp.csv
 
 			CSV2FILE=/home/root/OTP${ch}_read2.csv
