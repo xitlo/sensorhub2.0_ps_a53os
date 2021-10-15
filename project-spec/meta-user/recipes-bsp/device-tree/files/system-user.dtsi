@@ -163,31 +163,31 @@
     status = "disabled";
 };
 
-&CAN_BLK_can_0 {
+&CAN_BLK_canfd_0 {
     status = "disabled";
 };
 
-&CAN_BLK_can_1 {
+&CAN_BLK_canfd_1 {
     status = "disabled";
 };
 
-&CAN_BLK_can_2 {
+&CAN_BLK_canfd_2 {
     status = "disabled";
 };
 
-&CAN_BLK_can_3 {
+&CAN_BLK_canfd_3 {
     status = "disabled";
 };
 
-&CAN_BLK_can_4 {
+&CAN_BLK_canfd_4 {
     status = "disabled";
 };
 
-&CAN_BLK_can_5 {
+&CAN_BLK_canfd_5 {
     status = "disabled";
 };
 
-&CAN_BLK_can_6 {
+&CAN_BLK_canfd_6 {
     status = "disabled";
 };
 
