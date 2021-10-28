@@ -78,3 +78,5 @@ do_install() {
 }
 
 RDEPENDS_${PN}_append += "bash"
+
+INHIBIT_PACKAGE_STRIP = "1"

@@ -44,7 +44,7 @@
  * MACRO
  ** ===================================================== **/
 /* version */
-#define VERSION           "v1.5"
+#define VERSION           "v1.6"
 
 /* 设备节点名称 */
 #define DEVICE_NAME       "timesync"
@@ -134,6 +134,11 @@ static void synctime_process(struct work_struct *work)
     sync_ptr->diff_real_b_ns = (sync_ptr->realtime.tv_sec - sync_ptr->begin.tv_sec)*1000000000 + sync_ptr->realtime.tv_nsec - sync_ptr->begin.tv_nsec;
     sync_ptr->handle_e_b_ns  = (sync_ptr->end.tv_sec - sync_ptr->begin.tv_sec)*1000000000 + sync_ptr->end.tv_nsec - sync_ptr->begin.tv_nsec;
     spin_unlock(&dev->lock);
+
+    if(ret)
+    {
+        printk(KERN_ERR "timesync do_settimeofday64 failed:%d\n",ret);
+    }
 
     if ( 0 < iFlagDebuglog ) {
         printk(KERN_INFO "&&timer expire[%d]! b/r/diff, e/hdl: %lld.%09ld/%lld.%09ld/%ld, %lld.%09ld/%ld\n",

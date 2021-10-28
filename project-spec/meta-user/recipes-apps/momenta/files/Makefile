@@ -36,13 +36,13 @@ all: build
 build: $(APP1) $(APP2) $(APP3) $(APP4) $(APP5) $(APP6)
 
 $(APP1): $(APP1_SRC) $(COMMON_SRCS)
-	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+	$(CC) -o  $@ $^ $(LDFLAGS) $(LDLIBS) -g
 
 $(APP2): $(APP2_SRC) $(COMMON_SRCS)
-	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+	$(CC) -o  $@ $^ $(LDFLAGS) $(LDLIBS) -g
 
 $(APP3): $(APP3_SRC) $(COMMON_SRCS)
-	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+	$(CC) -o  $@ $^ $(LDFLAGS) $(LDLIBS) -g
 
 $(APP4): $(APP4_SRC) $(COMMON_SRCS)
 	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
