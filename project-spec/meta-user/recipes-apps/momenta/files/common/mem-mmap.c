@@ -80,7 +80,7 @@ int MAP_BlockRamOpen(BramPtr_s *pstBramPtr)
     pstBramPtr->pstA53State = (A53State_s *)(bram_map_base + BRAM_A53_STATE_BASE_ADDR - BRAM_BASE_ADDR);
     pstBramPtr->pstA53Data = (A53Data_s *)(bram_map_base + BRAM_A53_DATA_BASE_ADDR - BRAM_BASE_ADDR);
     pstBramPtr->pstR5State = (R5State_s *)(bram_map_base + BRAM_R5_STATE_BASE_ADDR - BRAM_BASE_ADDR);
-    pstBramPtr->pstR5Data = (R5Data_s *)(bram_map_base + BRAM_R5_STATE_BASE_ADDR - BRAM_BASE_ADDR);
+    pstBramPtr->pstR5Data = (R5Data_s *)(bram_map_base + BRAM_R5_DATA_BASE_ADDR - BRAM_BASE_ADDR);
 
     printf("%s %s exit!\n", __func__, MEM_MMAP_VERSION);
     return 0;

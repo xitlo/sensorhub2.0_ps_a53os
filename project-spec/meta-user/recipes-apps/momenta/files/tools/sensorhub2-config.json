@@ -1,5 +1,5 @@
 {
-    "version": "1.6",
+    "version": "1.7",
     "a53": {
         "ip_local": "192.168.2.160",
         "ip_dest": "192.168.2.2",
@@ -26,7 +26,119 @@
         "self_test_boot_addr": "0x80020004",
         "self_test_boot_normal": "0x00000300"
     },
-    "r5": {},
+    "r5": {
+        "imu_board_en": 1,
+        "uart": [
+            {
+                "name": "RS232-0",
+                "enable": 1,
+                "bps": 230400,
+                "id": 4,
+                "idle": 200
+            },
+            {
+                "name": "RS232-1",
+                "enable": 1,
+                "bps": 230400,
+                "id": 5,
+                "idle": 200
+            },
+            {
+                "name": "RS232-2",
+                "enable": 1,
+                "bps": 230400,
+                "id": 17,
+                "idle": 5000
+            },
+            {
+                "name": "RS232-3",
+                "enable": 1,
+                "bps": 230400,
+                "id": 18,
+                "idle": 5000
+            },
+            {
+                "name": "RS232-4",
+                "enable": 1,
+                "bps": 9600,
+                "id": 19,
+                "idle": 5000
+            },
+            {
+                "name": "RS232-5",
+                "enable": 1,
+                "bps": 230400,
+                "id": 20,
+                "idle": 5000
+            },
+            {
+                "name": "RS232-6",
+                "enable": 1,
+                "bps": 230400,
+                "id": 21,
+                "idle": 5000
+            },
+            {
+                "name": "RS232-7",
+                "enable": 1,
+                "bps": 230400,
+                "id": 22,
+                "idle": 5000
+            }
+        ],
+        "can": [
+            {
+                "name": "PS_CAN0",
+                "enable": 1,
+                "id": 1
+            },
+            {
+                "name": "PS_CAN1",
+                "enable": 1,
+                "id": 0
+            },
+            {
+                "name": "FPGA_CAN0",
+                "enable": 0,
+                "id": 7
+            },
+            {
+                "name": "FPGA_CAN1",
+                "enable": 0,
+                "id": 8
+            },
+            {
+                "name": "FPGA_CAN2",
+                "enable": 0,
+                "id": 2
+            },
+            {
+                "name": "FPGA_CAN3",
+                "enable": 0,
+                "id": 29
+            },
+            {
+                "name": "FPGA_CAN4",
+                "enable": 0,
+                "id": 30
+            },
+            {
+                "name": "FPGA_CAN5",
+                "enable": 0,
+                "id": 31
+            },
+            {
+                "name": "FPGA_CAN6",
+                "enable": 0,
+                "id": 32
+            },
+            {
+                "name": "FPGA_CAN7",
+                "enable": 0,
+                "id": 33
+            }
+        ]
+    },
     "fpga": {},
     "camera": {
         "flag_addr": "0x80020014",

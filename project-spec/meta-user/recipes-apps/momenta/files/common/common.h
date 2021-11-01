@@ -33,7 +33,7 @@
 // {
 // #endif // __cplusplus
 
-#define VRESION_A53                 "v1.24"
+#define VRESION_A53                 "v1.25"
 #define VERSION_DEBUG               0
 #define VERSION_A53_REG_ADDR        (0x8000017c)
 #define VERSION_R5_REG_ADDR         (0x80000178)
@@ -60,6 +60,11 @@
 #define STATE_A53_SIZE              (0x1F0)
 #define STATE_R5_SIZE               (0x180)
 #define STATE_PL_SIZE               (0x190)
+
+#define INTERFACE_UART_NUMBER       8
+#define INTERFACE_CAN_NUMBER        10
+
+#define R5_DATA_MAGIC_NUMBER  0xA55AF00F
 
 typedef enum BramType
 {
@@ -218,7 +223,22 @@ typedef struct R5State
 
 typedef struct R5Data
 {
-    volatile uint32_t uiCom1Baud;            /*!< BaudRate for COM1 */
+    volatile int magic_num;
+    volatile int imu_boad_en;
+    struct
+    {
+        volatile char name[16];
+        volatile int enable;
+        volatile int bps;
+        volatile int id;
+        volatile int idle;
+    }uart_config[INTERFACE_UART_NUMBER];
+    struct
+    {
+        volatile char name[16];
+        volatile int enable;
+        volatile int id;
+    }can_config[INTERFACE_CAN_NUMBER];
 } R5Data_s;
 
 typedef struct BramPtr

@@ -29,7 +29,7 @@
 /** ===================================================== **
  * MACRO
  ** ===================================================== **/
-#define CONFIG_PARSE_VERSION "v1.12"
+#define CONFIG_PARSE_VERSION "v1.13"
 
 /** ===================================================== **
  * STRUCT
@@ -43,7 +43,7 @@ static int debug = 0;
 
 static uint32_t uiVerA53;
 static cJSON *pstJsonRoot;
-static BramPtr_s s_stBram;
+static BramPtr_s s_stBram;  
 
 /** ===================================================== **
  * FUNCTION - INTERNAL - JSON
@@ -190,7 +190,82 @@ static int config_file_get_int(cJSON *pstJson, char *pcItem)
         return -1;
     }
 }
+static int config_file_r5(void)
+{
+     cJSON *pstJsonItem, *pstJsonItemUart, *pstJsonItemUartItem, \
+        *pstJsonItemCan, *pstJsonItemCanItem;
+    char *pcItem;
+    int iVal;
+    int json_arr_size;
 
+    s_stBram.pstR5Data->magic_num = R5_DATA_MAGIC_NUMBER;
+
+    pstJsonItem = cJSON_GetObjectItem(pstJsonRoot, "r5");
+    if (NULL == pstJsonItem)
+    {
+        fprintf(stderr, "%s: conf json parse err\n", __func__);
+        return -1;
+    }
+//---set imu board en---
+    s_stBram.pstR5Data->imu_boad_en = config_file_get_int(pstJsonItem, "imu_board_en");
+
+//--------------------set uart config array--------------------------
+    pstJsonItemUart = cJSON_GetObjectItem(pstJsonItem, "uart");
+    if (NULL == pstJsonItemUart)
+    {
+        fprintf(stderr, "%s: conf json parse err\n", __func__);
+        return -1;
+    }
+
+    json_arr_size = cJSON_GetArraySize(pstJsonItemUart);
+    if(json_arr_size != INTERFACE_UART_NUMBER)
+    {
+        fprintf(stderr, "%s: conf json parse err, r5 uart number\n", __func__);
+        return -1;
+    }
+    for(int i = 0;i < json_arr_size;i++)
+    {
+        pstJsonItemUartItem = cJSON_GetArrayItem(pstJsonItemUart, i);
+        if (NULL == pstJsonItemUartItem)
+        {
+            fprintf(stderr, "%s: conf json parse err\n", __func__);
+            return -1;
+        }
+        config_file_set_string(pstJsonItemUartItem, "name", s_stBram.pstR5Data->uart_config[i].name);
+        s_stBram.pstR5Data->uart_config[i].enable = config_file_get_int(pstJsonItemUartItem, "enable");
+        s_stBram.pstR5Data->uart_config[i].bps = config_file_get_int(pstJsonItemUartItem, "bps");
+        s_stBram.pstR5Data->uart_config[i].id = config_file_get_int(pstJsonItemUartItem, "id");
+        s_stBram.pstR5Data->uart_config[i].idle = config_file_get_int(pstJsonItemUartItem, "idle");
+    }
+//-----------------------set can config array------------------------
+    pstJsonItemCan = cJSON_GetObjectItem(pstJsonItem, "can");
+    if (NULL == pstJsonItemCan)
+    {
+        fprintf(stderr, "%s: conf json parse err\n", __func__);
+        return -1;
+    }
+
+    json_arr_size = cJSON_GetArraySize(pstJsonItemCan);
+    if(json_arr_size != INTERFACE_CAN_NUMBER)
+    {
+        fprintf(stderr, "%s: conf json parse err, r5 can number\n", __func__);
+        return -1;
+    }
+
+     for(int i = 0;i < json_arr_size;i++)
+    {
+        pstJsonItemCanItem = cJSON_GetArrayItem(pstJsonItemCan, i);
+        if (NULL == pstJsonItemCanItem)
+        {
+            fprintf(stderr, "%s: conf json parse err\n", __func__);
+            return -1;
+        }
+        config_file_set_string(pstJsonItemCanItem, "name", s_stBram.pstR5Data->can_config[i].name);
+        s_stBram.pstR5Data->can_config[i].enable = config_file_get_int(pstJsonItemCanItem, "enable");
+        s_stBram.pstR5Data->can_config[i].id = config_file_get_int(pstJsonItemCanItem, "id");
+    }
+
+}
 static int config_file_a53(void)
 {
     cJSON *pstJsonItem;
@@ -359,10 +434,12 @@ int main(int argc, char **argv)
         print_err("MAP_BlockRamOpen failed", __LINE__, errno);
     }
     memset((uint8_t *)s_stBram.pstA53Data, 0, BRAM_A53_DATA_SIZE);
+    memset((uint8_t *)s_stBram.pstR5Data, 0, BRAM_R5_DATA_SIZE);
 
     /* 5, read data from config file, set to BRAM */
     config_file_init(config_file_path);
     config_file_a53();
+    config_file_r5();
     config_file_exit();
 
     /* 6, set state */
