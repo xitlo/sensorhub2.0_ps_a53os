@@ -13,3 +13,5 @@ CONFIG_timesync
 CONFIG_r5files
 CONFIG_momenta
 CONFIG_api-cmd
+CONFIG_isp-monitor
+CONFIG_isp-interrupt

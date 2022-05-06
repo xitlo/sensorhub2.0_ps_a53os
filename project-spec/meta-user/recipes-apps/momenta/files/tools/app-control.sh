@@ -2,7 +2,7 @@
 SCRIPT_VERSION=v1.1
 
 #1, check param
-if [ $# -lt 2 ] || [ $1 -lt 1 ] || [ $1 -gt 6 ] ; then
+if [ $# -lt 2 ] || [ $1 -lt 1 ] || [ $1 -gt 7 ] ; then
     echo "app-control, ver: ${SCRIPT_VERSION}"
     echo "Usage: $0 <app_id> <turn_on_1_off_0>"
     echo "app_id: 1, r5 control, 1-on, 2-reset, 0-off"
@@ -96,4 +96,14 @@ if [ $1 -eq 6 ] ; then
     fi
 fi
 
+# 7, camrea isp monitor
+if [ $1 -eq 7 ] ; then
+    if [ $2 -eq 1 ]; then
+        echo ">>>>7, isp_monitor on!"
+        isp_monitor &
+    else
+        echo ">>>>7, isp_monitor off!"
+        ps -ef | grep isp_monitor | grep -v grep | awk '{print $1}' | xargs kill -9
+    fi
+fi
 exit 0;

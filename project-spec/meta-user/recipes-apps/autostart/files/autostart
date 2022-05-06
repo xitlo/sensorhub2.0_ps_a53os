@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CONFIG_FILE_VERSION="1.7"
+CONFIG_FILE_VERSION="1.8"
 echo -e "> Sensorhub2.0 autostart begin!"
 echo -e "> script version: v2.0"
 
@@ -221,6 +221,12 @@ flag=`cat $CONFIG_FILE_DEST | jq .a53.autostart_start_selftest`
 if [ 0 != $flag ]; then
     echo -e "\n>>10, run self test script"
     /etc/common/app-control.sh 6 1
+fi
+#11,run camera-isp monitor
+flag=`cat $CONFIG_FILE_DEST | jq .a53.autostart_start_ispmonitor`
+if [ 0 != $flag ]; then
+    echo -e "\n>>11, run camrea isp monitor"
+    /etc/common/app-control.sh 7 1
 fi
 echo "limitc:"`ulimit -c`
 echo -e "\n> Sensorhub2.0 autostart done!"

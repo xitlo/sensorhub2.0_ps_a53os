@@ -1,5 +1,5 @@
 {
-    "version": "1.7",
+    "version": "1.8",
     "a53": {
         "ip_local": "192.168.2.160",
         "ip_dest": "192.168.2.2",
@@ -19,6 +19,7 @@
         "autostart_start_task_state": 1,
         "autostart_check_ota": 1,
         "autostart_start_selftest": 1,
+        "autostart_start_ispmonitor":1,
         "irq_affinity_en": 1,
         "self_test_addr": "0x80020010",
         "self_test_period_s": 5,
@@ -109,7 +110,7 @@
             },
             {
                 "name": "FPGA_CAN2",
-                "enable": 0,
+                "enable": 1,
                 "id": 2
             },
             {
