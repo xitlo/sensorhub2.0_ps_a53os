@@ -30,10 +30,10 @@ SRC_URI = "file://api_cmd.c \
 S = "${WORKDIR}"
 
 do_compile() {
-	     oe_runmake
+#	     oe_runmake
 }
 
 do_install() {
-	     install -d ${D}${bindir}
-	     install -m 0755 isp_monitor ${D}${bindir}
+#	     install -d ${D}${bindir}
+#	     install -m 0755 isp_monitor ${D}${bindir}
 }

@@ -41,6 +41,7 @@ SRC_URI = "file://common/log.c \
 		file://tools/irq-affinity.sh \
 	    file://tools/view_adjust.sh \
 		file://tools/OTP_cali_data.sh \
+		file://isp_monitor/isp_monitor.c \
 		"
 
 S = "${WORKDIR}"
@@ -57,6 +58,7 @@ do_install() {
 		install -m 0755 config-parse/config-parse ${D}${bindir}
 		install -m 0755 ampperf/ampperf ${D}${bindir}
 		install -m 0755 ampecho/ampecho ${D}${bindir}
+		install -m 0755 isp_monitor/isp_monitor ${D}${bindir}
 		install -d ${D}${sysconfdir}/common
 		install -m 0755 tools/app-control.sh ${D}${sysconfdir}/common
 		install -m 0755 tools/deploy-emmc.sh ${D}${sysconfdir}/common

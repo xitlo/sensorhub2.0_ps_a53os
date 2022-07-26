@@ -4223,7 +4223,7 @@ CONFIG_autostart=y
 CONFIG_dosfstools=y
 # CONFIG_gpio-demo is not set
 CONFIG_iperf3=y
-CONFIG_isp-monitor=y
+#CONFIG_isp-monitor=y
 CONFIG_jq=y
 CONFIG_mem-test=y
 CONFIG_momenta=y

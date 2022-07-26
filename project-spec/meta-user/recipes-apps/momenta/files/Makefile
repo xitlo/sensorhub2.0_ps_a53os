@@ -28,12 +28,15 @@ APP5_SRC = $(APP5).c
 APP6 = ./ampecho/ampecho
 APP6_SRC = $(APP6).c
 
+APP7 = ./isp_monitor/isp_monitor
+APP7_SRC = $(APP7).c
+
 LDFLAGS += -I ./common
 LDLIBS += -lpthread -lzlog
 
 all: build
 
-build: $(APP1) $(APP2) $(APP3) $(APP4) $(APP5) $(APP6)
+build: $(APP1) $(APP2) $(APP3) $(APP4) $(APP5) $(APP6) $(APP7)
 
 $(APP1): $(APP1_SRC) $(COMMON_SRCS)
 	$(CC) -o  $@ $^ $(LDFLAGS) $(LDLIBS) -g
@@ -53,6 +56,8 @@ $(APP5): $(APP5_SRC) $(COMMON_SRCS)
 $(APP6): $(APP6_SRC) $(COMMON_SRCS)
 	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
+$(APP7): $(APP7_SRC) $(COMMON_SRCS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 clean:
 	rm -f $(APP1) $(APP2) $(APP3) $(APP4) $(APP5) $(APP6) *.o
 
