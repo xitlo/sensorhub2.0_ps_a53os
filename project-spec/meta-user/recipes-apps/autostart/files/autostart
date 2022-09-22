@@ -119,11 +119,20 @@ config-parse -p $CONFIG_FILE_DEST
 sleep 2
 
 # 5, read camera version in background
-flag=`cat $CONFIG_FILE_DEST | jq .a53.autostart_read_cam_ver`
-if [ 0 != $flag ]; then
-    echo -e "\n>>5, read camera version in background"
-    /etc/common/cam_ver.sh > /dev/null &
-fi
+ver_isp_monitor(){
+    flag=`cat $CONFIG_FILE_DEST | jq .a53.autostart_read_cam_ver`
+    if [ 0 != $flag ]; then
+        echo -e "\n>>5, read camera version in background"
+        /etc/common/cam_ver.sh > /dev/null;
+    fi
+    flag=`cat $CONFIG_FILE_DEST | jq .a53.autostart_start_ispmonitor`
+    if [ 0 != $flag ]; then
+        echo -e "\n>>11, run camrea isp monitor";
+        /etc/common/app-control.sh 7 1
+    fi
+}
+ver_isp_monitor &
+
 
 # 6, check and copy r5 firmware
 echo -e "\n>>6, check and copy r5 firmware"
@@ -221,12 +230,6 @@ flag=`cat $CONFIG_FILE_DEST | jq .a53.autostart_start_selftest`
 if [ 0 != $flag ]; then
     echo -e "\n>>10, run self test script"
     /etc/common/app-control.sh 6 1
-fi
-#11,run camera-isp monitor
-flag=`cat $CONFIG_FILE_DEST | jq .a53.autostart_start_ispmonitor`
-if [ 0 != $flag ]; then
-    echo -e "\n>>11, run camrea isp monitor"
-    /etc/common/app-control.sh 7 1
 fi
 echo "limitc:"`ulimit -c`
 echo -e "\n> Sensorhub2.0 autostart done!"

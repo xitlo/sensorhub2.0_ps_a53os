@@ -23,6 +23,19 @@ CamReadVer(){
 	# dev_ch=$(printf "%02x" $1)
 	print_log -e ">>>cam[$1], 1, read cam version, ${VER_BYTE_NUM}bytes"
 	local tty_port=`cat $CONFIG_FILE | jq .camera.cam$1.tty_port`
+	#fist check isp status,wait for it is ready
+	for((i=0;i<5;i++))
+	do
+		local cmd_line=$(printf "api_cmd -U$tty_port 0x10 max | grep \"PAYLOAD\\[00\\:03\\]\" | awk \'{print \$2}\'")
+		local status=`eval $cmd_line`
+		print_log -e "api_cmd -U$tty_port 0x10 max status: "${i},${status}
+		if [ "${status}" == "02" ] ; then
+			print_log -e "api_cmd -U$tty_port 0x10 max,ok can read cam version"
+			break
+		fi
+		print_log -e "api_cmd 0x10 -U$tty_port max isp status is not 02,sleep 1"
+		sleep 1
+	done
 
 	id=0
 	ret=0
@@ -39,6 +52,7 @@ CamReadVer(){
 		count=0;
 		while [ ! -n "${ver[$i]}" ]
 		do
+			usleep 100000
 			local cmd_line=$(printf "api_cmd -U$tty_port 0x53 1 0500000000fa0000%02x000000 | grep \"PAYLOAD\\[00\\:00\\]\" | awk \'{print \$2}\'" $id)
 			local ver[$i]=`eval $cmd_line` #eval 读取一连串的参数，再依据参数本身的特性来执行
 			count=`expr $count + 1`
@@ -112,8 +126,9 @@ date_start=$(date +%s)
 print_log -e "\n>>1, fakra powerup"
 /sbin/devmem 0x80000020 32 0x0000ffff
 
-print_log -e "\n>>2, sleep 2s, wait isp normal"
-sleep 2
+#isp上电延时5秒再读版本号
+print_log -e "\n>>2, sleep 5s, wait isp normal"
+sleep 5
 
 print_log -e "\n>>3, read and set version for cam 0-15"
 for((ch=0;ch<16;ch++))
