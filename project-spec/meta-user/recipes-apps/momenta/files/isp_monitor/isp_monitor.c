@@ -85,6 +85,11 @@ int main(int argc, char *argv[])
                     continue;
                 if((value >> (4+i)) & 0x00000001)
                     continue;
+                //check_cam isp status
+                sprintf(cmd_str, "/etc/common/cam_check.sh %d", 4+i);
+                status = system(cmd_str);
+                if(-1 == status)
+                    _log_info("cam_check: /etc/common/cam_check.sh exec faild");
                 //ther are cam error,reset all of them
                 _log_info("ISP: ISP value:0x%08x cam_channel(%d) uart(%d) is error,reset it\n",value,4+i,isp_uart_channel[i]);
                 errcnt=0;

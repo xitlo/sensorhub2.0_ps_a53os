@@ -42,6 +42,7 @@ SRC_URI = "file://common/log.c \
 	    file://tools/view_adjust.sh \
 		file://tools/OTP_cali_data.sh \
 		file://isp_monitor/isp_monitor.c \
+		file://isp_monitor/cam_check.sh \
 		"
 
 S = "${WORKDIR}"
@@ -77,6 +78,7 @@ do_install() {
 		install -m 0755 tools/irq-affinity.sh ${D}${sysconfdir}/common
 	    install -m 0755 tools/view_adjust.sh ${D}${sysconfdir}/common
 		install -m 0755 tools/OTP_cali_data.sh ${D}${sysconfdir}/common
+		install -m 0755 isp_monitor/cam_check.sh ${D}${sysconfdir}/common
 }
 
 RDEPENDS_${PN}_append += "bash"
