@@ -124,7 +124,7 @@ print_log -e "cam_ver.sh VER: $SCRIPT_VERSION"
 date_start=$(date +%s)
 
 print_log -e "\n>>1, fakra powerup"
-/sbin/devmem 0x80000020 32 0x0000ffff
+/sbin/devmem 0x80000020 32 0xffffffff
 
 #isp上电延时5秒再读版本号
 print_log -e "\n>>2, sleep 5s, wait isp normal"
@@ -150,8 +150,8 @@ do
 done
 wait
 
-print_log -e "\n>>4, fakra poweroff"
-/sbin/devmem 0x80000020 32 0xffff0000
+#print_log -e "\n>>4, fakra poweroff"
+#/sbin/devmem 0x80000020 32 0xffff0000
 
 cam_flag_val=0
 for((ch=0;ch<16;ch++))

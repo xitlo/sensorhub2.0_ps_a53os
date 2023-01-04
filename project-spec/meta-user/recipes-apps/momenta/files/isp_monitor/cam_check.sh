@@ -31,40 +31,23 @@ isp_gw5x=$CAM_CHECK_LOG_DIR/$name_1
 dir_FPGA=$CAM_CHECK_LOG_DIR/$name_5
 
 echo "FPGA is ready *******************************"
-mem-test r 0x80000000 100 10 >>$dir_FPGA #相机上电状态、通道配置状态、lock状态、输入状态
-mem-test r 0x80000000 130 20 >>$dir_FPGA #各相机lock丢失计数与丢帧计数
-mem-test r 0x80010000 0 10 >>$dir_FPGA #9296lock状态、status状态（Vsync信号）
+mem-test r 0x80000000 100 30 >>$dir_FPGA #相机上电状态、通道配置状态、lock状态、输入状态
+                               #各相机lock丢失计数与丢帧计数
+mem-test r 0x80010000 0 1 >>$dir_FPGA #9296lock状态、status状态（Vsync信号）
 
 echo "ISP is ready *******************************"
 api_cmd -U$UART_PORT 0x10 max | grep -E "Data|PAYLOAD" >>$isp_gw5x  #ISP状态
 api_cmd -U$UART_PORT 0x18 max | grep -E "Data|PAYLOAD" >>$isp_gw5x  #ISP输如输出状态
 api_cmd -U$UART_PORT 0x18 max | grep -E "Data|PAYLOAD" >>$isp_gw5x  #ISP输如输出状态
-api_cmd -U$UART_PORT 0x2 max 0140005e51 | grep -E "Data|PAYLOAD" >>$isp_gw5x  #SOT Error 计数
-api_cmd -U$UART_PORT 0x2 max 0154005e51 | grep -E "Data|PAYLOAD" >>$isp_gw5x  #CRC Error 计数
+#api_cmd -U$UART_PORT 0x2 max 0140005e51 | grep -E "Data|PAYLOAD" >>$isp_gw5x  #SOT Error 计数
+#api_cmd -U$UART_PORT 0x2 max 0154005e51 | grep -E "Data|PAYLOAD" >>$isp_gw5x  #CRC Error 计数
 
 echo "9296 is ready *****************************"
-api_cmd -U$UART_PORT  0xc0 04 900000002f0000000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串Lock丢失
-api_cmd -U$UART_PORT  0xc0 04 90000000000100000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串输入数据通道 crc Error异常
-api_cmd -U$UART_PORT  0xc0 04 90000000120100000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串输入数据通道 crc Error异常
-api_cmd -U$UART_PORT  0xc0 04 90000000240100000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串输入数据通道 crc Error异常
-api_cmd -U$UART_PORT  0xc0 04 90000000360100000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串输入数据通道 crc Error异常
-api_cmd -U$UART_PORT  0xc0 04 900000005c0500000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串输入数据通道crc异常计数
-api_cmd -U$UART_PORT  0xc0 04 900000005d0500000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串输入数据通道crc异常计数
-api_cmd -U$UART_PORT  0xc0 04 90000000dc0100000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串输入数据lock状态
-api_cmd -U$UART_PORT  0xc0 04 900000003c0100000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串输入数据lock状态
-api_cmd -U$UART_PORT  0xc0 04 900000001c0200000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串输入数据lock状态
-api_cmd -U$UART_PORT  0xc0 04 900000003c0200000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串输入数据lock状态
-
-
-echo "9295 is ready *******************************"
-api_cmd -U$UART_PORT 0xC0 04 800000001d0400000201 | grep -E "Data|PAYLOAD" >>$dir_9295  #串化芯片 crc error 计数
-api_cmd -U$UART_PORT 0xC0 04 80000000130000000201 | grep -E "Data|PAYLOAD" >>$dir_9295  #串化芯片输出端lock
-api_cmd -U$UART_PORT 0xC0 04 80000000410300000201 | grep -E "Data|PAYLOAD" >>$dir_9295  #串化芯片输入端mipi
-api_cmd -U$UART_PORT 0xC0 04 80000000420300000201 | grep -E "Data|PAYLOAD" >>$dir_9295  #串化芯片输入端mipi
-api_cmd -U$UART_PORT 0xC0 04 80000000201000000201 | grep -E "Data|PAYLOAD" >>$dir_9295  #pclock检测
-api_cmd -U$UART_PORT 0xC0 04 80000000a01000000201 | grep -E "Data|PAYLOAD" >>$dir_9295  #pclock检测
-api_cmd -U$UART_PORT 0xC0 04 80000001201000000201 | grep -E "Data|PAYLOAD" >>$dir_9295  #pclock检测
-api_cmd -U$UART_PORT 0xC0 04 80000001a01000000201 | grep -E "Data|PAYLOAD" >>$dir_9295  #pclock检测
+api_cmd -U$UART_PORT  0xc0 04 90000000220000000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串22寄存器                   
+api_cmd -U$UART_PORT  0xc0 04 900000005c0500000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串55c寄存器                  
+api_cmd -U$UART_PORT  0xc0 04 900000005d0500000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串55d寄存器                  
+api_cmd -U$UART_PORT  0xc0 04 90000000120100000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串输入数据Y通道 crc Error异常     
+api_cmd -U$UART_PORT  0xc0 04 90000000240100000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串输入数据Z通道 crc Error异常     
 
 if [ $1 -eq 4 -o $1 -eq 5 ]; then
     echo "IMX490 is ready *******************************"

@@ -80,6 +80,9 @@ int main(int argc, char *argv[])
         value = *(volatile unsigned int *)(map_base1 + 0);
         _log_info("ISP: ISP poweronflg=0x%08x,came_status=0x%08x\n",poweronflg,value);
         if((value & 0x0000fff0) != poweronflg){
+            //set flag
+			sprintf(cmd_str, "echo 1 > /data/bsplog/ispmonitor.log");
+            status = system(cmd_str);
             for(char i=0;i<12;i++){
                 if(((poweronflg >> (4+i)) & 0x00000001) == 0) //do not reset camera which is not power on
                     continue;
@@ -131,6 +134,9 @@ int main(int argc, char *argv[])
                     _log_info("ISP: ----------api_cmd -U%d 0x12 noquery 0000000000000000 failed----------\n",isp_uart_channel[i]);
             }
             sleep(5);
+            //clear flag
+			sprintf(cmd_str, "echo 0 > /data/bsplog/ispmonitor.log");
+            status = system(cmd_str);
         }
         //clear the interrupt reg
         //*(volatile unsigned int *)(map_base1 + 0x190) = 0xffffffff;
