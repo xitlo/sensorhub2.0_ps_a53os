@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
     pid_t status;
     char sysretval;
     char cmd_str[128] = "";
+	sprintf(cmd_str, "echo 0 > /data/bsplog/ispmonitor.log");
     printf("v2.0 camera ISP monitor app start.\n");
     if (0 != log_init("/etc/common/zlog.conf")) {
         printf("parse log config failed, please check zlog.conf", __LINE__, errno);
