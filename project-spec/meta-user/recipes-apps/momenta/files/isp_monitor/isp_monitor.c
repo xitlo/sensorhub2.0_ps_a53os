@@ -35,8 +35,9 @@ int main(int argc, char *argv[])
     pid_t status;
     char sysretval;
     char cmd_str[128] = "";
-	sprintf(cmd_str, "echo 0 > /data/bsplog/ispmonitor.log");
     printf("v2.0 camera ISP monitor app start.\n");
+	sprintf(cmd_str, "echo 0 > /data/bsplog/ispmonitor.log");
+	status = system(cmd_str);
     if (0 != log_init("/etc/common/zlog.conf")) {
         printf("parse log config failed, please check zlog.conf", __LINE__, errno);
         return -1;
@@ -80,7 +81,7 @@ int main(int argc, char *argv[])
 
         value = *(volatile unsigned int *)(map_base1 + 0);
         _log_info("ISP: ISP poweronflg=0x%08x,came_status=0x%08x\n",poweronflg,value);
-        if((value & 0x0000fff0) != poweronflg){
+        if((value & 0x0000fff0) != poweronflg & 0x0000fff0){
             //set flag
 			sprintf(cmd_str, "echo 1 > /data/bsplog/ispmonitor.log");
             status = system(cmd_str);
