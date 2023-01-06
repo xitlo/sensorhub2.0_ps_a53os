@@ -98,6 +98,10 @@ int main(int argc, char *argv[])
                 //ther are cam error,reset all of them
                 _log_info("ISP: ISP value:0x%08x cam_channel(%d) uart(%d) is error,reset it\n",value,4+i,isp_uart_channel[i]);
                 errcnt=0;
+                *(volatile unsigned int *)(map_base + 0x24) = 0x00000001<<i;
+                sleep(1);
+                *(volatile unsigned int *)(map_base + 0x24) = 0x0;
+                sleep(1);
                 do{
                     sprintf(cmd_str, "/usr/bin/api_cmd -U%d 0x14 max", isp_uart_channel[i]);
                     status = system(cmd_str);
