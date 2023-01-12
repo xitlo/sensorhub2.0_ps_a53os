@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
 
         value = *(volatile unsigned int *)(map_base1 + 0);
         _log_info("ISP: ISP poweronflg=0x%08x,came_status=0x%08x\n",poweronflg,value);
-        if((value & 0x0000fff0) != poweronflg & 0x0000fff0){
+        if((value & 0x0000fff0) != (poweronflg & 0x0000fff0)){
             //set flag
 			sprintf(cmd_str, "echo 1 > /data/bsplog/ispmonitor.log");
             status = system(cmd_str);
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
                 //ther are cam error,reset all of them
                 _log_info("ISP: ISP value:0x%08x cam_channel(%d) uart(%d) is error,reset it\n",value,4+i,isp_uart_channel[i]);
                 errcnt=0;
-                *(volatile unsigned int *)(map_base + 0x24) = 0x00000001<<i;
+                *(volatile unsigned int *)(map_base + 0x24) = (0x00000001<<(i+4));
                 sleep(1);
                 *(volatile unsigned int *)(map_base + 0x24) = 0x0;
                 sleep(1);
