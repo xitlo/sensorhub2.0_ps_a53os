@@ -8,51 +8,44 @@ cd $CAM_CHECK_LOG_DIR
 
 cam_nums=(490-0 490-1 490-2 490-3 F30 F120 LF100 RF100 LR60 RR60 RU60 RD60 Front197 Right197 Rear197 Left197)
 uart_nums=(0 0 0 0 10 11 12 13 14 15 2 3 4 5 6 7)
-UART_PORT=${uart_nums[$1]}
+FILE_IN=${uart_nums[$1]}
 cam_name=${cam_nums[$1]}
-
-name_0=result_9296_cam$cam_name.txt
-name_1=result_GW5x_cam$cam_name.txt
-name_2=result_9295_cam$cam_name.txt
-name_3=result_IMX390_cam$cam_name.txt
-name_4=result_IMX490_cam$cam_name.txt
-name_5=result_FPGA_cam$cam_name.txt
-touch $CAM_CHECK_LOG_DIR/$name_0
-touch $CAM_CHECK_LOG_DIR/$name_1
-touch $CAM_CHECK_LOG_DIR/$name_2
-touch $CAM_CHECK_LOG_DIR/$name_3
-touch $CAM_CHECK_LOG_DIR/$name_4
-touch $CAM_CHECK_LOG_DIR/$name_5
-dir_9296=$CAM_CHECK_LOG_DIR/$name_0
-dir_9295=$CAM_CHECK_LOG_DIR/$name_2
-dir_IMX390=$CAM_CHECK_LOG_DIR/$name_3
-dir_IMX490=$CAM_CHECK_LOG_DIR/$name_4
-isp_gw5x=$CAM_CHECK_LOG_DIR/$name_1
-dir_FPGA=$CAM_CHECK_LOG_DIR/$name_5
+name_cam_check=$CAM_CHECK_LOG_DIR/result.txt
+touch $name_cam_check
 
 echo "FPGA is ready *******************************"
-mem-test r 0x80000000 100 30 >>$dir_FPGA #相机上电状态、通道配置状态、lock状态、输入状态
+mem-test r 0x80000000 100 20 >>$name_cam_check #相机上电状态、通道配置状态、lock状态、输入状态
                                #各相机lock丢失计数与丢帧计数
-mem-test r 0x80010000 0 1 >>$dir_FPGA #9296lock状态、status状态（Vsync信号）
+mem-test r 0x80010000 0 1 >>$name_cam_check #9296lock状态、status状态（Vsync信号）
 
 echo "ISP is ready *******************************"
-api_cmd -U$UART_PORT 0x10 max | grep -E "Data|PAYLOAD" >>$isp_gw5x  #ISP状态
-api_cmd -U$UART_PORT 0x18 max | grep -E "Data|PAYLOAD" >>$isp_gw5x  #ISP输如输出状态
-api_cmd -U$UART_PORT 0x18 max | grep -E "Data|PAYLOAD" >>$isp_gw5x  #ISP输如输出状态
-#api_cmd -U$UART_PORT 0x2 max 0140005e51 | grep -E "Data|PAYLOAD" >>$isp_gw5x  #SOT Error 计数
-#api_cmd -U$UART_PORT 0x2 max 0154005e51 | grep -E "Data|PAYLOAD" >>$isp_gw5x  #CRC Error 计数
+api_0x10=$(api_cmd -U$FILE_IN 0x10 max | grep PAYLOAD)  #ISP状态
+echo "$cam_name 0x10:$api_0x10" >>$name_cam_check
+api_0x18_01=$(api_cmd -U$FILE_IN 0x18 max | grep Data|PAYLOAD) #ISP输如输出状态
+echo "$cam_name 0x18_01:$api_0x18_01" >>$name_cam_check
+api_0x18_02=$(api_cmd -U$FILE_IN 0x18 max | grep Data|PAYLOAD) #ISP输如输出状态
+echo "$cam_name 0x18_02:$api_0x18_02" >>$name_cam_check
 
 echo "9296 is ready *****************************"
-api_cmd -U$UART_PORT  0xc0 04 90000000220000000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串22寄存器                   
-api_cmd -U$UART_PORT  0xc0 04 900000005c0500000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串55c寄存器                  
-api_cmd -U$UART_PORT  0xc0 04 900000005d0500000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串55d寄存器                  
-api_cmd -U$UART_PORT  0xc0 04 90000000120100000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串输入数据Y通道 crc Error异常     
-api_cmd -U$UART_PORT  0xc0 04 90000000240100000201 | grep -E "Data|PAYLOAD" >>$dir_9296  #解串输入数据Z通道 crc Error异常     
+api_22=$(api_cmd -U$FILE_IN  0xc0 04 90000000220000000201 | grep PAYLOAD)  #解串22寄存器
+echo "$cam_name 22:$api_22" >>$name_cam_check
+api_55c=$(api_cmd -U$FILE_IN  0xc0 04 900000005c0500000201 | grep PAYLOAD)  #解串55c寄存器
+echo "$cam_name 55c:$api_55c" >>$name_cam_check
+api_55d=$(api_cmd -U$FILE_IN  0xc0 04 900000005d0500000201 | grep PAYLOAD)  #解串55d寄存器
+echo "$cam_name 55d:$api_55d" >>$name_cam_check
+api_112=$(api_cmd -U$FILE_IN  0xc0 04 90000000120100000201 | grep PAYLOAD)  #解串输入数据Y通道 crc Error异常
+echo "$cam_name 112:$api_112" >>$name_cam_check
+api_124=$(api_cmd -U$FILE_IN  0xc0 04 90000000240100000201 | grep PAYLOAD)  #解串输入数据Z通道 crc Error异常
+echo "$cam_name 124:$api_124" >>$name_cam_check
+
+
 
 if [ $1 -eq 4 -o $1 -eq 5 ]; then
     echo "IMX490 is ready *******************************"
-    api_cmd -U$UART_PORT 0xC0 04 34000000707600000201 | grep -E "Data|PAYLOAD" >>$dir_IMX490  #490状态
+    api_490=$(api_cmd -U$UART_PORT 0xC0 04 34000000707600000201 | grep PAYLOAD)  #490状态
+    echo "$cam_name 490:$api_490" >>$name_cam_check
 else
     echo "IMX390 is ready *******************************"
-    api_cmd -U$UART_PORT 0xC0 04 42000000015000000201 | grep -E "Data|PAYLOAD" >>$dir_IMX390  #390状态
+    api_390=$(api_cmd -U$UART_PORT 0xC0 04 42000000015000000201 | grep PAYLOAD)  #390状�
+    echo "$cam_name 390:$api_390" >>$name_cam_check
 fi

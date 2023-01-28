@@ -68,9 +68,13 @@ int main(int argc, char *argv[])
         sleep(1);
         //if camera is poweroff the stop check isp status
         poweronflg = *(volatile unsigned int *)(map_base + 0x20);
-        if((poweronflg & 0x0000fff0) == 0x00000000){
+        if((poweronflg & 0x0000000f) != 0x00000000){
             pwrinitflg =0;
-            _log_info("ISP: ISP camera is all power-off,don't check\n",poweronflg);
+            _log_info("ISP: camera service or test_demo is not running, don't check\n",poweronflg);
+            continue;
+		}else if((poweronflg & 0x0000fff0) == 0x00000000){
+            pwrinitflg =0;
+            _log_info("ISP: ISP camera is all power-off, don't check\n",poweronflg);
             continue;
         }else if(pwrinitflg == 0){
             sleep(10);
