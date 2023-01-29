@@ -21,9 +21,9 @@ mem-test r 0x80010000 0 1 >>$name_cam_check #9296lock状态、status状态（Vsy
 echo "ISP is ready *******************************"
 api_0x10=$(api_cmd -U$FILE_IN 0x10 max | grep PAYLOAD)  #ISP状态
 echo "$cam_name 0x10:$api_0x10" >>$name_cam_check
-api_0x18_01=$(api_cmd -U$FILE_IN 0x18 max | grep Data|PAYLOAD) #ISP输如输出状态
+api_0x18_01=$(api_cmd -U$FILE_IN 0x18 max | grep PAYLOAD) #ISP输如输出状态
 echo "$cam_name 0x18_01:$api_0x18_01" >>$name_cam_check
-api_0x18_02=$(api_cmd -U$FILE_IN 0x18 max | grep Data|PAYLOAD) #ISP输如输出状态
+api_0x18_02=$(api_cmd -U$FILE_IN 0x18 max | grep PAYLOAD) #ISP输如输出状态
 echo "$cam_name 0x18_02:$api_0x18_02" >>$name_cam_check
 
 echo "9296 is ready *****************************"
