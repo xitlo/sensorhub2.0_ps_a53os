@@ -42,10 +42,10 @@ echo "$cam_name 124:$api_124" >>$name_cam_check
 
 if [ $1 -eq 4 -o $1 -eq 5 ]; then
     echo "IMX490 is ready *******************************"
-    api_490=$(api_cmd -U$UART_PORT 0xC0 04 34000000707600000201 | grep PAYLOAD)  #490状态
+    api_490=$(api_cmd -U$FILE_IN 0xC0 04 34000000707600000201 | grep PAYLOAD)  #490状态
     echo "$cam_name 490:$api_490" >>$name_cam_check
 else
     echo "IMX390 is ready *******************************"
-    api_390=$(api_cmd -U$UART_PORT 0xC0 04 42000000015000000201 | grep PAYLOAD)  #390状�
+    api_390=$(api_cmd -U$FILE_IN 0xC0 04 42000000015000000201 | grep PAYLOAD)  #390状态
     echo "$cam_name 390:$api_390" >>$name_cam_check
 fi
