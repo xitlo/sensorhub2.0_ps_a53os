@@ -28,13 +28,14 @@ int main(int argc, char *argv[])
     char errcnt =0;
     unsigned int  addr, value, map_size;;
     unsigned long base;
-    unsigned char *map_base,*map_base1;
+    unsigned char *map_base,*map_base1,*map_base2;
     int dev_fd;
     unsigned char index;
     unsigned int poweronflg=0x00000000;
     pid_t status;
     char sysretval;
     char cmd_str[128] = "";
+    int mipi_cnt0,mipi_cnt1,mipi_cnt2,mipi_cnt3;
     printf("v2.0 camera ISP monitor app start.\n");
 	sprintf(cmd_str, "echo 0 > /data/bsplog/ispmonitor.log");
 	status = system(cmd_str);
@@ -102,10 +103,71 @@ int main(int argc, char *argv[])
                 //ther are cam error,reset all of them
                 _log_info("ISP: ISP value:0x%08x cam_channel(%d) uart(%d) is error,reset it\n",value,4+i,isp_uart_channel[i]);
                 errcnt=0;
-                *(volatile unsigned int *)(map_base + 0x24) = (0x00000001<<(i+4));
+                
+                //*************************************************************
+                //get mipi status
+                base = 0x80240000;
+                map_size = 0xd00000;
+                map_base2 = (unsigned char *)mmap(NULL, map_size, PROT_READ | PROT_WRITE, MAP_SHARED, dev_fd, base);
+
+                mipi_cnt0 = *(volatile unsigned int *)(map_base2 + 0x10000*i + 0x10);
+                mipi_cnt1 = *(volatile unsigned int *)(map_base2 + 0x10000*i + 0x101c);
                 sleep(1);
-                *(volatile unsigned int *)(map_base + 0x24) = 0x0;
-                sleep(1);
+                mipi_cnt2 = *(volatile unsigned int *)(map_base2 + 0x10000*i + 0x10);
+                mipi_cnt3 = *(volatile unsigned int *)(map_base2 + 0x10000*i + 0x101c);
+                _log_info("dphy cnt0=%d, cnt1=%d, mipi cnt0=%d, cnt1=%d\n",mipi_cnt1,mipi_cnt3,mipi_cnt0,mipi_cnt2);
+                
+                if((mipi_cnt1!=mipi_cnt3)&&(mipi_cnt0==mipi_cnt2)){ 
+                    //if fpga mipi ip coredump
+                    _log_info("fpga mipi ip coredump!!!!!!\n");
+                    *(volatile unsigned int *)(map_base + 0x24) = (0x00000001<<(i+4-(i+4)%4));
+                    sleep(1);
+                    *(volatile unsigned int *)(map_base + 0x24) = 0x0;
+                    sleep(1);
+                    *(volatile unsigned int *)(map_base + 0x24) = (0x00000001<<(i+4));
+                    sleep(1);
+                    *(volatile unsigned int *)(map_base + 0x24) = 0x0;
+                    sleep(1);
+                    
+                    //if cam4 mipi dump need reset cam4 first
+                    do{
+                        sprintf(cmd_str, "/usr/bin/api_cmd -U%d 0x14 max", isp_uart_channel[i-i%4]);
+                        status = system(cmd_str);
+                        if(-1 == status)
+                           _log_info("ISP: ISP system api_cmd 0x14 error");
+                        else{
+                            sysretval = status >> 8;
+                            _log_info("ISP: ISP api cmd 0x14 ret=%d\n",sysretval);
+                            if(sysretval != 0){
+                                usleep(200 * 1000);
+                                errcnt++;
+                            }else
+                                break;
+                        }
+                    }while(errcnt<3);
+                    if(errcnt >= 3)
+                        _log_info("ISP: ISP ----------api_cmd -U%d 0x14 max failed----------\n",isp_uart_channel[i-i%4]);
+                    usleep(100 * 1000);
+                    errcnt =0;
+                    do{
+                        sprintf(cmd_str, "/usr/bin/api_cmd -U%d 0x12 noquery 0000000000000000", isp_uart_channel[i-i%4]);
+                        status = system(cmd_str);
+                        if(-1 == status)
+                           _log_info("ISP: system api_cmd 0x12 error");
+                        else{
+                            sysretval = status >> 8;
+                            _log_info("ISP: api cmd 0x12 ret=%d\n",sysretval);
+                            if(sysretval != 0){
+                                usleep(200 * 1000);
+                                errcnt++;
+                            }else
+                                break;
+                        }
+                    }while(errcnt<3);
+                    if(errcnt >= 3)
+                        _log_info("ISP: ----------api_cmd -U%d 0x12 noquery 0000000000000000 failed----------\n",isp_uart_channel[i-i%4]);   
+                }
+
                 do{
                     sprintf(cmd_str, "/usr/bin/api_cmd -U%d 0x14 max", isp_uart_channel[i]);
                     status = system(cmd_str);
