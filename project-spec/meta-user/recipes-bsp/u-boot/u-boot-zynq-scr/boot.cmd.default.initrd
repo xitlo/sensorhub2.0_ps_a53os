@@ -5,60 +5,28 @@
 ################
 @@PRE_BOOTENV@@
 
-# set HEADER, fix to 0xAABBCCDD
-mw 0x80020000 0xAABBCCDD
-
-# read multiboot reg, set to 0x80020004
-zynqmp mmio_read 0xFFCA0010 0x80020004
-
-# set custom uboot version to 0x80020008
-zynqmp version 0x80020008
-
-# set boot.scr version to 0x80020005, byte
-mw.b 0x80020005 0x03
-
 for boot_target in ${boot_targets};
 do
-	echo "boot_target/devtype: ${boot_target}/${devtype}"
 	if test "${boot_target}" = "jtag" ; then
 		@@KERNEL_BOOTCMD@@ @@KERNEL_LOAD_ADDRESS@@ @@RAMDISK_IMAGE_ADDRESS@@ @@DEVICETREE_ADDRESS@@
 		exit;
 	fi
-	if test "${boot_target}" = "mmc0"; then
-		if test -e ${devtype} 0:1 /@@FIT_IMAGE@@; then
-			mw.b 0x80020006 0x00
-			fatload ${devtype} 0:1 @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE@@;
+	if test "${boot_target}" = "mmc0" || test "${boot_target}" = "mmc1" ; then
+		if test -e ${devtype} ${devnum}:${distro_bootpart} /@@FIT_IMAGE@@; then
+			fatload ${devtype} ${devnum}:${distro_bootpart} @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE@@;
 			bootm @@FIT_IMAGE_LOAD_ADDRESS@@;
+			exit;
+                fi
+		if test -e ${devtype} ${devnum}:${distro_bootpart} /@@KERNEL_IMAGE@@; then
+			fatload ${devtype} ${devnum}:${distro_bootpart} @@KERNEL_LOAD_ADDRESS@@ @@KERNEL_IMAGE@@;;
 		fi
-		if test -e ${devtype} 0:1 /@@FIT_IMAGE_BAK@@; then
-			mw.b 0x80020006 0x01
-			fatload ${devtype} 0:1 @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE_BAK@@;
-			bootm @@FIT_IMAGE_LOAD_ADDRESS@@;
+		if test -e ${devtype} ${devnum}:${distro_bootpart} /system.dtb; then
+			fatload ${devtype} ${devnum}:${distro_bootpart} @@DEVICETREE_ADDRESS@@ system.dtb;
 		fi
-		if test -e ${devtype} 0:1 /@@FIT_IMAGE_ORIGIN@@; then
-			mw.b 0x80020006 0x02
-			fatload ${devtype} 0:1 @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE_ORIGIN@@;
-			bootm @@FIT_IMAGE_LOAD_ADDRESS@@;
-		fi
-		if test -e ${devtype} 0:1 /@@KERNEL_IMAGE@@; then
-			fatload ${devtype} 0:1 @@KERNEL_LOAD_ADDRESS@@ @@KERNEL_IMAGE@@;;
-		fi
-		if test -e ${devtype} 0:1 /system.dtb; then
-			fatload ${devtype} 0:1 @@DEVICETREE_ADDRESS@@ system.dtb;
-		fi
-		if test -e ${devtype} 0:1 /@@RAMDISK_IMAGE@@; then
-			fatload ${devtype} 0:1 @@RAMDISK_IMAGE_ADDRESS@@ @@RAMDISK_IMAGE@@;
+		if test -e ${devtype} ${devnum}:${distro_bootpart} /@@RAMDISK_IMAGE@@; then
+			fatload ${devtype} ${devnum}:${distro_bootpart} @@RAMDISK_IMAGE_ADDRESS@@ @@RAMDISK_IMAGE@@;
 			@@KERNEL_BOOTCMD@@ @@KERNEL_LOAD_ADDRESS@@ @@RAMDISK_IMAGE_ADDRESS@@ @@DEVICETREE_ADDRESS@@
 			exit;
-		fi
-		@@KERNEL_BOOTCMD@@ @@KERNEL_LOAD_ADDRESS@@ - @@DEVICETREE_ADDRESS@@
-		exit;
-	fi
-	if test "${boot_target}" = "mmc1"; then
-		if test -e ${devtype} 1:1 /@@FIT_IMAGE@@; then
-			mw.b 0x80020006 0x03
-			fatload ${devtype} 1:1 @@FIT_IMAGE_LOAD_ADDRESS@@ @@FIT_IMAGE@@;
-			bootm @@FIT_IMAGE_LOAD_ADDRESS@@;
 		fi
 		@@KERNEL_BOOTCMD@@ @@KERNEL_LOAD_ADDRESS@@ - @@DEVICETREE_ADDRESS@@
 		exit;
@@ -66,7 +34,6 @@ do
 	if test "${boot_target}" = "xspi0" || test "${boot_target}" = "qspi" || test "${boot_target}" = "qspi0"; then
 		sf probe 0 0 0;
 		if test "@@QSPI_KERNEL_IMAGE@@" = "@@FIT_IMAGE@@"; then
-			mw.b 0x80020006 0x04
 			sf read @@QSPI_FIT_IMAGE_LOAD_ADDRESS@@ @@QSPI_KERNEL_OFFSET@@ @@QSPI_FIT_IMAGE_SIZE@@;
 			bootm @@QSPI_FIT_IMAGE_LOAD_ADDRESS@@;
 			exit;

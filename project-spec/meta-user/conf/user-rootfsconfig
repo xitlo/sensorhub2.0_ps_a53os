@@ -4,12 +4,7 @@
 CONFIG_gpio-demo
 CONFIG_peekpoke
 CONFIG_mem-test
-CONFIG_autostart
-CONFIG_jq
 CONFIG_zlog
 CONFIG_iperf3
-CONFIG_dosfstools
-CONFIG_timesync
-CONFIG_r5files
 CONFIG_momenta
-CONFIG_api-cmd
+

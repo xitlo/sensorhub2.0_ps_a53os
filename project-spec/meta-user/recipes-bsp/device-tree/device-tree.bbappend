@@ -15,3 +15,10 @@ do_configure_append () {
 	-hdf ${DT_FILES_PATH}/hardware_description.${HDF_EXT} -repo ${S} \
 	-data ${data} -sw ${DT_FILES_PATH} -o ${DT_FILES_PATH} -a "soc_mapping"
 }
+
+SRC_URI += " \
+    file://system-user.dtsi \
+    file://0001-Fix-the-external-AXI-interface.patch \
+    file://0001-Fix-the-external-interfaces-with-multiple-segments.patch \
+"
+ 

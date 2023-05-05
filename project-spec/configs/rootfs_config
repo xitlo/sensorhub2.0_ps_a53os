@@ -4218,22 +4218,12 @@ CONFIG_imagefeature-debug-tweaks=y
 #
 # apps 
 #
-CONFIG_api-cmd=y
-CONFIG_autostart=y
-CONFIG_dosfstools=y
 # CONFIG_gpio-demo is not set
 CONFIG_iperf3=y
-CONFIG_jq=y
 CONFIG_mem-test=y
-CONFIG_momenta=y
+# CONFIG_momenta is not set
 # CONFIG_peekpoke is not set
-CONFIG_r5files=y
 CONFIG_zlog=y
-
-#
-# modules 
-#
-CONFIG_timesync=y
 
 #
 # user packages 

@@ -49,8 +49,8 @@ NAND_RAMDISK_SIZE = "0x3200000"
 
 ## Below offsets and sizes are based on 128MB QSPI Memory for zynqmp/versal
 ## For zynqMP
-## Load boot.scr at 0x3810000 -> 56MB of QSPI/NAND Memory
-QSPI_KERNEL_OFFSET = "0x1C10000"
+## Load boot.scr at 0x3E80000 -> 62MB of QSPI/NAND Memory
+QSPI_KERNEL_OFFSET = "0xF00000"
 QSPI_KERNEL_OFFSET_zynqmpdr = "0x3F00000"
 QSPI_RAMDISK_OFFSET = "0x4000000"
 QSPI_RAMDISK_OFFSET_zynqmpdr = "0x5D00000"
@@ -82,7 +82,7 @@ NAND_KERNEL_IMAGE = "image.ub"
 FIT_IMAGE_LOAD_ADDRESS = "${@append_baseaddr(d,"0x10000000")}"
 
 QSPI_FIT_IMAGE_LOAD_ADDRESS = "${@append_baseaddr(d,"0x10000000")}"
-QSPI_FIT_IMAGE_SIZE = "0x1C00000"
+QSPI_FIT_IMAGE_SIZE = "0x6400000"
 QSPI_FIT_IMAGE_SIZE_zynqmpdr = "0x3F00000"
 QSPI_FIT_IMAGE_SIZE_zynq = "0xF00000"
 
@@ -90,8 +90,6 @@ NAND_FIT_IMAGE_LOAD_ADDRESS = "${@append_baseaddr(d,"0x10000000")}"
 NAND_FIT_IMAGE_SIZE = "0x6400000"
 
 FIT_IMAGE = "image.ub"
-FIT_IMAGE_BAK = "image0001.ub"
-FIT_IMAGE_ORIGIN = "image0002.ub"
 
 python () {
     baseaddr = d.getVar('DDR_BASEADDR') or "0x0"
@@ -141,9 +139,6 @@ do_compile_prepend() {
 	    -e 's/@@NAND_FIT_IMAGE_LOAD_ADDRESS@@/${NAND_FIT_IMAGE_LOAD_ADDRESS}/' \
 	    -e 's/@@NAND_FIT_IMAGE_SIZE@@/${NAND_FIT_IMAGE_SIZE}/' \
 	    -e 's/@@FIT_IMAGE@@/${FIT_IMAGE}/' \
-	    -e 's/@@FIT_IMAGE_BAK@@/${FIT_IMAGE_BAK}/' \
-	    -e 's/@@FIT_IMAGE_ORIGIN@@/${FIT_IMAGE_ORIGIN}/' \
-	    -e 's/@@MULTIBOOT_VAL@@/${MULTIBOOT_VAL}/' \
 	    -e 's/@@PRE_BOOTENV@@/${PRE_BOOTENV}/' \
 	    "${WORKDIR}/boot.cmd.${BOOTMODE}${BOOTFILE_EXT}" > "${WORKDIR}/boot.cmd.${BOOTMODE}.${SOC_FAMILY}"
 }
