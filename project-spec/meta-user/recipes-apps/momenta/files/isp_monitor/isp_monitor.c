@@ -306,12 +306,7 @@ power_reset_mode:
                 power_brd_flg[i] ++;
                 if(power_brd_flg[i] > 2){
                     _log_error("ISP: poweroff cam_channel(%d) uart(%d) over 2 times,but not yet recovery\n",4+i,isp_uart_channel[i]);
-                    for(j=0;j<12;j++)
-                        if(power_brd_flg[j] <= 2)
-                            break;
-                        if(j>=12)
-                            goto sys_exit;
-                    continue;
+                    goto sys_exit;
                 }
 
                 _log_info("ISP: poweroff cam_channel(%d) uart(%d),cnt(%d)\n",4+i,isp_uart_channel[i],power_brd_flg[i]);
